@@ -9,8 +9,8 @@ int clientPing = -1;
 int lastPing = -1;
 int pingRepeatCount = 0;
 
-float protocol = -1;
-int worldId = -1;
+float protocol = 6.5;
+int worldId = 2;
 int lastMessageId = -1;
 
 void AP_init()
@@ -43,8 +43,16 @@ void AP_Read()
 {
     xsOpenFile("AP");
     clientPing = xsReadInt();
-    protocol = xsReadFloat();
-    worldId = xsReadInt();
+    int check_protocol = xsReadFloat();
+    if (check_protocol != protocol) {
+        xsChatData("Unexpected AP World Protocol from Client: %d", check_protocol);
+        xsChatData("Expected Protocol: %d", protocol);
+    }
+    int check_worldId = xsReadInt();
+    if (check_worldId != worldId) {
+        xsChatData("Unexpected AP World ID from Client: %d", check_worldId);
+        xsChatData("Expected World ID: %d", worldId);
+    }
     int items = xsReadInt();
     if (items == 1) {
         xsEnableRule("ReadItems");
@@ -70,6 +78,15 @@ void AP_Check_Location(int locationId = -1)
     xsArrayResizeInt(locationArray, locationSize + 1);
     xsArraySetInt(locationArray, locationSize, locationId);
     xsChatData("Location Id : %d", xsArrayGetInt(locationArray, locationSize));
+}
+
+void GiveItem(int itemId = -1) {
+    if (itemId <= 25) {
+        GiveResource(itemId);
+    }
+    if (itemId >= 1000 || itemId < 3000) {
+        GiveProgressionItem(itemId);
+    }
 }
 
 // This rule prints the value of a every 2 seconds.
@@ -151,13 +168,4 @@ rule FreeLocations
     }
     xsCloseFile();
     xsDisableSelf();
-}
-
-void GiveItem(int itemId = -1) {
-    if (itemId <= 25) {
-        GiveResource(itemId);
-    }
-    if (itemId >= 1000 || itemId < 3000) {
-        GiveProgressionItem(itemId);
-    }
 }

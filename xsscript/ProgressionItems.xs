@@ -9,7 +9,7 @@ void TOWN_CENTER_STONE() {
 
 // Scenario-specific items
 void AP_ATTILA_2_VILLAGERS_TRIGGER() {
-    xsSetTriggerVariable(3, 1);
+    xsSetTriggerVariable(2, 1);
 }
 
 void GiveProgressionItem(int itemId = -1) {
