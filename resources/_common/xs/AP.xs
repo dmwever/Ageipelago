@@ -42,6 +42,7 @@ void AP_Write()
 void AP_Read()
 {
     xsOpenFile("AP");
+    lastPing = clientPing;
     clientPing = xsReadInt();
     int check_protocol = xsReadFloat();
     if (check_protocol != protocol) {
@@ -94,7 +95,7 @@ void GiveScenarioSpecificItems(string filename = "") {
   int itemCount = xsGetFileSize() / 4;
   for (i = 0; < itemCount) {
     int item = xsReadInt();
-    GiveItem(item);
+    GiveItem(item, filename);
   }
   xsCloseFile();
 }
