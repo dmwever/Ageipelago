@@ -44,18 +44,21 @@ void AP_Write()
 
 void AP_Read()
 {
-    xsOpenFile("AP");
+    bool opened = xsOpenFile("AP");
     lastPing = clientPing;
     clientPing = xsReadInt();
+    if (clientPing == lastPing) {
+        return;
+    }
     int check_protocol = xsReadFloat();
     if (check_protocol != protocol) {
-        xsChatData("Unexpected AP World Protocol from Client: %d", check_protocol);
-        xsChatData("Expected Protocol: %d", protocol);
+        xsChatData("<RED>Unexpected AP World Protocol from Client: %d", check_protocol);
+        xsChatData("<RED>Expected Protocol: %d", protocol);
     }
     int check_worldId = xsReadInt();
     if (check_worldId != worldId) {
-        xsChatData("Unexpected AP World ID from Client: %d", check_worldId);
-        xsChatData("Expected World ID: %d", worldId);
+        xsChatData("<RED>Unexpected AP World ID from Client: %d", check_worldId);
+        xsChatData("<RED>Expected World ID: %d", worldId);
     }
     int items = xsReadInt();
     if (items == 1) {
@@ -72,7 +75,6 @@ void AP_Read()
     int units = xsReadInt();
     int messages = xsReadInt();
     if (messages == 1) {
-        xsChatData("ReadMessages");
         xsEnableRule("ReadMessages");
     }
     xsCloseFile();
@@ -94,8 +96,8 @@ void GiveItem(int itemId = -1, string filename = "") {
     }
 }
 
-void ScenarioSpecificReadInit(string filename = "") {
-  xsOpenFile(filename);
+void ScenarioSpecificInit(string filename = "") {
+  bool openFile = xsOpenFile(filename);
   int itemCount = xsGetFileSize() / 4;
   completed = xsReadInt();
   for (i = 1; < itemCount) {
@@ -111,8 +113,8 @@ void GiveVictory() {
 
 rule ReadAP
     active
-    minInterval 1
-    maxInterval 1
+    minInterval 2
+    maxInterval 4
 {
     AP_Read();
     if (clientPing > lastPing) {
@@ -194,13 +196,13 @@ rule ReadMessages
     minInterval 1
     maxInterval 1
 {
-    xsOpenFile("messages");
+    bool opened = xsOpenFile("messages");
     int messageCount = xsReadInt();
     for (i = 0; < messageCount) {
         int nextMessageId = xsReadInt();
+        string message = xsReadString();
         if (lastMessageId <  nextMessageId) {
             lastMessageId = nextMessageId;
-            string message = xsReadString();
             xsChatData(message);
         }
     }
