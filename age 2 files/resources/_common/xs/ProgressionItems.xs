@@ -8,25 +8,34 @@ void TOWN_CENTER_STONE() {
 }
 
 // Scenario-specific items
-void ATTILA_1_BLEDAS_CAMP(string scenario = "") {
-    if (scenario == "ATT1") {
-        xsSetTriggerVariable(6, 1);
-    }
+bool bledasCamp = false;
+void ATTILA_1_BLEDAS_CAMP() {
+    bledasCamp = true;
 }
 
-void ATTILA_1_ATTILAS_CAMP(string scenario = "") {
-    if (scenario == "ATT1") {
-        xsSetTriggerVariable(7, 1);
-    }
+bool HAS_BLEDAS_CAMP() {
+    return (bledasCamp);
 }
 
-void AP_ATTILA_2_VILLAGERS_TRIGGER(string scenario = "") {
-    if (scenario == "ATT2") {
-        xsSetTriggerVariable(2, 1);
-    }
+bool attilasCamp = false;
+void ATTILA_1_ATTILAS_CAMP() {
+    attilasCamp = true;
 }
 
-void GiveProgressionItem(int itemId = -1, string scenario = "") {
+bool HAS_ATTILAS_CAMP() {
+    return (attilasCamp);
+}
+
+bool attila2Villagers = false;
+void AP_ATTILA_2_VILLAGERS_TRIGGER() {
+    attila2Villagers = true;
+}
+
+bool HAS_ATTILA_2_VILLAGERS() {
+    return (attila2Villagers);
+}
+
+void GiveProgressionItem(int itemId = -1) {
     switch(itemId) {
         case 1000: {
             TOWN_CENTER_WOOD();
@@ -35,13 +44,13 @@ void GiveProgressionItem(int itemId = -1, string scenario = "") {
             TOWN_CENTER_STONE();
         }
         case 1002: {
-            AP_ATTILA_2_VILLAGERS_TRIGGER(scenario);
+            AP_ATTILA_2_VILLAGERS_TRIGGER();
         }
         case 1003: {
-            ATTILA_1_BLEDAS_CAMP(scenario);
+            ATTILA_1_BLEDAS_CAMP();
         }
         case 1004: {
-            ATTILA_1_ATTILAS_CAMP(scenario);
+            ATTILA_1_ATTILAS_CAMP();
         }
     }
 }

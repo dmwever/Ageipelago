@@ -1,5 +1,6 @@
 include "./ProgressionItems.xs";
 include "./ResourceItems.xs";
+include "./ItemHandler.xs";
 
 
 int itemArray = -1;
@@ -19,6 +20,7 @@ void AP_init()
 {
     itemArray = xsArrayCreateInt(12, -1, "Item Array");
     locationArray = xsArrayCreateInt(0, -1, "Location Array");
+    GiveStartupItems();
 }
 
 void AP_Write()
@@ -87,22 +89,13 @@ void AP_Check_Location(int locationId = -1)
     xsArraySetInt(locationArray, locationSize, locationId);
 }
 
-void GiveItem(int itemId = -1, string filename = "") {
-    if (itemId <= 25) {
-        GiveResource(itemId);
-    }
-    if (itemId >= 1000 || itemId < 3000) {
-        GiveProgressionItem(itemId, filename);
-    }
-}
-
 void ScenarioSpecificInit(string filename = "") {
   bool openFile = xsOpenFile(filename);
   int itemCount = xsGetFileSize() / 4;
   completed = xsReadInt();
   for (i = 1; < itemCount) {
     int itemId = xsReadInt();
-    GiveItem(itemId, filename);
+    GiveItem(itemId);
   }
   xsCloseFile();
 }

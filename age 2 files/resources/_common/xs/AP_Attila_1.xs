@@ -1,6 +1,5 @@
 include "./AP.xs";
 
-
 void InitScenarioSpecific() {
   ScenarioSpecificInit("ATT1");
 }
