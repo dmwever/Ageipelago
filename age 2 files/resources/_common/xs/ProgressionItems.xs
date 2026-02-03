@@ -8,6 +8,8 @@ void TOWN_CENTER_STONE() {
 }
 
 // Scenario-specific items
+
+//Attila 1
 bool bledasCamp = false;
 void ATTILA_1_BLEDAS_CAMP() {
     bledasCamp = true;
@@ -26,6 +28,7 @@ bool HAS_ATTILAS_CAMP() {
     return (attilasCamp);
 }
 
+//Attila 2
 bool attila2Villagers = false;
 void AP_ATTILA_2_VILLAGERS_TRIGGER() {
     attila2Villagers = true;
@@ -33,6 +36,25 @@ void AP_ATTILA_2_VILLAGERS_TRIGGER() {
 
 bool HAS_ATTILA_2_VILLAGERS() {
     return (attila2Villagers);
+}
+
+//Attila 3
+bool attila3RedGold = false;
+void AP_ATTILA_3_RED_GOLD() {
+    attila3RedGold = true;
+}
+
+bool HAS_ATTILA_3_RED_GOLD() {
+    return (attila3RedGold);
+}
+
+bool attila3GreenGold = false;
+void AP_ATTILA_3_GREEN_GOLD() {
+    attila3GreenGold = true;
+}
+
+bool HAS_ATTILA_3_GREEN_GOLD() {
+    return (attila3GreenGold);
 }
 
 void GiveProgressionItem(int itemId = -1) {
@@ -51,6 +73,12 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1004: {
             ATTILA_1_ATTILAS_CAMP();
+        }
+        case 1005: {
+            AP_ATTILA_3_RED_GOLD();
+        }
+        case 1006: {
+            AP_ATTILA_3_GREEN_GOLD();
         }
     }
 }
