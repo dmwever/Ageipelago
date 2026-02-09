@@ -11,70 +11,86 @@ void main() {
 }
 
 // Scenario-specific locations
-void VICTORY() {
+void Victory() {
   AP_Check_Location(0);
 }
 
-void UNITE_THE_HUNS() {
+void UniteTheHuns() {
   AP_Check_Location(1);
 }
 
-void FREE_VILLAGERS() {
+void FreeVillagers() {
   AP_Check_Location(2);
 }
 
-void RESOLVE_SCOUT_ANY() {
+void ResolveScoutAny() {
   AP_Check_Location(3);
 }
 
-void CAPTURE_HORSES_CAMP() {
+void CaptureHorsesCamp() {
   AP_Check_Location(4);
 }
 
-void CAPTURE_HORSE_RUINS() {
+void CaptureHorsesRuins() {
   AP_Check_Location(5);
 }
 
-void CAPTURE_HORSES_LUMBER() {
+void CaptureHorsesLumber() {
   AP_Check_Location(6);
 }
 
-void CAPTURE_HORSES_BEHIND_BASE() {
+void CsptureHorsesBehindBase() {
   AP_Check_Location(7);
 }
 
-void CAPTURE_HORSES_WEST() {
+void CaptureHorsesWest() {
   AP_Check_Location(8);
 }
 
-void CAPTURE_HORSES_ROMAN() {
+void CaptureHorsesRoman() {
   AP_Check_Location(9);
 }
 
-void KILL_THE_BOAR() {
+void KillTheBoar() {
   AP_Check_Location(10);
 }
 
-void BETRAY_BLEDA() {
+void BetrayBleda() {
   AP_Check_Location(11);
 }
 
-void BLOW_BLEDA_OFF() {
+void BlowBledaOff() {
   AP_Check_Location(12);
 }
 
-void FREE_SCOUT() {
+void FreeScout() {
   AP_Check_Location(13);
 }
 
-void KILL_SCOUT() {
+void KillScout() {
   AP_Check_Location(14);
 }
 
-void GIVE_HORSES() {
+void GiveHorses() {
   AP_Check_Location(15);
 }
 
-void DEFEAT_FIRST_PLAYER() {
+void DefeatFirstPlayer() {
   AP_Check_Location(16);
+}
+
+void DefeatsanityBlue() {
+AP_Check_Location(17);
+}
+
+void DefeatsanityRed() {
+AP_Check_Location(18);
+}
+
+void DefeatsanityGreen() {
+AP_Check_Location(19);
+}
+
+void DefeatsanityPurple() {
+AP_Check_Location(20);
 }
