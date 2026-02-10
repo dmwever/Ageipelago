@@ -54,15 +54,16 @@ Each scenario has a unique .xsdat file.
 
 |Name|Type|Purpose|
 |---|---|---|
-|Active|int|Whether the current scenario is running (0 or 1)|
+|Active|bool|Whether the current scenario is running (0 or 1)|
 |Ping|int|Updated each rule tick while scenario is running and unpaused|
 |Protocol|float|What AP version is expected by the game|
 |WorldId|int|The ID of the AP World being played|
 |LatestMessageId|int|The ID of the latest played message, assumes all previously sent messages have been played in order|
 |ItemId1-ItemId12|int*12|The most recent item packet Ids received by the game|
+|ScenarioCompleted|bool|Returns scenario global variable completed, which is 1 if the scenario has been completed|
 |CurrentUnitBufferId|int|The latest unit buffer, set to -1 if no buffer has been received|
 |CurrentUnitBufferRemaining|int|How many units are left from the current item to spawn|
-|x29 spaces|undetermined|Reserved for future use|
+|x28 spaces|undetermined|Reserved for future use|
 |Locations (L)|int*L|All locations checked that have not been confirmed by AP client|
 
 ### AP.xsdat
@@ -81,7 +82,7 @@ Sent from the client to the game to confirm that the client is still connected a
 |CheckLocations|int|If 1, the game reads the `locations.xsdat` file|
 |CheckUnitBuffer|int|If 1, the game reads the `units.xsdat` file. This will only be 1 if the client knows that `CurrentUnitBufferRemaining` is 0|
 
-### items.xsdat NOT IMPLEMENTED
+### items.xsdat
 
 Client -> Game
 
@@ -93,6 +94,26 @@ The game reads these items one at a time. Each item here will have a correspondi
 |ItemId2|int|Id for the second item|
 |...|...|...|
 |ItemId12|int|Id for the 12th item|
+
+### free_items.xsdat
+
+Client -> Game
+
+the client echoes back the items that have been successfully recieved by the game. The game frees item slots in its local cache, allowing new items to be loaded into the game and activated.
+
+|Name|Type|Purpose|
+|ItemId1|int|Id for the first item|
+|ItemId2|int|Id for the second item|
+|...|...|...|
+|ItemId12|int|Id for the 12th item|
+
+### locations.xsdat
+
+Client -> Game
+
+The game reads a location file that echoes back the locations sent in past packets from the <SCENARIO_NAME>.xsdat packet. These locations are freed from the game's memory so that they will not continue to be sent in future packets.
+
+|Locations (L)|int*L|All locations checked that have not been confirmed by AP client|
 
 ### units.xsdat NOT IMPLEMENTED
 
@@ -111,3 +132,13 @@ Buffer item messages are always received, but the units will spawn in as the cli
 |CurrentBufferItemId|int|Tells the game what the current buffer item is, reflected back int `<SCENARIO_NAME>.xsdat`|
 |NumberOfUnits|int|Tells the game how many units are in this item|
 |UnitIds|int*NumberOfUnits|The ids of the units to be spawned in order|
+
+### <SCENARIO_SHORTHAND>.xsdat
+
+Client -> Game
+
+Each Scenario has a shorthand file containing found items to be sent at level start, as well as a completion status for the scenario.
+
+|Name|Type|Purpose|
+|Completed|bool|If completed is true (1), set global variable completed = true|
+|ItemIds (I)|int * I|Id of item to unlock on level start|
