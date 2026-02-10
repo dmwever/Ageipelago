@@ -54,11 +54,10 @@ void DestroyOrangeWonder() {
   AP_Check_Location(10);
 }
 
-
-void DefeatsanityBlue() {
+void DestroyPurpleWonder2() {
   AP_Check_Location(11);
 }
 
-void DESTROY_PURPLE_WONDER_2() {
-  AP_Check_Location(11);
+void DefeatsanityBlue() {
+  AP_Check_Location(12);
 }
