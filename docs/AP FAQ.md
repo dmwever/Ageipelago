@@ -16,7 +16,8 @@
 ### Attila 2: The Great Ride
 
 - "Attila: The Great Ride: Villagers" item must be found before the player can obtain villagers from destroying Purple's houses.
-- Rome can be beaten without a TC.
+- Freeing the Tarkans location is awarded by destroying the Cyan castle or destroying the Cyan TC.
+- Defeat Rome check be given without needing a TC.
 
 ### Attila 3:
 
