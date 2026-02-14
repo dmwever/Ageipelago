@@ -28,9 +28,18 @@ bool HAS_ATTILAS_CAMP() {
     return (attilasCamp);
 }
 
+bool romanCampVils = false;
+void ATTILA_1_ROMAN_CAMP_VILS() {
+    romanCampVils = true;
+}
+
+bool HAS_ROMAN_CAMP_VILS() {
+    return (romanCampVils);
+}
+
 //Attila 2
 bool attila2Villagers = false;
-void AP_ATTILA_2_VILLAGERS_TRIGGER() {
+void ATTILA_2_VILLAGERS_TRIGGER() {
     attila2Villagers = true;
 }
 
@@ -40,7 +49,7 @@ bool HAS_ATTILA_2_VILLAGERS() {
 
 //Attila 3
 bool attila3RedGold = false;
-void AP_ATTILA_3_RED_GOLD() {
+void ATTILA_3_RED_GOLD() {
     attila3RedGold = true;
 }
 
@@ -49,7 +58,7 @@ bool HAS_ATTILA_3_RED_GOLD() {
 }
 
 bool attila3GreenGold = false;
-void AP_ATTILA_3_GREEN_GOLD() {
+void ATTILA_3_GREEN_GOLD() {
     attila3GreenGold = true;
 }
 
@@ -66,19 +75,19 @@ void GiveProgressionItem(int itemId = -1) {
             TOWN_CENTER_STONE();
         }
         case 1002: {
-            AP_ATTILA_2_VILLAGERS_TRIGGER();
-        }
-        case 1003: {
             ATTILA_1_BLEDAS_CAMP();
         }
-        case 1004: {
+        case 1003: {
             ATTILA_1_ATTILAS_CAMP();
         }
+        case 1004: {
+            ATTILA_2_VILLAGERS_TRIGGER();
+        }
         case 1005: {
-            AP_ATTILA_3_RED_GOLD();
+            ATTILA_3_RED_GOLD();
         }
         case 1006: {
-            AP_ATTILA_3_GREEN_GOLD();
+            ATTILA_3_GREEN_GOLD();
         }
     }
 }

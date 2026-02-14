@@ -7,6 +7,9 @@ void GiveItem(int itemId = -1) {
     if (itemId >= 1000 || itemId < 3000) {
         GiveProgressionItem(itemId);
     }
+    if (itemId >= 4000) {
+        GiveMercenary(itemId);
+    }
 }
 
 void GiveStartupItems() {
