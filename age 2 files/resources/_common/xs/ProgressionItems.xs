@@ -28,15 +28,6 @@ bool HAS_ATTILAS_CAMP() {
     return (attilasCamp);
 }
 
-bool romanCampVils = false;
-void ATTILA_1_ROMAN_CAMP_VILS() {
-    romanCampVils = true;
-}
-
-bool HAS_ROMAN_CAMP_VILS() {
-    return (romanCampVils);
-}
-
 //Attila 2
 bool attila2Villagers = false;
 void ATTILA_2_VILLAGERS_TRIGGER() {
