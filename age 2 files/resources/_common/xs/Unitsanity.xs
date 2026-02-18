@@ -3,17 +3,10 @@
 
 // Town Center
 const int villager = 83;
-const int villager = 293;
 
 // Market
 const int trade-cart = 128;
 
-// Dock
-const int fishing-ship = 13;
-const int trade-cog = 17;
-
-
-// Military
 
 
 // Archery Range
@@ -227,7 +220,9 @@ const int qizilbashWarrior = 1817;
 const int elite-QizilbashWarrior = 1829;
 
 
-// Navy
+// Dock
+const int fishing-ship = 13;      // also disable with Economy
+const int trade-cog = 17;         // also disable with Economy
 const int transport-ship = 545;
 const int galley = 539;
 const int war-galley = 21;
@@ -250,3 +245,255 @@ const int caravel = 1004;
 const int elite-caravel = 1006;
 const int longboat = 250;
 const int elite-longboat = 533;
+
+
+
+void InitUnitsanityEconomy() {
+    xsEffectAmount(cEnableObject, villager, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, trade-cart, cAttributeSet, 0, 1);
+}
+
+void InitUnitsanityArchery() {
+    xsEffectAmount(cEnableObject, archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, crossbowman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, arbalester, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, skirmisher, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-skirmisher, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, imperial-skirmisher, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, cavalry-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, heavy-cavalry-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, hand-cannoneer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, slinger, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, grenadier, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, genitour, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-genitour, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elephant-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-elephant-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, xianbeiRaider, cAttributeDisable, 0, 1);
+}
+
+void InitUnitsanityBarracks() {
+    xsEffectAmount(cEnableObject, militia, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, man-at-arms, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, long-swordsman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, two-handed-swordsman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, champion, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, legionary, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, spearman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, pikeman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, halberdier, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, eagle-warrior, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, heavy-eagle-warrior, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-eagle-warrior, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, fireLancer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, eliteFireLancer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, condottiero, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, huskarlBarracks, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, eliteHuskarlBarracks, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, town-center-flemish-pikeman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, jianSwordsman, cAttributeDisable, 0, 1);
+}
+
+void InitUnitsanityStable() {
+    xsEffectAmount(cEnableObject, scout-cavalry, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, light-cavalry, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, hussar, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, winged-hussar, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, knight, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, cavalier, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, paladin, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, savar, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, camel-scout, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, camel-rider, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, heavy-camel-rider, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, imperial-camel-rider, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, battle-elephant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-battle-elephant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, steppe-lancer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-steppe-lancer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, hei-guang-cavalry, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, heavy-hei-guang-cavalry, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, shrivamsha-rider, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-shrivamsha-rider, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, stable-tarkan, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, stable-elite-tarkan, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, xolotlWarrior, cAttributeDisable, 0, 1);
+}
+
+void InitUnitsanitySiegeWorkshop() {
+    xsEffectAmount(cEnableObject, feudal-battering-ram, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, battering-ram, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, capped-ram, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, siege-ram, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, armored-elephant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, siege-elephant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, mangonel, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, onager, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, siege-onager, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, rocketCart, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, heavyRocketCart, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, scorpion, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, heavy-scorpion, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, warChariot, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, bombard-cannon, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, houfnice, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, tractionTrebuchet, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, mountedTrebuchet, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, siegeTower, cAttributeDisable, 0, 1);
+}
+
+void InitUnitsanityMonastery() {
+    xsEffectAmount(cEnableObject, monk, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, missionary, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, warrior-priest, cAttributeDisable, 0, 1);
+}
+
+void InitUnitsanityKrepost() {
+    xsEffectAmount(cEnableObject, krepost-konnik, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-krepost-konnik, cAttributeDisable, 0, 1);
+}
+
+void InitUnitsanityDonjon() {
+    xsEffectAmount(cEnableObject, donjon-serjeant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-donjon-serjeant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, spearmanDonjon, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, pikemanDonjon, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, halberdierDonjon, cAttributeDisable, 0, 1);
+}
+
+void InitUnitsanityCastle() {
+    xsEffectAmount(cEnableObject, trebuchet, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, petard, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, composite-bowman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-composite-bowman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, jaguar-warrior, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-jaguar-warrior, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, ratha, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-ratha, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, camel-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-camel-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, longbowman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-longbowman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, hussite-wagon, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-hussite-wagon, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, konnik, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-konnik, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, coustillier, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-coustillier, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, arambai, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-arambai, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, cataphract, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-cataphract, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, woad-raider, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-woad-raider, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, chu-ko-nu, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-chu-ko-nu, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, kipchak, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-kipchak, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, urumi-swordsman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-urumi-swordsman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, shotel-warrior, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-shotel-warrior, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, throwing-axeman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-throwing-axeman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, monaspa, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-monaspa, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, huskarl, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-huskarl, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, chakram-thrower, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-chakram-thrower, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, ghulam, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-ghulam, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, tarkan, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-tarkan, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, kamayuk, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-kamayuk, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elephant-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-elephant-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, genoese-crossbowman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-genoese-crossbowman, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, samurai, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-samurai, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, iron-pagoda, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-iron-pagoda, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, liao-dao, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-liao-dao, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, ballista-elephant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-ballista-elephant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, war-wagon, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-war-wagon, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, leitis, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-leitis, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, magyar-huszar, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-magyar-huszar, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, karambit-warrior, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-karambit-warrior, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, gbeto, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-gbeto, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, plumed-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-plumed-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, mangudai, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-mangudai, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, war-elephant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-war-elephant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, obuch, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-obuch, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, organ-gun, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-organ-gun, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, centurion, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-centurion, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, mameluke, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-mameluke, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, white-feather-guard, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-white-feather-guard, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, serjeant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-serjeant, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, boyar, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-boyar, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, conquistador, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-conquistador, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, keshik, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-keshik, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, flaming-camel, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, teutonic-knight, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-teutonic-knight, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, janissary, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-janissary, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, rattan-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-rattan-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, berserk, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-berserk, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, tiger-cavalry, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-tiger-cavalry, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, fire-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-fire-archer, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, qizilbashWarrior, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-QizilbashWarrior, cAttributeDisable, 0, 1);
+}
+
+void InitUnitsanityDock() {
+    xsEffectAmount(cEnableObject, fishing-ship, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, trade-cog, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, transport-ship, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, galley, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, war-galley, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, galleon, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, fire-galley, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, fire-ship, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, fast-fire-ship, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, dragonShip, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, demo-raft, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, demolition-ship, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, heavy-demolition-ship, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, cannon-galleon, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-cannon-galleon, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, dromon, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, louChuan, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, thirisadai, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, turtle-ship, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-turtle-ship, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, caravel, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-caravel, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, longboat, cAttributeDisable, 0, 1);
+    xsEffectAmount(cEnableObject, elite-longboat, cAttributeDisable, 0, 1);
+}
