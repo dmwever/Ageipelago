@@ -55,7 +55,7 @@ void AP_Read()
     if (clientPing == lastPing) {
         return;
     }
-    int check_protocol = xsReadFloat();
+    float check_protocol = xsReadFloat();
     if (check_protocol != protocol) {
         xsChatData("<RED>Unexpected AP World Protocol from Client: %d", check_protocol);
         xsChatData("<RED>Expected Protocol: %d", protocol);

@@ -1,4 +1,5 @@
 include "structs.xs";
+
 // Always
 const int WONDER = 276;
 const int OUTPOST = 598;
