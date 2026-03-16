@@ -81,8 +81,8 @@ vector disableBuilding(string buildingName = "", int buildingId = -1, float cost
     structSetInt(building, "id", buildingId);
     structSetInt(building, "playerCount", xsGetObjectCount(1, structGetInt(building, "id")));
     structSetFloat(building, "resourceCost", cost);
-    xsEffectAmount(cSetAttribute, buildingId, cDisabledFlag, 1, 1);
-    return building;
+    xsEffectAmount(cSetAttribute, buildingId, cDisabledFlag, 1.0, 1);
+    return (building);
 }
 
 void InitBuildsanityStructs() {
@@ -182,44 +182,44 @@ void InitBuildsanityMilitary() {
 void InitBuildsanityDefense() {
     int buildings = structGetInt(buildsanity, "buildings");
     
-    vector palisadeGate = addBuilding("Palisade Gate", PALISADE_GATE, 20.0);
+    vector palisadeGate = disableBuilding("Palisade Gate", PALISADE_GATE, 20.0);
     xsArraySetVector(buildings, 19, palisadeGate);
 
-    vector gate = addBuilding("Stone Gate", GATE, 30.0);
+    vector gate = disableBuilding("Stone Gate", GATE, 30.0);
     xsArraySetVector(buildings, 20, gate);
 
-    vector palisadeWall = addBuilding("Palisade Wall", PALISADE_WALL, 3.0);
+    vector palisadeWall = disableBuilding("Palisade Wall", PALISADE_WALL, 3.0);
     xsArraySetVector(buildings, 21, palisadeWall);
 
-    vector wall = addBuilding("Stone Wall", STONE_WALL, 5.0);
+    vector wall = disableBuilding("Stone Wall", STONE_WALL, 5.0);
     xsArraySetVector(buildings, 22, wall);
 
-    vector watchTower = addBuilding("Watch Tower", WATCH_TOWER, 160.0);
+    vector watchTower = disableBuilding("Watch Tower", WATCH_TOWER, 160.0);
     xsArraySetVector(buildings, 23, watchTower);
 
-    vector bombardTower = addBuilding("Bombard Tower", BOMBARD_TOWER, 225.0);
+    vector bombardTower = disableBuilding("Bombard Tower", BOMBARD_TOWER, 225.0);
     xsArraySetVector(buildings, 24, bombardTower);
 }
 
 void InitBuildsanityUniqueEcon() {
     int buildings = structGetInt(buildsanity, "buildings");
 
-    vector folwark = addBuilding("Folwark", FOLWARK, 100.0);
+    vector folwark = disableBuilding("Folwark", FOLWARK, 100.0);
     xsArraySetVector(buildings, 25, folwark);
 
-    vector muleCart = addBuilding("Mule Cart", MULE_CART, 100.0);
+    vector muleCart = disableBuilding("Mule Cart", MULE_CART, 100.0);
     xsArraySetVector(buildings, 26, muleCart);
 
-    vector pasture = addBuilding("Pasture", PASTURE, 110.0);
+    vector pasture = disableBuilding("Pasture", PASTURE, 110.0);
     xsArraySetVector(buildings, 27, pasture);
 
-    vector harbor = addBuilding("Harbor", HARBOR, 150.0);
+    vector harbor = disableBuilding("Harbor", HARBOR, 150.0);
     xsArraySetVector(buildings, 28, harbor);
 
-    vector caravanserai = addBuilding("Caravanserai", CARAVANSERAI, 225.0);
+    vector caravanserai = disableBuilding("Caravanserai", CARAVANSERAI, 225.0);
     xsArraySetVector(buildings, 29, caravanserai);
 
-    vector feitoria = addBuilding("Feitoria", FEITORIA, 650.0);
+    vector feitoria = disableBuilding("Feitoria", FEITORIA, 650.0);
     xsArraySetVector(buildings, 30, feitoria);
 
     vector settlement = disableBuilding("Settlement", 2556, 125.0);
@@ -227,13 +227,15 @@ void InitBuildsanityUniqueEcon() {
 }
 
 void InitBuildsanityUniqueMilitaryOrDefense() {
-    vector fortifiedChurch = addBuilding("Fortified Church", FORTIFIED_CHURCH, 200.0);
+    int buildings = structGetInt(buildsanity, "buildings");
+
+    vector fortifiedChurch = disableBuilding("Fortified Church", FORTIFIED_CHURCH, 200.0);
     xsArraySetVector(buildings, 32, fortifiedChurch);
 
-    vector krepost = addBuilding("Krepost", KREPOST, 350.0);
+    vector krepost = disableBuilding("Krepost", KREPOST, 350.0);
     xsArraySetVector(buildings, 33, krepost);
 
-    vector donjon = addBuilding("Donjon", DONJON, 225.0);
+    vector donjon = disableBuilding("Donjon", DONJON, 225.0);
     xsArraySetVector(buildings, 34, donjon);
 }
 
@@ -272,15 +274,15 @@ void InitBuildsanity(bool econ = false, bool tech = false, bool mil = false, boo
 
 bool Built(int buildings = -1, string name = "") {
     if (name == "" || buildings == -1) {
-        return false;
+        return (false);
     }
     vector building = getBuildingByName(buildings, name);
     int built = xsGetObjectCount(1, structGetInt(building, "id"));
     if (built > structGetInt(building, "playerCount")) {
         structSetInt(building, "playerCount", built);
-        return true;
+        return (true);
     }
-    return false;
+    return (false);
 }
 
 rule BuildsanityChecks
@@ -471,5 +473,5 @@ void UnlockBuilding(int ItemId = -1) {
     vector building = xsArrayGetVector(buildings, ItemId);
     
     int id = structGetInt(building, "id");
-    xsEffectAmount(cSetAttribute, id, cDisabledFlag, 0, 1);
+    xsEffectAmount(cSetAttribute, id, cDisabledFlag, 0.0, 1);
 }
