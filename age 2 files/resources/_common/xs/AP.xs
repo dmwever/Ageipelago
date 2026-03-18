@@ -1,6 +1,7 @@
 include "./ProgressionItems.xs";
 include "./MercenaryItems.xs";
 include "./ResourceItems.xs";
+include "./Buildsanity.xs";
 include "./ItemHandler.xs";
 
 

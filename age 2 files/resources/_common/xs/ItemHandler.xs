@@ -1,10 +1,11 @@
-
-
 void GiveItem(int itemId = -1) {
-    if (itemId <= 25) {
+    if (itemId < 25) {
         GiveResource(itemId);
     }
-    if (itemId >= 1000 || itemId < 3000) {
+    if (itemId >= 200 && itemId < 300) {
+        UnlockBuilding(itemId - 200);
+    }
+    if (itemId >= 1000 && itemId < 3000) {
         GiveProgressionItem(itemId);
     }
     if (itemId >= 4000) {
