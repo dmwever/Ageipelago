@@ -12,7 +12,7 @@
 
 - "Attila's Camp" and "Bleda's Camp" items must be found before the player can receive their respective camp after beating/blowing off Bleda.
 - Attila's Camp is not given when the player receives Bleda's Camp.
-- 10 horses can be brought to the Scythian flags even if defeated or an enemy.
+- 10 horses can be brought to the Scythian flags even if defeated or an enemy. (As of 0.1.1, the scythian flags might not be accessible until after the cmap is received. This is a buge that will be fixed next update.)
 - Roman Villagers and the Scythian Mangudai are now mercenary items that need to be unlocked.
 
 ### Attila 2: The Great Ride
