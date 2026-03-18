@@ -12,62 +12,62 @@ void main() {
 }
 
 // Scenario-specific locations
-void ATT2_VICTORY() {
+void Victory() {
   AP_Check_Location(0);
 }
 
-void Att2RedTC() {
+void RedTC() {
   AP_Check_Location(1);
 }
 
-void Att2GreenLumber() {
+void GreenLumber() {
   AP_Check_Location(2);
 }
 
-void Att2PurpleVills() {
+void PurpleVils() {
   AP_Check_Location(3);
 }
 
-void Att2GreyMining() {
+void GreyMining() {
   AP_Check_Location(4);
 }
 
-void Att2CyanTC() {
+void CyanTC() {
   AP_Check_Location(5);
 }
 
-void Att2ScythianVills() {
+void ScythianVils() {
   AP_Check_Location(6);
 }
 
-void Att2BuildTC() {
+void BuildTC() {
   AP_Check_Location(7);
 }
 
-void Att2BeatTheRomans() {
+void BeatTheRomans() {
   AP_Check_Location(8);
 }
 
-void Att2DefeatsanityRed() {
+void DefeatsanityRed() {
   AP_Check_Location(9);
 }
 
-void Att2DefeatsanityGreen() {
+void DefeatsanityGreen() {
   AP_Check_Location(10);
 }
 
-void Att2DefeatsanityPurple() {
+void DefeatsanityPurple() {
   AP_Check_Location(11);
 }
 
-void Att2DefeatsanityGrey() {
+void DefeatsanityGrey() {
   AP_Check_Location(12);
 }
 
-void Att2DefeatsanityCyan() {
+void DefeatsanityCyan() {
   AP_Check_Location(13);
 }
 
-void Att2DefeatsanityOrange() {
+void DefeatsanityOrange() {
   AP_Check_Location(14);
 }

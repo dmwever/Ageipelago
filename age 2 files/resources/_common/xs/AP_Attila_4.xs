@@ -27,7 +27,7 @@ void DefeatOrleans() {
   AP_Check_Location(3);
 }
 
-void DefeatRomanArms() {
+void DefeatRomanArmy() {
   AP_Check_Location(4);
 }
 

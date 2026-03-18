@@ -31,7 +31,7 @@ void CaptureHorsesCamp() {
   AP_Check_Location(4);
 }
 
-void CaptureHorsesRuins() {
+void CaptureHorseRuins() {
   AP_Check_Location(5);
 }
 
@@ -39,7 +39,7 @@ void CaptureHorsesLumber() {
   AP_Check_Location(6);
 }
 
-void CsptureHorsesBehindBase() {
+void CaptureHorsesBehindBase() {
   AP_Check_Location(7);
 }
 

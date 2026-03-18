@@ -23,7 +23,7 @@ void DefeatMediolanum() {
   AP_Check_Location(2);
 }
 
-void DefeatAquilea() {
+void DefeatAquileia() {
   AP_Check_Location(3);
 }
 
