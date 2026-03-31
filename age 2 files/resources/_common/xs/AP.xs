@@ -1,7 +1,3 @@
-include "./ProgressionItems.xs";
-include "./MercenaryItems.xs";
-include "./ResourceItems.xs";
-include "./Buildsanity.xs";
 include "./ItemHandler.xs";
 
 
@@ -24,6 +20,9 @@ void AP_init()
     itemArray = xsArrayCreateInt(12, -1, "Item Array");
     locationArray = xsArrayCreateInt(0, -1, "Location Array");
     GiveStartupItems();
+    
+    InitBuildsanity(true, true, true, true, true);
+    GiveStartupBuildings();
 }
 
 void AP_Write()

@@ -12,53 +12,53 @@ void main() {
 
 // Scenario-specific locations
 void Victory() {
-  AP_Check_Location(0);
+  AP_Check_Location(10600);
 }
 
 void DefeatPatavium() {
-  AP_Check_Location(1);
+  AP_Check_Location(10601);
 }
 
 void DefeatMediolanum() {
-  AP_Check_Location(2);
+  AP_Check_Location(10602);
 }
 
 void DefeatAquileia() {
-  AP_Check_Location(3);
+  AP_Check_Location(10603);
 }
 
 void DefeatVerona() {
-  AP_Check_Location(4);
+  AP_Check_Location(10604);
 }
 
 void DefeatTheItalians() {
-  AP_Check_Location(5);
+  AP_Check_Location(10605);
 }
 
 void MeetThePope() {
-  AP_Check_Location(6);
+  AP_Check_Location(10606);
 }
 
 void DestroyPurpleWonder() {
-  AP_Check_Location(7);
+  AP_Check_Location(10607);
 }
 
 void DestroyGreenWonder() {
-  AP_Check_Location(8);
+  AP_Check_Location(10608);
 }
 
 void DestroyRedWonder() {
-  AP_Check_Location(9);
+  AP_Check_Location(10609);
 }
 
 void DestroyOrangeWonder() {
-  AP_Check_Location(10);
+  AP_Check_Location(10610);
 }
 
 void DestroyPurpleWonder2() {
-  AP_Check_Location(11);
+  AP_Check_Location(10611);
 }
 
 void DefeatsanityBlue() {
-  AP_Check_Location(12);
+  AP_Check_Location(10612);
 }

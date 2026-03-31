@@ -12,33 +12,33 @@ void main() {
 
 // Scenario-specific locations
 void Victory() {
-  AP_Check_Location(0);
+  AP_Check_Location(10400);
 }
 
 void DefeatBurgundyAll() {
-  AP_Check_Location(1);
+  AP_Check_Location(10401);
 }
 
 void DefeatMetz() {
-  AP_Check_Location(2);
+  AP_Check_Location(10402);
 }
 
 void DefeatOrleans() {
-  AP_Check_Location(3);
+  AP_Check_Location(10403);
 }
 
 void DefeatRomanArmy() {
-  AP_Check_Location(4);
+  AP_Check_Location(10404);
 }
 
 void TributeBurgundyAll() {
-  AP_Check_Location(5);
+  AP_Check_Location(10405);
 }
 
 void CastleBurgundyAll() {
-  AP_Check_Location(6);
+  AP_Check_Location(10406);
 }
 
 void DefeatOrAllyBurgundyAny() {
-  AP_Check_Location(7);
+  AP_Check_Location(10407);
 }

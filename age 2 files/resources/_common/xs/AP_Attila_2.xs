@@ -13,61 +13,61 @@ void main() {
 
 // Scenario-specific locations
 void Victory() {
-  AP_Check_Location(0);
+  AP_Check_Location(10200);
 }
 
 void RedTC() {
-  AP_Check_Location(1);
+  AP_Check_Location(10201);
 }
 
 void GreenLumber() {
-  AP_Check_Location(2);
+  AP_Check_Location(10202);
 }
 
 void PurpleVils() {
-  AP_Check_Location(3);
+  AP_Check_Location(10203);
 }
 
 void GreyMining() {
-  AP_Check_Location(4);
+  AP_Check_Location(10204);
 }
 
 void CyanTC() {
-  AP_Check_Location(5);
+  AP_Check_Location(10205);
 }
 
 void ScythianVils() {
-  AP_Check_Location(6);
+  AP_Check_Location(10206);
 }
 
 void BuildTC() {
-  AP_Check_Location(7);
+  AP_Check_Location(10207);
 }
 
 void BeatTheRomans() {
-  AP_Check_Location(8);
+  AP_Check_Location(10208);
 }
 
 void DefeatsanityRed() {
-  AP_Check_Location(9);
+  AP_Check_Location(10209);
 }
 
 void DefeatsanityGreen() {
-  AP_Check_Location(10);
+  AP_Check_Location(10210);
 }
 
 void DefeatsanityPurple() {
-  AP_Check_Location(11);
+  AP_Check_Location(10211);
 }
 
 void DefeatsanityGrey() {
-  AP_Check_Location(12);
+  AP_Check_Location(10212);
 }
 
 void DefeatsanityCyan() {
-  AP_Check_Location(13);
+  AP_Check_Location(10213);
 }
 
 void DefeatsanityOrange() {
-  AP_Check_Location(14);
+  AP_Check_Location(10214);
 }

@@ -12,25 +12,25 @@ void main() {
 
 // Scenario-specific locations
 void Victory() {
-  AP_Check_Location(0);
+  AP_Check_Location(10500);
 }
 
 void DefeatRomans() {
-  AP_Check_Location(1);
+  AP_Check_Location(10501);
 }
 
 void DefeatVisigoths() {
-  AP_Check_Location(2);
+  AP_Check_Location(10502);
 }
 
 void DefeatAlans() {
-  AP_Check_Location(3);
+  AP_Check_Location(10503);
 }
 
 void DefeatsanityGrey() {
-  AP_Check_Location(4);
+  AP_Check_Location(10504);
 }
 
 void DefeatsanityRed() {
-  AP_Check_Location(5);
+  AP_Check_Location(10505);
 }
