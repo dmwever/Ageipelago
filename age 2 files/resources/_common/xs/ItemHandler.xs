@@ -26,6 +26,7 @@ void GiveStartupBuildings() {
     for (i = 0; < itemCount) {
         UnlockBuilding(xsReadInt() - AP_BUILDING_ITEM_OFFSET);
     }
+    bool closed = xsCloseFile();
 }
 
 void GiveStartupItems() {
