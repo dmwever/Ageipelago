@@ -52,7 +52,7 @@ void RedTC() {
 }
 
 void BlueCogs() {
-  AP_Check_Location(103010);
+  AP_Check_Location(10310);
 }
 
 void RedDock() {

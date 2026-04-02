@@ -57,8 +57,8 @@ void AP_Read()
     }
     float check_protocol = xsReadFloat();
     if (check_protocol != protocol) {
-        xsChatData("<RED>Unexpected AP World Protocol from Client: %d", check_protocol);
-        xsChatData("<RED>Expected Protocol: %d", protocol);
+        xsChatData("<RED>Unexpected AP World Protocol from Client: " + check_protocol);
+        xsChatData("<RED>Expected Protocol: " + protocol);
     }
     int check_worldId = xsReadInt();
     if (check_worldId != worldId) {
