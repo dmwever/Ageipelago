@@ -253,12 +253,24 @@ bool Built(int buildings = -1, string name = "") {
     int built = xsGetObjectCount(1, structGetInt(building, "id"));
     if (name == "Town Center") {
         built = xsGetObjectCount(1, townCenterId);
-    }
+    } 
     if (built > structGetInt(building, "playerCount")) {
-        structSetInt(building, "playerCount", built);
         return (true);
     }
     return (false);
+}
+
+void updateCosts(int buildings = -1) {
+    for (i = 0; < xsArrayGetSize(buildings)) {
+        vector building = xsArrayGetVector(buildings, i);
+        int built = xsGetObjectCount(1, structGetInt(building, "id"));
+        if (structGetString(building, "name") == "Town Center") {
+            built = xsGetObjectCount(1, townCenterId);
+        }
+        if (built > structGetInt(building, "playerCount")) {
+            structSetInt(building, "playerCount", built);
+        }
+    }
 }
 
 rule BuildsanityChecks
@@ -288,6 +300,7 @@ rule BuildsanityChecks
     }
     
     if (structGetFloat(buildsanity, "currentBuildingTotalCost") == buildingTotalCost) {
+        updateCosts(structGetInt(buildsanity, "buildings"));
         return;
     }
 
@@ -306,7 +319,62 @@ rule BuildsanityChecks
         }
     }
 
+    updateCosts(buildings);
+
     structSetFloat(buildsanity, "currentBuildingTotalCost", buildingTotalCost);
+}
+
+void checkPrerequisites(vector building = cInvalidVector) {
+    if (building == cInvalidVector) {
+        xsChatData("checkPrerequisites: Building not found.");
+    }
+
+    string name = structGetString(building, "name");
+
+    // Dark
+    if (name == "Farm") {
+        if (xsGetObjectCount(1, MILL) > 0) {
+            xsChatData("Unlock Farm Please");
+            xsEffectAmount(cEnableObject, FARM, cAttributeEnable, 1.0, 1);
+        }
+    }
+
+    //Feudal
+    if (name == "Stable" || name == "Archery Range") {
+        if (xsGetObjectCount(1, BARRACKS) > 0 && xsGetTechState(101, 1) == cTechStateDone) {
+            xsChatData("Unlock Stable/Arch Please");
+            xsEffectAmount(cEnableObject, structGetInt(building, "id"), cAttributeEnable, 1.0, 1);
+        }
+    }
+
+    if (name == "Blacksmith") {
+        if (xsGetTechState(101, 1) == cTechStateDone) {
+            xsChatData("Unlock Smith Please");
+            xsEffectAmount(cEnableObject, BLACKSMITH, cAttributeEnable, 1.0, 1);
+        }
+    }
+
+    if (name == "Market") {
+        if (xsGetObjectCount(1, MILL) > 0 && xsGetTechState(101, 1) == cTechStateDone) {
+            xsChatData("Unlock Market Please");
+            xsEffectAmount(cEnableObject, MARKET, cAttributeEnable, 1.0, 1);
+        }
+    }
+
+    // Castle
+    if (name == "Siege Workshop") {
+        if (xsGetObjectCount(1, BLACKSMITH) > 0 && xsGetTechState(102, 1) == cTechStateDone) {
+            xsChatData("Unlock Siege Please");
+            xsEffectAmount(cEnableObject, SIEGE_WORKSHOP, cAttributeEnable, 1.0, 1);
+        }
+    }
+
+    if (name == "Monastery" || name == "University" || name == "Castle") {
+        if (xsGetTechState(102, 1) == cTechStateDone) {
+            xsChatData("Unlock Castle Age Please");
+            xsEffectAmount(cEnableObject, structGetInt(building, "id"), cAttributeEnable, 1.0, 1);
+        }
+    }
 }
 
 void UnlockBuilding(int index = -1) {
@@ -316,4 +384,6 @@ void UnlockBuilding(int index = -1) {
     
     int id = structGetInt(building, "id");
     xsEffectAmount(cSetAttribute, id, cDisabledFlag, 0.0, 1);
+
+    checkPrerequisites(building);
 }
