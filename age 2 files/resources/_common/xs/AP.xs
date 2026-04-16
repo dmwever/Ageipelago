@@ -1,5 +1,5 @@
 include "./ItemHandler.xs";
-
+include "./APavilion.xs";
 
 int itemArray = -1;
 int locationArray = -1;
@@ -21,6 +21,8 @@ void AP_init()
     locationArray = xsArrayCreateInt(0, -1, "Location Array");
     GiveStartupItems();
     
+    xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, cAttributeDisable);
+
     InitBuildsanity(true, true, true, true, true);
     GiveStartupBuildings();
 }
