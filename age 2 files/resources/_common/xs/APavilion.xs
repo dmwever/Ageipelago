@@ -1,4 +1,4 @@
-extern const int victoryTech = 73;
+extern const int victoryTech = 1180;
 
 void ShowVictory() {
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetLocation, 624.0);
@@ -8,5 +8,5 @@ void ShowVictory() {
 }
 
 bool DeclareVictory() {
-    return (xsGetTechState(73, 1) == cTechStateDone);
+    return (xsGetTechState(victoryTech, 1) == cTechStateDone);
 }
