@@ -10,46 +10,86 @@ from AoE2ScenarioParser.scenarios.aoe2_de_scenario import AoE2DEScenario, Trigge
 # The path to your scenario folder
 
 # The scenario object.
-scenario: AoE2DEScenario = AoE2DEScenario.from_file(os.getcwd() + "/age 2 files/resources/_common/scenario/" + "AP_Attila_1.aoe2scenario")
 
 class APavilionMaker():
     trigger_manager: TriggerManager
     unit_manager: UnitManager
     apavilion: Unit
+    x: int
+    y: int
     
-    def __init__(self, scenario: AoE2DEScenario):
+    _color_trigger_id: int
+    
+    def __init__(self, scenario: AoE2DEScenario, x: int, y: int):
         self.trigger_manager = scenario.trigger_manager
         self.unit_manager = scenario.unit_manager
         self.apavilion = None
+        self.x = x
+        self.y = y
 
-    def addPavilion(self):
+    def add_pavilion(self):
         if not any(trigger.name == "-- APavilion --" for trigger in self.trigger_manager.triggers):
             self.trigger_manager.add_trigger("-- APavilion --")
             
-        pavilion_space = self.unit_manager.get_units_in_area(x1=105, y1=4, x2=106, y2=5)
+        pavilion_space = self.unit_manager.get_units_in_area(x1=self.x, y1=self.y, x2=self.x + 1, y2=self.y + 1)
         if len(pavilion_space) == 0:
             self.apavilion = self.unit_manager.add_unit(
                 player = PlayerId.ONE,
-                unit_const = BuildingInfo.PAVILION_A,
-                x=105.0,
-                y=4.0
+                unit_const = BuildingInfo.PAVILION_A.ID,
+                x=self.x,
+                y=self.y
             )
         else:
             self.apavilion = pavilion_space[0]
         
-        first_trigger_id = self._add_color_rotation(PlayerColorId.RED, "Red", 1)
+        self._color_trigger_id = self._add_color_rotation(PlayerColorId.RED, "Red", 1)
         self._add_color_rotation(PlayerColorId.GREEN, "Green")
         self._add_color_rotation(PlayerColorId.PURPLE, "Purple")
         self._add_color_rotation(PlayerColorId.ORANGE, "Orange")
         self._add_color_rotation(PlayerColorId.BLUE, "Blue")
-        self._add_color_rotation(PlayerColorId.YELLOW, "Yellow", trigger_id=first_trigger_id)
+        self._add_color_rotation(PlayerColorId.YELLOW, "Yellow", trigger_id=self._color_trigger_id)
         
         if not any(trigger.name == "APavilion Victory Tech" for trigger in self.trigger_manager.triggers):
             ap_victory_tech = self.trigger_manager.add_trigger("APavilion Victory Tech")
             
             ap_victory_tech.new_effect.change_technology_name(1, 1180, message="Declare Victory")
 
-
+    def add_victory_trigger(self) -> None:
+        if self.apavilion == None:
+            raise ValueError("Pavilion not found. Run add_pavilion first.")
+        victory: Trigger = None
+        for trigger in self.trigger_manager.triggers:
+            if trigger.name == f"AP Has Victory":
+                victory = trigger
+                break
+        
+        if victory == None:
+            victory = self.trigger_manager.add_trigger("AP Has Victory")
+        
+        if victory.conditions.count() == 0:
+            victory.new_condition.script_call("HasVictory();")
+        
+        if victory.effects.count() == 1 or 2:
+            victory.new_effect.change_view(
+                location_x=self.x,
+                location_y=self.y
+            )
+            
+            victory.new_effect.change_ownership(
+                source_player=PlayerId.ONE,
+                target_player=PlayerId.ONE,
+                flash_object=1,
+                selected_object_ids=[self.apavilion]
+            )
+            
+            victory.new_effect.display_instructions(
+                source_player=PlayerId.ONE,
+                message="Click \"Victory\" in the APavilion to win or keep playing for checks."
+            )
+            
+            victory.new_effect.activate_trigger(self._color_trigger_id)
+            
+            victory.new_effect.script_call("ShowVictory();")
 
     def _add_color_rotation(self, color: PlayerColorId, color_name: str, timer: int = 2, trigger_id: int = None) -> int:
         color_trigger: Trigger = None
@@ -77,8 +117,3 @@ class APavilionMaker():
             )
         
         return color_trigger.trigger_id
-
-pavilion = APavilionMaker(scenario)
-pavilion.addPavilion()
-
-scenario.write_to_file("AP_Attila_1.aoe2scenario")

@@ -12,6 +12,7 @@ void main() {
 
 // Scenario-specific locations
 void Victory() {
+  GiveVictory();
   AP_Check_Location(10100);
 }
 

@@ -113,6 +113,10 @@ void GiveVictory() {
     completed = 1;
 }
 
+bool HasVictory() {
+    return (completed == 1);
+}
+
 rule ReadAP
     active
     minInterval 2
