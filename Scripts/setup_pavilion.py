@@ -49,47 +49,46 @@ class APavilionMaker():
         self._add_color_rotation(PlayerColorId.BLUE, "Blue")
         self._add_color_rotation(PlayerColorId.YELLOW, "Yellow", trigger_id=self._color_trigger_id)
         
-        if not any(trigger.name == "APavilion Victory Tech" for trigger in self.trigger_manager.triggers):
-            ap_victory_tech = self.trigger_manager.add_trigger("APavilion Victory Tech")
+        if not any(trigger.name == "APavilion Startup" for trigger in self.trigger_manager.triggers):
+            pavilion_startup = self.trigger_manager.add_trigger("APavilion Startup")
             
-            ap_victory_tech.new_effect.change_technology_name(1, 1180, message="Declare Victory")
+            pavilion_startup.new_effect.change_object_name(selected_object_ids=[self.apavilion.reference_id], message="APavilion")
+            pavilion_startup.new_effect.change_technology_name(1, 1180, message="Declare Victory")
 
     def add_victory_trigger(self) -> None:
         if self.apavilion == None:
             raise ValueError("Pavilion not found. Run add_pavilion first.")
         victory: Trigger = None
+        
         for trigger in self.trigger_manager.triggers:
             if trigger.name == f"AP Has Victory":
-                victory = trigger
+                self.trigger_manager.remove_trigger(trigger)
                 break
         
-        if victory == None:
-            victory = self.trigger_manager.add_trigger("AP Has Victory")
+        victory = self.trigger_manager.add_trigger("AP Has Victory")
+    
+        victory.new_condition.script_call("HasVictory();")
         
-        if victory.conditions.count() == 0:
-            victory.new_condition.script_call("HasVictory();")
+        victory.new_effect.change_view(
+            location_x=self.x,
+            location_y=self.y
+        )
         
-        if victory.effects.count() == 1 or 2:
-            victory.new_effect.change_view(
-                location_x=self.x,
-                location_y=self.y
-            )
-            
-            victory.new_effect.change_ownership(
-                source_player=PlayerId.ONE,
-                target_player=PlayerId.ONE,
-                flash_object=1,
-                selected_object_ids=[self.apavilion]
-            )
-            
-            victory.new_effect.display_instructions(
-                source_player=PlayerId.ONE,
-                message="Click \"Victory\" in the APavilion to win or keep playing for checks."
-            )
-            
-            victory.new_effect.activate_trigger(self._color_trigger_id)
-            
-            victory.new_effect.script_call("ShowVictory();")
+        victory.new_effect.change_ownership(
+            source_player=PlayerId.ONE,
+            target_player=PlayerId.ONE,
+            flash_object=1,
+            selected_object_ids=[self.apavilion.reference_id]
+        )
+        
+        victory.new_effect.display_instructions(
+            source_player=PlayerId.ONE,
+            message="Click \"Victory\" in the APavilion to win or keep playing for checks."
+        )
+        
+        victory.new_effect.activate_trigger(self._color_trigger_id)
+        
+        victory.new_effect.script_call(message="ShowVictory();")
 
     def _add_color_rotation(self, color: PlayerColorId, color_name: str, timer: int = 2, trigger_id: int = None) -> int:
         color_trigger: Trigger = None
@@ -101,6 +100,7 @@ class APavilionMaker():
         if color_trigger == None:
             color_trigger = self.trigger_manager.add_trigger(f"APavilion {color_name}")
     
+            color_trigger.enabled = 0
             color_trigger.new_condition.timer(timer)
         
             color_trigger.new_effect.change_object_player_color(
