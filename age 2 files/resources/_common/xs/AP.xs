@@ -84,6 +84,7 @@ void AP_Read()
     if (messages == 1) {
         xsEnableRule("ReadMessages");
     }
+    completed = xsReadInt();
     xsCloseFile();
 }
 
@@ -100,6 +101,9 @@ void SetScenarioId(int id = 0) {
 
 void ScenarioSpecificInit(string filename = "") {
   bool openFile = xsOpenFile(filename);
+  if (openFile == false) {
+    return;
+  }
   int itemCount = xsGetFileSize() / 4;
   completed = xsReadInt();
   for (i = 1; < itemCount) {

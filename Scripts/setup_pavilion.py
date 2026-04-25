@@ -55,14 +55,14 @@ class APavilionMaker():
             pavilion_startup.new_effect.change_object_name(selected_object_ids=[self.apavilion.reference_id], message="APavilion")
             pavilion_startup.new_effect.change_technology_name(1, 1180, message="Declare Victory")
 
-    def add_victory_trigger(self) -> None:
+    def add_victory_triggers(self) -> None:
         if self.apavilion == None:
             raise ValueError("Pavilion not found. Run add_pavilion first.")
         victory: Trigger = None
         
         for trigger in self.trigger_manager.triggers:
             if trigger.name == f"AP Has Victory":
-                self.trigger_manager.remove_trigger(trigger)
+                self.trigger_manager.remove_trigger(trigger.trigger_id)
                 break
         
         victory = self.trigger_manager.add_trigger("AP Has Victory")
@@ -89,6 +89,17 @@ class APavilionMaker():
         victory.new_effect.activate_trigger(self._color_trigger_id)
         
         victory.new_effect.script_call(message="ShowVictory();")
+        
+        for trigger in self.trigger_manager.triggers:
+            if trigger.name == f"AP Declare Victory":
+                self.trigger_manager.remove_trigger(trigger)
+                break
+            
+        declare_victory: Trigger = self.trigger_manager.add_trigger("AP Declare Victory")
+        
+        declare_victory.new_condition.technology_state(technology=1180, quantity=3, source_player=1)
+        
+        declare_victory.new_effect.declare_victory(source_player=1)
 
     def _add_color_rotation(self, color: PlayerColorId, color_name: str, timer: int = 2, trigger_id: int = None) -> int:
         color_trigger: Trigger = None

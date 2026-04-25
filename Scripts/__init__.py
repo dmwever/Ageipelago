@@ -13,5 +13,5 @@ with open("Data/VictoryPavilionLocations.json", 'r') as file:
         scenario: AoE2DEScenario = AoE2DEScenario.from_file(os.getcwd() + "/age 2 files/resources/_common/scenario/" + f"{file}.aoe2scenario")
         pavilion_maker: APavilionMaker = APavilionMaker(scenario, x=location["x"], y=location["y"])
         pavilion_maker.add_pavilion()
-        pavilion_maker.add_victory_trigger()
+        pavilion_maker.add_victory_triggers()
         scenario.write_to_file(f"{file}.aoe2scenario")
