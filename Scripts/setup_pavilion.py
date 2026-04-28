@@ -31,7 +31,7 @@ class APavilionMaker():
         if not any(trigger.name == "-- APavilion --" for trigger in self.trigger_manager.triggers):
             self.trigger_manager.add_trigger("-- APavilion --")
             
-        pavilion_space = self.unit_manager.get_units_in_area(x1=self.x, y1=self.y, x2=self.x + 1, y2=self.y + 1)
+        pavilion_space = self.unit_manager.get_units_in_area(x1=self.x - 1, y1=self.y - 1, x2=self.x, y2=self.y)
         if len(pavilion_space) == 0:
             self.apavilion = self.unit_manager.add_unit(
                 player = PlayerId.ONE,
@@ -92,7 +92,7 @@ class APavilionMaker():
         
         for trigger in self.trigger_manager.triggers:
             if trigger.name == f"AP Declare Victory":
-                self.trigger_manager.remove_trigger(trigger)
+                self.trigger_manager.remove_trigger(trigger.trigger_id)
                 break
             
         declare_victory: Trigger = self.trigger_manager.add_trigger("AP Declare Victory")
