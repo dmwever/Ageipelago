@@ -57,6 +57,16 @@ bool HAS_ATTILA_3_GREEN_GOLD() {
     return (attila3GreenGold);
 }
 
+//Joan 1
+bool joan1Transports = false;
+void Joan1Transports() {
+    joan1Transports = true;
+}
+
+bool HasJoan1Transports() {
+    return (joan1Transports);
+}
+
 void GiveProgressionItem(int itemId = -1) {
     switch(itemId) {
         case 1000: {
@@ -79,6 +89,9 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1006: {
             ATTILA_3_GREEN_GOLD();
+        }
+        case 1007: {
+            Joan1Transports();
         }
     }
 }
