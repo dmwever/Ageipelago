@@ -40,6 +40,22 @@ void FindRecruits() {
   AP_Check_Location(20106);
 }
 
-void FightHighwaymen() {
+void SouthHighwaymen() {
   AP_Check_Location(20107);
+}
+
+void EastHighwaymen() {
+  AP_Check_Location(20108);
+}
+
+void RiverHighwaymen() {
+  AP_Check_Location(20109);
+}
+
+void RiverBurgundians() {
+  AP_Check_Location(20110);
+}
+
+void BreakIntoBurgundy() {
+  AP_Check_Location(20111);
 }
