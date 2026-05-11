@@ -105,6 +105,16 @@ bool HasJoan3Boats() {
     return (joan3Boats);
 }
 
+// Joan 4
+bool joan4Base = false;
+void Joan4Base() {
+    joan4Base = true;
+}
+
+bool HasJoan4Base() {
+    return (joan4Base);
+}
+
 void GiveProgressionItem(int itemId = -1) {
     switch(itemId) {
         case 1000: {
@@ -142,6 +152,9 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1011: {
             Joan3Boats();
+        }
+        case 1012: {
+            Joan4Base();
         }
     }
 }
