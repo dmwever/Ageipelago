@@ -67,6 +67,34 @@ bool HasJoan1Transports() {
     return (joan1Transports);
 }
 
+//Joan 2
+bool joan2Carts = false;
+void Joan2Carts() {
+    joan2Carts = true;
+}
+
+bool HasJoan2Carts() {
+    return (joan2Carts);
+}
+
+bool joan2Orleans = false;
+void Joan2Orleans() {
+    joan2Orleans = true;
+}
+
+bool HasJoan2Orleans() {
+    return (joan2Orleans);
+}
+
+bool joan2Dock = false;
+void Joan2Dock() {
+    joan2Dock = true;
+}
+
+bool HasJoan2Dock() {
+    return (joan2Dock);
+}
+
 void GiveProgressionItem(int itemId = -1) {
     switch(itemId) {
         case 1000: {
