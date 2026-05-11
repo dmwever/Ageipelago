@@ -15,3 +15,15 @@ void Victory() {
   GiveVictory();
   AP_Check_Location(20600);
 }
+
+void FrenchArmy() {
+  AP_Check_Location(20601);
+}
+
+void FrenchArtillery() {
+  AP_Check_Location(20602);
+}
+
+void BurgundianTown() {
+  AP_Check_Location(20603);
+}
