@@ -95,6 +95,15 @@ bool HasJoan5KingsTroop() {
 }
 
 // Joan 6
+bool joan6LaHire = false;
+void Joan6LaHire() {
+    joan6LaHire = true;
+}
+
+bool HasJoan6LaHire() {
+    return (joan6LaHire);
+}
+
 bool joan6Artillery = false;
 void Joan6Artillery() {
     joan6Artillery = true;
@@ -138,6 +147,9 @@ void GiveMercenary(int itemId = -1) {
             Joan5KingsTroop();
         }
         case 4010: {
+            Joan6LaHire();
+        }
+        case 4011: {
             Joan6Artillery();
         }
     }

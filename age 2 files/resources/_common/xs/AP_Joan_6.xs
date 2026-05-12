@@ -16,14 +16,18 @@ void Victory() {
   AP_Check_Location(20600);
 }
 
-void FrenchArmy() {
+void LaHire() {
   AP_Check_Location(20601);
 }
 
-void FrenchArtillery() {
+void FrenchArmy() {
   AP_Check_Location(20602);
 }
 
-void BurgundianTown() {
+void FrenchArtillery() {
   AP_Check_Location(20603);
+}
+
+void BurgundianTown() {
+  AP_Check_Location(20604);
 }
