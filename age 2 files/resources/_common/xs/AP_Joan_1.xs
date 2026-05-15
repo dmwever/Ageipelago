@@ -24,11 +24,11 @@ void GetCrossbowmen() {
   AP_Check_Location(20102);
 }
 
-void FindRam() {
+void FindVenison() {
   AP_Check_Location(20103);
 }
 
-void FindVenison() {
+void FindRam() {
   AP_Check_Location(20104);
 }
 

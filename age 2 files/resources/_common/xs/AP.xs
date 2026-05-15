@@ -22,8 +22,8 @@ void AP_init()
     GiveStartupItems();
     
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, cAttributeDisable);
-
-    InitBuildsanity(true, true, true, true, true);
+    
+    InitBuildsanity();
     GiveStartupBuildings();
 }
 

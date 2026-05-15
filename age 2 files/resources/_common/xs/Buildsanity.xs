@@ -36,7 +36,6 @@ int getBuildingsByCost(int arrayId = -1, float cost = -1.0) {
     for (i = 0; < arraySize) {
         vector building = xsArrayGetVector(arrayId, i);
         float buildingCost = structGetFloat(building, "resourceCost");
-        xsChatData("getBuildingsByCost: " + structGetString(building, "name") + " Cost = " + buildingCost);
         if (buildingCost == cost) {
             xsArraySetVector(filteredArray, j, building);
             j = j + 1;
@@ -77,7 +76,7 @@ void InitBuildsanityStructs() {
     structSetInt(buildsanity, "buildings", buildings);
 }
 
-void InitBuildsanityAlways() {
+void DisableBuildings() {
     int buildings = structGetInt(buildsanity, "buildings");
 
     vector wonder = disableBuilding("Wonder", WONDER, 3000.0, 200);
@@ -85,12 +84,8 @@ void InitBuildsanityAlways() {
 
     vector outpost = disableBuilding("Outpost", OUTPOST, 30.0, 201);
     xsArraySetVector(buildings, 1, outpost);
-}
 
-// TC Foundation disabled + Extra Town Centers
-void InitBuildsanityEconomy() {
-    int buildings = structGetInt(buildsanity, "buildings");
-
+    // Economy
     vector townCenter = disableBuilding("Town Center", 621, 275.0, 202);
     structSetInt(townCenter, "playerCount", xsGetObjectCount(1, townCenterId));
     xsArraySetVector(buildings, 2, townCenter);
@@ -107,22 +102,19 @@ void InitBuildsanityEconomy() {
     vector lumberCamp = disableBuilding("Lumber Camp", LUMBER_CAMP, 100.0, 206);
     xsArraySetVector(buildings, 6, lumberCamp);
     
-    vector dock = disableBuilding("Dock", DOCK, 150.0, 207);
-    xsArraySetVector(buildings, 7, dock);
-    
-    vector farm = disableBuilding("Farm", FARM, 60.0, 208);
-    xsArraySetVector(buildings, 8, farm);
-    
-    vector fishTrap = disableBuilding("Fish Trap", FISH_TRAP, 100.0, 209);
-    xsArraySetVector(buildings, 9, fishTrap);
+    vector farm = disableBuilding("Farm", FARM, 60.0, 207);
+    xsArraySetVector(buildings, 7, farm);
+
+    vector fishTrap = disableBuilding("Fish Trap", FISH_TRAP, 100.0, 208);
+    xsArraySetVector(buildings, 8, fishTrap);
+
+    vector dock = disableBuilding("Dock", DOCK, 150.0, 209);
+    xsArraySetVector(buildings, 9, dock);
 
     vector market = disableBuilding("Market", MARKET, 175.0, 210);
     xsArraySetVector(buildings, 10, market);
-}
-
-void InitBuildsanityTech() {
-    int buildings = structGetInt(buildsanity, "buildings");
-
+    
+    // Tech
     vector university = disableBuilding("University", UNIVERSITY, 200.0, 211);
     xsArraySetVector(buildings, 11, university);
 
@@ -131,11 +123,8 @@ void InitBuildsanityTech() {
 
     vector monastery = disableBuilding("Monastery", MONASTERY, 175.0, 213);
     xsArraySetVector(buildings, 13, monastery);
-}
-
-void InitBuildsanityMilitary() {
-    int buildings = structGetInt(buildsanity, "buildings");
-
+    
+    // Military
     vector barracks = disableBuilding("Barracks", BARRACKS, 175.0, 214);
     xsArraySetVector(buildings, 14, barracks);
 
@@ -150,11 +139,8 @@ void InitBuildsanityMilitary() {
 
     vector castle = disableBuilding("Castle", CASTLE, 650.0, 218);
     xsArraySetVector(buildings, 18, castle);
-}
-
-void InitBuildsanityDefense() {
-    int buildings = structGetInt(buildsanity, "buildings");
     
+    // Defense
     vector palisadeGate = disableBuilding("Palisade Gate", PALISADE_GATE, 20.0, 219);
     xsArraySetVector(buildings, 19, palisadeGate);
 
@@ -172,11 +158,8 @@ void InitBuildsanityDefense() {
 
     vector bombardTower = disableBuilding("Bombard Tower", BOMBARD_TOWER, 225.0, 224);
     xsArraySetVector(buildings, 24, bombardTower);
-}
-
-void InitBuildsanityUniqueEcon() {
-    int buildings = structGetInt(buildsanity, "buildings");
-
+    
+    // Unique
     vector folwark = disableBuilding("Folwark", FOLWARK, 100.0, 225);
     xsArraySetVector(buildings, 25, folwark);
 
@@ -197,10 +180,6 @@ void InitBuildsanityUniqueEcon() {
 
     vector settlement = disableBuilding("Settlement", 2556, 125.0, 231);
     xsArraySetVector(buildings, 31, settlement);
-}
-
-void InitBuildsanityUniqueMilitaryOrDefense() {
-    int buildings = structGetInt(buildsanity, "buildings");
 
     vector fortifiedChurch = disableBuilding("Fortified Church", FORTIFIED_CHURCH, 200.0, 232);
     xsArraySetVector(buildings, 32, fortifiedChurch);
@@ -212,36 +191,9 @@ void InitBuildsanityUniqueMilitaryOrDefense() {
     xsArraySetVector(buildings, 34, donjon);
 }
 
-void InitBuildsanity(bool econ = false, bool tech = false, bool mil = false, bool def = false, bool unique = false) {
-    xsChatData("This Should Only Appear Once: %d", econ);
+void InitBuildsanity() {
     InitBuildsanityStructs();
-    InitBuildsanityAlways();
-    if (econ == true) {
-        InitBuildsanityEconomy();
-    }
-    if (tech == true) {
-        InitBuildsanityTech();
-    }
-    if (mil == true) {
-        InitBuildsanityMilitary();
-    }
-    if (def == true) {
-        InitBuildsanityDefense();
-    }
-    if (unique == true) {
-        if (econ == false && mil == false && def == false) {
-            InitBuildsanityUniqueEcon();
-            InitBuildsanityUniqueMilitaryOrDefense();
-        }
-        else {
-            if (econ == true) {
-                InitBuildsanityUniqueEcon();
-            }
-            if (mil == true || def == true) {
-                InitBuildsanityUniqueMilitaryOrDefense();
-            }
-        }
-    }
+    DisableBuildings();
     xsEnableRule("BuildsanityChecks");
 }
 
@@ -307,13 +259,9 @@ rule BuildsanityChecks
     int buildings = structGetInt(buildsanity, "buildings");
     float newBuildingCost = buildingTotalCost - structGetFloat(buildsanity, "currentBuildingTotalCost");
 
-    xsChatData("Debug: Building Built. Cost: " + newBuildingCost);
-
     int buildingsAtCost = getBuildingsByCost(buildings, newBuildingCost);
     for (i = 0; < xsArrayGetSize(buildingsAtCost)) {
         vector building = xsArrayGetVector(buildingsAtCost, i);
-        printStructInstance(building);
-        xsChatData(structGetString(building, "name"));
         if (Built(buildings, structGetString(building, "name"))) {
             AP_Check_Location(structGetInt(building, "locationId"));
         }
@@ -334,7 +282,6 @@ void checkPrerequisites(vector building = cInvalidVector) {
     // Dark
     if (name == "Farm") {
         if (xsGetObjectCount(1, MILL) > 0) {
-            xsChatData("Unlock Farm Please");
             xsEffectAmount(cEnableObject, FARM, cAttributeEnable, 1.0, 1);
         }
     }
@@ -342,21 +289,18 @@ void checkPrerequisites(vector building = cInvalidVector) {
     //Feudal
     if (name == "Stable" || name == "Archery Range") {
         if (xsGetObjectCount(1, BARRACKS) > 0 && xsGetTechState(101, 1) == cTechStateDone) {
-            xsChatData("Unlock Stable/Arch Please");
             xsEffectAmount(cEnableObject, structGetInt(building, "id"), cAttributeEnable, 1.0, 1);
         }
     }
 
     if (name == "Blacksmith") {
         if (xsGetTechState(101, 1) == cTechStateDone) {
-            xsChatData("Unlock Smith Please");
             xsEffectAmount(cEnableObject, BLACKSMITH, cAttributeEnable, 1.0, 1);
         }
     }
 
     if (name == "Market") {
         if (xsGetObjectCount(1, MILL) > 0 && xsGetTechState(101, 1) == cTechStateDone) {
-            xsChatData("Unlock Market Please");
             xsEffectAmount(cEnableObject, MARKET, cAttributeEnable, 1.0, 1);
         }
     }
@@ -364,14 +308,12 @@ void checkPrerequisites(vector building = cInvalidVector) {
     // Castle
     if (name == "Siege Workshop") {
         if (xsGetObjectCount(1, BLACKSMITH) > 0 && xsGetTechState(102, 1) == cTechStateDone) {
-            xsChatData("Unlock Siege Please");
             xsEffectAmount(cEnableObject, SIEGE_WORKSHOP, cAttributeEnable, 1.0, 1);
         }
     }
 
     if (name == "Monastery" || name == "University" || name == "Castle") {
         if (xsGetTechState(102, 1) == cTechStateDone) {
-            xsChatData("Unlock Castle Age Please");
             xsEffectAmount(cEnableObject, structGetInt(building, "id"), cAttributeEnable, 1.0, 1);
         }
     }
