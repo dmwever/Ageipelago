@@ -115,6 +115,7 @@ void ScenarioSpecificInit(string filename = "") {
 
 void GiveVictory() {
     completed = 1;
+    AP_Write();
 }
 
 bool HasVictory() {

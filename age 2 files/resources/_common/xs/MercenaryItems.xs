@@ -132,10 +132,10 @@ void GiveMercenary(int itemId = -1) {
             Joan1Ram();
         }
         case 4005: {
-            Joan1Crossbowmen();
+            Joan1Swordsmen();
         }
         case 4006: {
-            Joan1Swordsmen();
+            Joan1Crossbowmen();
         }
         case 4007: {
             Joan1Recruits();
