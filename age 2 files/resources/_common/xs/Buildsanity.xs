@@ -141,7 +141,7 @@ void DisableBuildings() {
     xsArraySetVector(buildings, 18, castle);
     
     // Defense
-    vector palisadeGate = disableBuilding("Palisade Gate", PALISADE_GATE, 20.0, 219);
+    vector palisadeGate = disableBuilding("Palisade Gate", PALISADE_GATE, 30.0, 219);
     xsArraySetVector(buildings, 19, palisadeGate);
 
     vector gate = disableBuilding("Stone Gate", GATE, 30.0, 220);
@@ -197,6 +197,33 @@ void InitBuildsanity() {
     xsEnableRule("BuildsanityChecks");
 }
 
+int getGatesCount() {
+    int gateCount =
+        xsGetObjectCount(1, gateAscendingId) +
+        xsGetObjectCount(1, gateAscendingOpenId) +
+        xsGetObjectCount(1, gateDescendingId) +
+        xsGetObjectCount(1, gateDescendingOpenId) +
+        xsGetObjectCount(1, gateHorizontalId) +
+        xsGetObjectCount(1, gateHorizontalOpenId) +
+        xsGetObjectCount(1, gateVerticalId);
+        xsGetObjectCount(1, gateVerticalOpenId);
+        xsChatData("Gates: " + gateCount);
+    return (gateCount);
+}
+
+int getPalisadeGatesCount() {
+    int palisadeGateCount =
+        xsGetObjectCount(1, palisadeGateAscendingId) +
+        xsGetObjectCount(1, palisadeGateAscendingOpenId) +
+        xsGetObjectCount(1, palisadeGateDescendingId) +
+        xsGetObjectCount(1, palisadeGateDescendingOpenId) +
+        xsGetObjectCount(1, palisadeGateHorizontalId) +
+        xsGetObjectCount(1, palisadeGateHorizontalOpenId) +
+        xsGetObjectCount(1, palisadeGateVerticalId);
+        xsGetObjectCount(1, palisadeGateVerticalOpenId);
+        xsChatData("Palisade Gates: " + palisadeGateCount);
+    return (palisadeGateCount);
+} 
 bool Built(int buildings = -1, string name = "") {
     if (name == "" || buildings == -1) {
         return (false);
@@ -205,7 +232,13 @@ bool Built(int buildings = -1, string name = "") {
     int built = xsGetObjectCount(1, structGetInt(building, "id"));
     if (name == "Town Center") {
         built = xsGetObjectCount(1, townCenterId);
-    } 
+    }
+    if (name == "Stone Gate") {
+        built = getGatesCount();
+    }
+    if (name == "Palisade Gate") {
+        built = getPalisadeGatesCount();
+    }
     if (built > structGetInt(building, "playerCount")) {
         return (true);
     }
@@ -218,6 +251,12 @@ void updateCosts(int buildings = -1) {
         int built = xsGetObjectCount(1, structGetInt(building, "id"));
         if (structGetString(building, "name") == "Town Center") {
             built = xsGetObjectCount(1, townCenterId);
+        }
+        if (structGetString(building, "name") == "Stone Gate") {
+            built = getGatesCount();
+        }
+        if (structGetString(building, "name") == "Palisade Gate") {
+            built = getPalisadeGatesCount();
         }
         if (built > structGetInt(building, "playerCount")) {
             structSetInt(building, "playerCount", built);
@@ -241,13 +280,13 @@ rule BuildsanityChecks
 
     if (castlesBuilt > structGetFloat(buildsanity, "castlesBuilt")) {
         structSetFloat(buildsanity, "castlesBuilt", castlesBuilt);
-        AP_Check_Location(200);
+        AP_Check_Location(218);
         return;
     }
 
     if (wondersBuilt > structGetFloat(buildsanity, "wondersBuilt")) {
         structSetFloat(buildsanity, "wondersBuilt", wondersBuilt);
-        AP_Check_Location(201);
+        AP_Check_Location(200);
         return;
     }
     
