@@ -29,7 +29,10 @@ void AP_init()
 
 void AP_Write()
 {
-    xsCreateFile(false);
+    bool created = xsCreateFile(false);
+    if (created == false) {
+        return;
+    }
     xsWriteInt(1);
     xsWriteInt(xsGetGameTime());
     xsWriteFloat(protocol);
@@ -52,6 +55,9 @@ void AP_Write()
 void AP_Read()
 {
     bool opened = xsOpenFile("AP");
+    if (opened == false) {
+        return;
+    }
     lastPing = clientPing;
     clientPing = xsReadInt();
     if (clientPing == lastPing) {
@@ -145,7 +151,10 @@ rule ReadItems
     minInterval 1
     maxInterval 1
 {
-    xsOpenFile("items");
+    bool opened = xsOpenFile("items");
+    if (opened == false) {
+        return;
+    }
     int itemCount = xsGetFileSize();
     for (i = 0; < itemCount) {
         int itemId = xsReadInt();
@@ -163,7 +172,10 @@ rule FreeItems
     minInterval 1
     maxInterval 1
 {
-    xsOpenFile("free_items");
+    bool opened = xsOpenFile("free_items");
+    if (opened == false) {
+        return;
+    }
     for (i = 0; < 12) {
         int itemId = xsReadInt();
         if (itemId == -1) {
@@ -184,7 +196,10 @@ rule FreeLocations
     minInterval 1
     maxInterval 1
 {
-    xsOpenFile("locations");
+    bool opened = xsOpenFile("locations");
+    if (opened == false) {
+        return;
+    }
     int locationCount = xsGetFileSize();
     for (i = 0; < locationCount) {
         int locationId = xsReadInt();
@@ -208,6 +223,9 @@ rule ReadMessages
     maxInterval 1
 {
     bool opened = xsOpenFile("messages");
+    if (opened == false) {
+        return;
+    }
     int messageCount = xsReadInt();
     for (i = 0; < messageCount) {
         int nextMessageId = xsReadInt();

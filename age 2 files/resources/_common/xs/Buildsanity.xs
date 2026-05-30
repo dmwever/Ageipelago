@@ -207,7 +207,6 @@ int getGatesCount() {
         xsGetObjectCount(1, gateHorizontalOpenId) +
         xsGetObjectCount(1, gateVerticalId);
         xsGetObjectCount(1, gateVerticalOpenId);
-        xsChatData("Gates: " + gateCount);
     return (gateCount);
 }
 
@@ -221,7 +220,6 @@ int getPalisadeGatesCount() {
         xsGetObjectCount(1, palisadeGateHorizontalOpenId) +
         xsGetObjectCount(1, palisadeGateVerticalId);
         xsGetObjectCount(1, palisadeGateVerticalOpenId);
-        xsChatData("Palisade Gates: " + palisadeGateCount);
     return (palisadeGateCount);
 } 
 bool Built(int buildings = -1, string name = "") {
