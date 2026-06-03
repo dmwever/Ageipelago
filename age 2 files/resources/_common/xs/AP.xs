@@ -227,8 +227,22 @@ rule ReadMessages
         return;
     }
     int messageCount = xsReadInt();
+    int fileLength = xsGetFileSize();
     for (i = 0; < messageCount) {
         int nextMessageId = xsReadInt();
+
+        // IMPORTANT: Use this for hunting down messages that crash AoE2! Comment out xsChatData(message);
+        // Do not remove these lines unless you want to fix things the hard way!
+        // int filePosition = xsGetFilePosition();
+        // xsChatData("Message Id: " + nextMessageId);
+        // xsChatData("Position: " + filePosition);
+        // int stringLength = xsReadInt();
+        // if (stringLength > fileLength - filePosition) {
+        //     xsChatData("String is too long: " + stringLength);
+        //     return;
+        // }
+        // bool backToMessageLength = xsSetFilePosition(filePosition);
+
         string message = xsReadString();
         if (lastMessageId <  nextMessageId) {
             lastMessageId = nextMessageId;
