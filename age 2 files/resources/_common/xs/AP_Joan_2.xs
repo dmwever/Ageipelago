@@ -5,9 +5,8 @@ void InitScenarioSpecific() {
 }
 
 void main() {
-  AP_init();
-  InitScenarioSpecific();
   SetScenarioId(202);
+  xsEnableRule("InitAP");
 }
 
 // Scenario-specific locations
