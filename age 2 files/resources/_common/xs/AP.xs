@@ -138,7 +138,6 @@ void ScenarioSpecificInit(string filename = "") {
     completed = xsReadInt();
     for (i = 1; < itemCount) {
         int itemId = xsReadInt();
-        xsChatData("Hi mom " + itemId);
         GiveItem(itemId);
     }
     xsCloseFile();
