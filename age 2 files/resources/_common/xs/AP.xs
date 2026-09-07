@@ -48,7 +48,7 @@ void AP_Write()
         xsWriteInt(i);
     }
     int sendingLocations = FilterCompletedNotSent();
-    for (i = 0; < xsArrayGetSize(sendingLocations)) {
+    for (i = 0; < filteredCount) {                      // NOT xsArrayGetSize: the array is reused
         vector location = xsArrayGetVector(sendingLocations, i);
         int locationId = structGetInt(location, "id");
         if (locationId != -1) {
@@ -216,7 +216,7 @@ rule ReadItems
     if (opened == false) {
         return;
     }
-    int itemCount = xsGetFileSize();
+    int itemCount = xsGetFileSize() / 4; // byte to int
     for (i = 0; < itemCount) {
         int itemId = xsReadInt();
         if (xsArrayGetInt(itemArray, i) == -1) {
@@ -261,7 +261,7 @@ rule MarkServerLocations
     if (opened == false) {
         return;
     }
-    int locationCount = xsGetFileSize();
+    int locationCount = xsGetFileSize() / 4; // byte to int
     for (i = 0; < locationCount) {
         int locationId = xsReadInt();
         if (locationId == -1) {

@@ -21,7 +21,7 @@ bool STRUCTS_INITIALIZED = false;
 
 extern int MAX_STRUCT_COUNT = 10;
 extern int MAX_STRUCT_ATTRIBUTES = 10;
-extern int MAX_INSTANCE_PER_STRUCT = 100;
+extern int MAX_INSTANCE_PER_STRUCT = 400;
 extern int STRUCT_PRINT_BUFFER_SIZE = 200;
 
 extern int TYPE_INT = 0;
