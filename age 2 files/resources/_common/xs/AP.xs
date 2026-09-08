@@ -12,7 +12,7 @@ int completed = 0;
 int scenarioId = 0;
 
 int worldMajor = 0;
-int worldMinor = 2;
+int worldMinor = 3;
 int reportedMismatch = 0;
 int lastMessageId = -1;
 
