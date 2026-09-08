@@ -1,5 +1,46 @@
 # AP FAQ
 
+## Setup
+
+Do this once per seed, in this order.
+
+1. **Install the Ageipelago files** into your Age of Empires II: DE user folder — the one at
+   `C:\Users\<you>\Games\Age of Empires 2 DE\<a long string of numbers>\`. You should end up with a
+   `resources\_common\` containing `campaign`, `scenario` and `xs` folders alongside the `profile`
+   folder that is already there.
+2. **Start the Age of Empires II: DE client** from the Archipelago launcher and connect to your
+   multiworld.
+3. **`/set_user_folder`** — pick the `<long string of numbers>` folder. Not `resources`, not
+   `profile`, the one above both.
+4. **`/install`** — this sets your install up for *this* seed. It prints each file it wrote and
+   finishes with `Installed slot <n>, seed tag <tag>.`
+5. **Play the campaign named with your seed tag**, e.g. `AP Joan of Arc_b435aa86`. The plain
+   `AP Joan of Arc` is the untagged source and will not talk to the client.
+
+`/install` only writes the campaigns your yaml enabled, and it never touches the untagged originals
+or the `scenario` folder — so re-running it is safe, and installing a second seed leaves the first
+one's files in place.
+### Things the client may tell you
+
+| Message | What it means |
+|---|---|
+| `Set your Age2 user folder first with /set_user_folder.` | Step 3 has not been done |
+| `Connect to your multiworld first, so the install knows your seed and slot.` | `/install` needs your slot number and seed name, which only arrive once connected |
+| `Could not find AP Joan of Arc.aoe2campaign in ...` | Step 1 is missing or the folder from step 3 is wrong |
+| `This seed was generated with Age2 X but this client is Y.` followed by `Nothing was written.` | Your apworld and the seed disagree. Update the apworld or regenerate the seed; nothing was changed |
+| `This slot has no campaigns to install.` | Your yaml enabled no campaigns |
+| `Found Age2 scenarios tagged <other>; this slot expects <mine>.` | Another seed's files are installed. Run `/install` again for the seed you actually want |
+
+### Things the game may tell you
+
+| Message | What it means |
+|---|---|
+| `Waiting for Client Connection` | Normal. The scenario is up and looking for the client |
+| `This install has no Archipelago slot. Connect the client and run /install.` | You are playing the untagged source campaign, or step 4 was never done |
+| `Unexpected Age2 version from Client` | The installed files and the client are different versions. Reinstall |
+| `These scenarios belong to a different seed or player slot.` | You are playing another seed's campaign. Launch the one matching your tag |
+| `AP Client disconnected.` | The client stopped pinging. Locations and items will not move until it is back |
+
 ## Global
 
 - Victory must be received at the AP Victory Pavilion, which can be researched once that mission's vanilla-equivalent task has been achieved.

@@ -37,7 +37,7 @@ AP server ──► client (CommonClient + kvui, registered at age2de/__init__.p
                 ▼
         <AoE2 user dir>/profile/        ◄── 0.5 s poll, both directions
                 ▲
-                │  writes <scenario>.xsdat  (active, ping, protocol, worldId,
+                │  writes <scenario>.xsdat  (active, ping, worldMajor, slotId,
                 │          lastMessageId, 12 item ids, completed, scenarioId,
                 │          30 reserved ints, then location ids)
          AoE2:DE XS ──► AP.xs AP_Write(), driven by a looping "AP Ping" trigger
@@ -49,18 +49,39 @@ Game→client is one file; client→game is many. `AP_Read` (`AP.xs:103-120`) re
 
 Location acknowledgement is a two-flag ledger in `ScenarioLocations.xs`: the game sets `scenarioComplete`, the client echoes the id back, and the game then sets `serverComplete` to stop resending. Scenario-completion de-duplication across restarts rides on AP **DataStorage** instead — a bitfield keyed by each scenario's `completion_bit` (0-11).
 
-### 2a. `communication_protocol.md` is stale — do not implement from it **[new]**
+### 2a. `communication_protocol.md` — regenerated in 0.3.0 **[corrected]**
 
-Section 3 below calls the packet layouts "specified in `communication_protocol.md`, hand-implemented twice". That is no longer true. The spec is a *third, divergent* description, and a reader built from it will be misaligned. Verified against both implementations:
+Section 3 below calls the packet layouts "specified in `communication_protocol.md`, hand-implemented
+twice". For most of this project's life the spec was a *third, divergent* description and a reader
+built from it would have been misaligned. **That is now closed** — the spec has been rewritten
+field-by-field from `AP_Write` / `AP_Read` / `Age2Packet` / `ping_game`, and it says so at the top.
 
-1. **`<SCENARIO>.xsdat` reserved block.** The spec lists `CurrentUnitBufferId` + `CurrentUnitBufferRemaining` + "x27 spaces" = 29 ints. `AP_Write` writes `for (i = 0; < 30)` (`AP.xs:47-49`) and `Age2Packet.__init__` does `XsdatFile.skip_int(fp, 30)` (`GameClient.py:88`). **Both implementations agree on 30; only the spec is wrong** — following it puts the entire location list 4 bytes out of alignment.
-2. **`AP.xsdat` has an undocumented leading field.** The spec's table starts at `Ping`. Both sides write and read a **`scenarioId` int first** (`AP_Read`'s scenario check at `AP.xs:69-76`; `ping_game`'s first `write_int` at `GameClient.py:269`).
-3. **`AP.xsdat` flag count.** The spec lists four (`CheckItems`, `ResetItems`, `CheckLocations`, `CheckUnitBuffer`). The implementations exchange **six** ints: items, free_items, free_locations, units, messages, completed. Neither `messages` nor `completed` appears in the spec.
-4. **Name mismatch.** The spec's `AP.xsdat` table refers to `reset_items.xsdat` while its own later section documents `free_items.xsdat`. The implementations use `free_items.xsdat`.
-5. **`messages.xsdat` is absent from the spec entirely**, despite being a live channel with its own count-prefixed framing (`MessageHandler.py:36`).
-6. The worked example still names scenarios `C1_Attila_1`; the real stems are `AP_Attila_1`. (`.gitignore` still carries the old `C1_*` paths — vestigial.)
+Recorded because the failure mode is instructive, and because a spec drifts again the moment someone
+changes a packet without touching it. The six divergences that existed:
 
-Also note `AP_Write` fills the reserved block with the **loop counter** (`xsWriteInt(i)` → 0, 1, 2 … 29) rather than zeros or `-1`. Harmless while the units path is unimplemented, but the two live fields the spec places there would read as `0` and `1` instead of `-1` and `0`.
+1. **Reserved-block size.** The spec listed `CurrentUnitBufferId` + `CurrentUnitBufferRemaining` +
+   "x27 spaces" = 29 ints where both implementations used 30 — following it put the entire location
+   list 4 bytes out of alignment. The two unit-buffer fields were **never written by anything**; the
+   units path is unimplemented. The block is still 30, of which the first now carries `worldMinor`.
+2. **`AP.xsdat` had an undocumented leading field.** The spec's table started at `Ping`; both sides
+   write and read a `scenarioId` int first.
+3. **Flag count.** The spec listed four (`CheckItems`, `ResetItems`, `CheckLocations`,
+   `CheckUnitBuffer`); the implementations exchange six — items, free_items, free_locations, units,
+   messages, completed. Neither `messages` nor `completed` appeared in the spec.
+4. **Name mismatch.** The spec's `AP.xsdat` table referred to `reset_items.xsdat` while its own later
+   section documented `free_items.xsdat`. The implementations use `free_items.xsdat`.
+5. **`messages.xsdat` was absent entirely**, despite being a live channel with its own
+   count-prefixed framing.
+6. The worked example named scenarios `C1_Attila_1`; the real stems are `AP_Attila_1`. (`.gitignore`
+   still carries the old `C1_*` paths — vestigial.)
+
+Three further files were undocumented and are now covered: `startup.xsdat`, `buildings.xsdat` and
+`SlotData.xs`.
+
+Still worth knowing: `AP_Write` fills the reserved block with the **loop counter**
+(`xsWriteInt(i)` → 0, 1, 2 … 28 after `worldMinor`) rather than zeros or `-1`. Harmless while the
+units path is unimplemented, but any field taken from that block will read as its index, not as a
+sentinel — so give new fields an explicit write rather than assuming `0` or `-1`.
 
 ## 3. The coupling between the repos
 
@@ -68,7 +89,9 @@ There is no structural link — no submodule, no shared package, no path config.
 
 1. **Packet layouts** — hand-implemented twice (`AP.xs` and `age2de/client/GameClient.py`). See §2a: the spec document is a divergent third copy, not the source of truth.
 2. **Filenames** — `age2de/locations/Scenarios.py:33-45` hardcodes `AP_Attila_1.xsdat`…`AP_Joan_6.xsdat` (read) and `ATT1.xsdat`…`JOAN6.xsdat` (write). `age2de/locations/Campaigns.py:14-15` hardcodes `AP Attila the Hun.xsdat` / `AP Joan of Arc.xsdat`. These are exactly this repo's scenario and campaign stems — **renaming one here silently breaks the client.**
-3. **Magic pair** — `protocol = 6.5` / `worldId = 2`, in `AP.xs:13-14` and `GameClient.py:26-27`.
+3. **[resolved] The magic pair is gone.** `protocol = 6.5` / `worldId = 2` became
+   `worldMajor` / `worldMinor` in `AP.xs` and a derived `AP_WORLD_VERSION` on the client, with
+   `archipelago.json` as the single source. The slot moved to `SlotData.xs`.
 4. **ID ranges** — see the corrected map in Group 3 below. `Scenarios.py:14` computes `campaign.value * 100 + chapter`; `AP.xs:272` recovers the scenario from a location id.
 5. **[new] Pavilion placement** — `Data/VictoryPavilionLocations.json` is keyed by the same 12 scenario stems (`AP_Attila_1` … `AP_Joan_6`). A rename breaks pavilion placement too, silently, at build time rather than run time.
 
@@ -110,8 +133,12 @@ There is no structural link — no submodule, no shared package, no path config.
 - **Regions are missions**, chained linearly per campaign off `Menu`, plus one synthetic `Can Build` region holding the building checks. (`regions/Regions.py` is an **empty file** — dead.)
 - **Logic is hand-written Python** under `logic/` and `rules/`. The `.xlsx` worksheets do not drive it.
 - **6 options**: `scenarioBranching`, `shuffle_buildings`, `enabled_campaigns`, `starting_campaigns`, `goal`, `startInventoryPool`. Note `goal` has exactly one choice, so it is effectively inert.
-- `campaign/ScenarioPatcher.py`, `campaign/CampaignReader.py` and `campaign/xsscript/AP.xs` are **dead code** — a superseded auto-patching path. `inject_ap` is never called, and that bundled `AP.xs` is a 34-line stale fork of the real 314-line bridge (it writes a **31**-int filler block where the live `Age2Packet` expects 30, so it cannot round-trip). Only `campaign/XsdatFile.py` is live.
-- **[new]** That dead patcher is the **only** importer of the vendored `AoE2ScenarioParser`, and `ordered_set` exists only to satisfy that parser. See Group 5.
+- **[corrected in 0.3.0]** `campaign/CampaignReader.py` is now **live** — `InstallHandler` reads
+  every bundle through it and the new `CampaignWriter.py` writes them back. `campaign/xsscript/AP.xs`
+  (the 34-line stale fork that wrote a **31**-int filler where the reader expects 30) has been
+  **deleted**. `campaign/ScenarioPatcher.py` is still dead. `campaign/XsdatFile.py` remains live.
+- **[new]** `ScenarioPatcher.py` is the only importer of the vendored `AoE2ScenarioParser`, so that
+  tree currently has no live consumer — but it is kept deliberately. See Group 5.
 - `test/` contains `bases.py` and **no `test_*.py`**. `bases.py` is the unmodified APQuest template — its comments reference test files that do not exist.
 
 ---
@@ -143,9 +170,23 @@ Also worth recording for whoever reads `connection_closed` next: it is reached f
 
 ---
 
+# Resolved in 0.3.0
+
+| # | What it was | Fixed by |
+|---|---|---|
+| 2.14 | `read_string` unpacked its value and discarded it | `cb446771a` — `return` restored. **Residual:** it still returns `bytes`, not `str` (no `.decode`), and still shadows the builtin `len`. Harmless while nothing calls it |
+| 2.21 | An empty status file read as "active", livelocking the status loop | `e37fa0fc1` — both detectors now test `active == b'\x01'` instead of `!= b'\x00'` |
+| 2.22 | `update_packet` committed torn reads before the sanity check | `0b16ad85e` — the `current_ping_id == -1` guard now sits *before* the `update_packet` call, so a failed read never reaches it. The related note about non-atomic writes on both sides still stands and is unaddressed |
+| 2.23 | The 60-second disconnect branch was unreachable dead code | `0889fb53d` — branch removed. `deactivate_scenario` still truncates the game's own output file after 5 seconds of no ping |
+| 5.x | Version skew was three-way (`archipelago.json` 0.0.1 / slot_data 0.2.0 / tag 0.2.3) | `36f8d4ea6` + `0e288a585` — `archipelago.json` is now the single source. `fill_slot_data` derives from `self.world_version`, the client derives `AP_WORLD_VERSION` from it, and the time-based `world_id` key is gone |
+
+Re-verified against the current tree, not taken from the commit messages.
+
+---
+
 # Open defects
 
-Numbering is stable and matches the resolved table above; gaps are resolved items. Items 2.19-2.23 and the additions to Groups 3-5 come from the 2026-09-05 fact-check.
+Numbering is stable and matches the resolved tables above; gaps are resolved items. Items 2.19-2.20 and the additions to Groups 3-5 come from the 2026-09-05 fact-check; 2.21-2.23 came from the same pass and have since been fixed.
 
 ## Group 2 — Client (`age2de/client/`)
 
@@ -209,7 +250,22 @@ if self.game_loop != None:
 
 Any `status_loop` crash therefore does more than kill the status loop: it kills the server task and disables reconnect. The regression note at the end of this document anticipates a *hang* here; the raise case is the likelier one and is entirely unhandled.
 
-**Fix:** wrap the await — `try: await asyncio.wait_for(self.game_loop, timeout=5) except Exception: logger.exception(...)`. That covers both the hang and the raise.
+**[corrected] Now partial — the raise is closed, the hang is not.** `disconnect()` wraps the await:
+
+```python
+try:
+    await self.game_loop
+except Exception:
+    logger.exception("Game loop did not end gracefully, continuing disconnect.")
+```
+
+So a `status_loop` crash no longer escapes `connection_closed`'s `finally`, and auto-reconnect
+survives it. What remains is the other half: there is no `wait_for`, so a `status_loop` that *hangs*
+rather than raises still hangs `disconnect()`, and with it `connection_closed` and the reconnect
+block behind it.
+
+**Remaining fix:** `await asyncio.wait_for(self.game_loop, timeout=5)` inside the existing
+`try`. `except Exception` already covers `TimeoutError`.
 
 ### 2.20 `_handle_received_items` ignores `args["index"]`. `ApClient.py:95-105` **[new]**
 
@@ -223,41 +279,16 @@ The *replay* this causes is fine — that is 2.16's intended behaviour. The prob
 
 **Fix:** honour `args["index"]` — clear `unlocked_items` when `index == 0`, mirroring what `CommonClient` does to `items_received`. The XS-side granted-id tracking from 2.17 would make the resource symptom harmless, but the unbounded list still wants fixing on its own.
 
-### 2.21 An empty status file reads as "active". `CampaignHandler.py:134-137` **[new]**
-
-```python
-with open(self._user_folder + scenario.data.xsdat_read_name, "rb") as fp:
-    active = fp.peek(1)[:1]
-    if (active != b'\x00'):
-        self.active_file = ActiveFile(...)
-        return
-```
-
-For a zero-length file, `fp.peek(1)[:1]` is `b''`, and `b'' != b'\x00'` is `True` — so a truncated or empty `AP_*.xsdat` is adopted as the active scenario. `read_packet` then throws, returns a default `Age2Packet`, and `status_loop` `continue`s on `ping == -1` **forever**: `active_file` stays set, so the re-detection branch at `:301` never runs again. Livelock, with no output beyond a `print(ex)`.
-
-`find_active_campaign` has the same `b''` test but survives it, because `skip_int` then throws inside its `try`.
-
-**Fix:** test `active == b'\x01'` (or check file size first).
-
-### 2.22 `update_packet` commits failed reads before the sanity check. `GameClient.py:193` **[new]**
-
-`self.current_packet = new_pkt` runs on every call — including the default `Age2Packet()` that `read_packet` returns from its `except`. The `current_ping_id == -1` guard is 140 lines later at `:333`.
-
-A torn read therefore wipes `item_ids` and `location_ids` and resets `current_ping_id` to `-1`, so the next real packet can never be classified `REPEAT`. Torn reads are expected, not hypothetical: the client polls at 0.5 s a file the game rewrites every tick, and **neither side uses atomic writes** — every client writer opens plain `"wb"` truncate-in-place (`:198`, `:215`, `:228`, `:239`, `:268`, `BuildingHandler.py:36`, `CampaignHandler.py:174`), so XS can equally read a half-written file.
-
-Related: `Age2Packet.__init__` reads location ids until EOF with no validation, and `status_loop:380-382` forwards them straight to `on_location_received` → `LocationChecks`, and into `ctx.checked_locations` — which is the *same set object* `CommonContext` uses. A torn read injects garbage ids into both.
-
-### 2.23 The 60-second disconnect branch is unreachable. `GameClient.py:346-356` **[new]**
-
-At `packet_repeat_count == 10` the code calls `deactivate_scenario()`, which sets `active_file = None`. The next iteration therefore takes the `:301` re-detection branch — and since `deactivate_scenario` just wrote `False` over the file, detection fails and `:306-307` (`await long_sleep(); continue`) runs before the counter can advance. `packet_repeat_count` is pinned at 10, so `if ctx.packet_repeat_count == 120:` and its warning are dead code.
-
-Relatedly, `deactivate_scenario` opens the *game's own output file* with `"wb"` and truncates it after only 5 seconds of no ping — recoverable only because `AP_Write()` recreates it every tick.
-
 ### 2.12 `check_victory` fails open. `CampaignHandler.py:73-80`
 
 *(lines corrected from `:61-68`)*
 
-If no campaign has `must_beat` set, every iteration `continue`s and the function returns `True` → instant goal on the first tick. It works today only because `fill_slot_data` emits `"<Campaign Name>_unlocked"` (`__init__.py:281-282`) and `setup_victory_requirements` matches on key **presence**, not value — which is the correct intent (beat all *included* campaigns, not just starting ones). Any key-name drift silently wins the game.
+If no campaign has `must_beat` set, every iteration `continue`s and the function returns `True` → instant goal on the first tick. It works today only because `fill_slot_data` emits `"<Campaign Name>_unlocked"` and `setup_victory_requirements` matches on key **presence**, not value — which is the correct intent (beat all *included* campaigns, not just starting ones). Any key-name drift silently wins the game.
+
+**[new] The stakes went up in 0.3.0.** `CampaignHandler.included_campaigns()` now reads the same
+key-presence convention to decide which campaigns `/install` writes. So key-name drift would both
+win the game instantly *and* install nothing — the convention is now load-bearing in two places and
+is still asserted nowhere.
 
 ### 2.13 `FolderHandler._user_folder` has no default. `FolderHandler.py:2`
 
@@ -265,21 +296,19 @@ Annotation only; `__init__` is `pass`. `MessageHandler.is_message_sending` (`:55
 
 **[corrected] Downgraded to latent.** No reachable path was found in this revision: `status_loop` is only ever started by `try_startup_game_connection()`, called from `connect()` *after* `update_game_user_folder()`; and `disconnect()` rebuilds the handlers strictly after `await self.game_loop` returns, with no `await` in between for the loop to observe. The missing guard is real and worth fixing, but "silently kills the `status_loop` task" is not demonstrable as written. Note that if it *did* fire, 2.19 makes the consequence worse than a dead loop.
 
-### 2.14 `read_string` never returns. `campaign/XsdatFile.py:15-17`
-
-Unpacks the value and discards it. Unused anywhere in the world — the definition is the only occurrence. (It also shadows the builtin `len`, harmlessly.)
-
 ### 2.15 Dead or malformed declarations
 
-*(line numbers refreshed)*
+*(trimmed — three of the original seven are fixed, see below)*
 
-- `CampaignHandler.py:44` — `_victory: False` is an annotation whose *type* is `False`, not an assignment. Unused.
-- `ManagedScenarioItem.unlocked` (`CampaignHandler.py:15`) and `ManagedBuilding.unlocked` (`BuildingHandler.py:12`) are bare class attributes on `@dataclass`es, not fields. Assignment works (it creates an instance attribute) but `__init__`/`__repr__`/`__eq__` ignore them — two items with the same `data` compare equal regardless of unlock state.
-- `Age2Context.victory: bool` (`ApClient.py:46`) declared, never used.
-- `unlock_scenario` (`CampaignHandler.py:94-95`) is a `pass` stub, never called.
-- `__add_campaign_to_folder`, `__add_scenario_to_age2campaign`, `__update_age2campaign_json` (`:193-199`) are stubs missing `self`.
-- `args = parser.parse_args()` (`ApClient.py:171`) is assigned and never used, so `--connect` / `--password` are ignored in favour of the `main()` parameters — and `main()` is launched with no arguments from `__init__.py`, so both are always `None`. This is the leftover half of 2.10.
+- `unlock_scenario` (`CampaignHandler.py:106-107`) is a `pass` stub, never called.
+- `__add_campaign_to_folder`, `__add_scenario_to_age2campaign`, `__update_age2campaign_json`
+  (`CampaignHandler.py:207-213`) are stubs missing `self`.
+- `args = parser.parse_args()` (`ApClient.py:225`) is assigned and never used, so `--connect` / `--password` are ignored in favour of the `main()` parameters — and `main()` is launched with no arguments from `__init__.py`, so both are always `None`. This is the leftover half of 2.10.
 - `PacketStatus.ERROR` is defined and never used.
+
+**Fixed in 0.3.0**, mostly by `cb446771a`: `_victory: False` and `Age2Context.victory: bool` are
+gone, and `ManagedScenarioItem.unlocked` / `ManagedBuilding.unlocked` are now real
+`unlocked: bool = False` dataclass fields, so `__init__` / `__repr__` / `__eq__` account for them.
 
 ## Group 3 — Generation (`age2de/`)
 
@@ -317,7 +346,22 @@ if Buildings.BuildingOption.unique in building.building_options and not any(buil
     continue # No civs with this unique building are included.
 ```
 
-is **always true** for unique buildings. Every unique building (Folwark, Mule Cart, Pasture, Harbor, Caravanserai, Feitoria, Settlement, Fortified Church, Krepost, Donjon) is unconditionally skipped, making the `unique` value of `shuffle_buildings` a dead option.
+is **always true** for unique buildings. Every unique building (Folwark, Mule Cart, Pasture, Harbor, Caravanserai, Feitoria, Settlement, Fortified Church, Krepost, Donjon) is unconditionally skipped, making the `unique` value of `shuffle_buildings` a dead option — and the default template yaml *does* select `'Unique'`.
+
+**[corrected] The mechanism is the defect; the severity is unverified.** There is no civ → unique
+building mapping anywhere in the project — `included_buildings` is only ever initialised to `[]`, in
+one place, and never assigned by `CivilizationBuildings.py` or anything else. So the code cannot know
+which civ owns what, regardless of which civs a seed includes.
+
+Whether that is *currently observable* depends on whether either included civ (Huns, via Attila;
+Franks, via Joan) owns one of those ten buildings. That is a game-data question, and the local
+AoE2 knowledge base has no civ-ownership mapping to settle it — its `genie_registry.json` carries
+building ids and facets but no owning civ. Two indirect hints from that registry: it contains
+`SERJEANT_DONJON` and `KONNIK_KREPOST`, and the Serjeant and Konnik are the Sicilian and Bulgarian
+unique units, which points to those two buildings belonging to civs that are *not* included.
+
+**Do not record this as benign on that basis.** Populate `included_buildings` and the question stops
+mattering; leave it empty and `unique` is dead for every civ that will ever be added.
 
 ### 3.4 `Logic.__init__` builds scenario logic against a partially-filled list. `logic/Logic.py:31-39` **[new]**
 
@@ -500,13 +544,28 @@ Per the linter, intermediate ints are not promoted, so the disable-at-init and f
 
 ### 4.14 Corrections to earlier XS claims **[corrected]**
 
-- `AP_Read` does **not** "hard-fail" on a protocol/worldId mismatch — it chats and returns early, leaving the rule armed to retry, and re-spams the chat log once per `ReadAP` tick.
+- **[resolved in 0.3.0]** `AP_Read` used to chat and return early on a version/slot mismatch,
+  leaving the rule armed and re-spamming the chat log once per `ReadAP` tick. `ReportMismatch` now
+  reports once, names both values, and calls `xsDisableRule("ReadAP")`. The client side matches:
+  `report_packet_mismatch_once` replaced the silent 2-second `logger.warning` retry loop.
 - `AP.xs:272` recovers the scenario as `locationId / 10 / 10`, not `/ 100` — arithmetically identical for the ids in use.
 - The `/ 4` byte→int fix (1.1) landed at **five** sites, not two: `AP.xs:139`, `:219`, `:264`, `ItemHandler.xs:28`, `:40`.
 
 ## Group 5 — Hygiene
 
-- **Deleting the dead patcher drops 13 MB from the apworld. [new]** `campaign/ScenarioPatcher.py` is the **only** importer of the vendored `AoE2ScenarioParser` (13 MB), and `ordered_set` (44 KB) exists solely to satisfy that parser (`AoE2ScenarioParser/objects/support/area.py:9`). Nothing in `age2de` imports either otherwise. So finishing the existing "delete `ScenarioPatcher.py`, `CampaignReader.py` and `xsscript/AP.xs`" item also removes both vendored trees. The stale duplicate bridge is a trap for anyone editing the protocol; the 13 MB is the bigger prize.
+- **[corrected] The vendored parser has no consumer, but do not delete it.** Partly actioned and
+  partly reversed in 0.3.0, so the item needs restating:
+  - `campaign/xsscript/AP.xs` — **deleted**. It was a 34-line fork claiming protocol 6.5 and writing
+    a **31**-int filler block where the reader expected 30. Recoverable from git if ever wanted.
+  - `campaign/CampaignReader.py` — **now live.** `InstallHandler` reads every bundle through it, and
+    `CampaignWriter.py` (new) writes them back. Do not delete either.
+  - `campaign/ScenarioPatcher.py` — dead again. Nothing at runtime opens a scenario: retagging is a
+    filename change plus a bundle-table rebuild, never a body edit. Scenario *authoring* happens in
+    Ageipelago's own venv via `Scripts/__init__.py`.
+  - So `AoE2ScenarioParser` (13 MB) and `ordered_set` (44 KB) again have no importer except that dead
+    file. **Left in place deliberately:** the loose scenarios in `resources/_common/scenario/` are
+    expected to become a generation input, which is exactly when the parser is needed again. Deleting
+    it now would mean re-vendoring it later.
 - **`age2de` has no `docs/` directory. [new]** No `en_<Game>.md`, no setup guide. Blocks upstream submission and pairs with the missing `WebWorld`.
 - `age2de/client/Age2ClientConfig.json` is vestigial — it contains `{"AGE2_USER_FOLDER": ""}` and nothing reads the file or the key. The folder comes from `Age2Settings.user_folder`.
 - **[corrected]** Path building is fragile, not Windows-only. The client uses `AGE2_USER_PROFILE = "/profile/"` — POSIX separators that work on Windows too. The real smell is string concatenation instead of `os.path.join`/`pathlib`, and the genuine backslash case is in `Scripts/`.
@@ -515,10 +574,18 @@ Per the linter, intermediate ints are not promoted, so the disable-at-init and f
 - **[new] `APavilionMaker.add_pavilion` can bind to the wrong unit.** If `get_units_in_area` finds anything near the configured coordinates it reuses `pavilion_space[0]` — *any* unit, not necessarily a pavilion — and renames it "APavilion". `_add_color_rotation` also chains triggers by assuming `trigger_id + 1`, which breaks if creation order changes.
 - **[corrected] `Techsanity.xs` has never compiled.** `xs-check` fails to lex it: `const int ri-hul'cheJavelineers = 485;` (`:314`) has an apostrophe, and **every** identifier in the file contains `-`, which XS lexes as subtraction (`const int feudal-age = 101;`, `void InitTechsanityAge-Ups() {`). It also has four declare/use name typos (`ri-aznauri-cavalry`/`ri-avnauri-cavalry`, `ri-tusk-swords`/`ri-tusl-swords`, `ri-eupseong`/`ri-eupesong`, `ri-shinkichon`/`ri-shinkichan`). Enabling it needs a full rename pass, not a wiring change.
 - **[corrected] `Unitsanity.xs` lexes but cannot resolve** — it calls `new`, `defineStruct`, `structSet*` with no `include "structs.xs"`. It has no rule, no master `InitUnitsanity()`, `disableUnit` is never called, and `InitUnitsanityEconomy` mixes `cAttributeDisable` and `cAttributeSet` on adjacent lines.
-- **[corrected] Version skew is three-way**, and the earlier attribution was wrong. "0.2.0" comes from `fill_slot_data` hardcoding `version_public 0 / version_major 2 / version_minor 0` (`__init__.py:276-279`), not from a branch name. So: `archipelago.json` says `world_version 0.0.1` / `minimum_ap_version 0.6.5`, slot_data says 0.2.0, and the git tag/branch is 0.2.3. Pick one scheme. **[new]** The client reads none of those slot_data keys, and the `world_id` emitted there is a time-based per-slot value unrelated to the protocol `worldId = 2`.
 - **[new]** `fill_slot_data` never emits the `goal` option, so the client's `check_victory` hardcodes "complete every included campaign". Harmless while `Goal` has one option; it diverges silently the moment a second is added.
 - The Archipelago fork's drift from upstream — see the caveat in §1 about which `upstream` this measures.
-- **No `test_*.py` anywhere.** 1.1, 1.2 and 2.5 were all the kind of defect a single round-trip `.xsdat` encode/decode test would have caught before shipping.
+- **[corrected] Tests now exist — 66 of them.** `age2de/test/` holds `test_identity.py`,
+  `test_campaign_bundle.py`, `test_installer.py` and `test_world_version.py`. They cover the
+  `.xsdat` byte layout (including that `ScenarioId` stays at offset 72), the `.aoe2campaign`
+  round-trip against a synthetic fixture *and* byte-identically against the shipped bundles, the
+  installer end to end against a fake user folder, and the version rules. Two are worth knowing
+  about because they guard conventions nothing else does: one asserts `AP.xs`'s declared
+  `worldMajor`/`worldMinor` still match `archipelago.json`, and one asserts `_scenario_size` agrees
+  with `_pack_scenario_header` — the single-pass offset arithmetic is silently wrong if those drift.
+  1.1, 1.2 and 2.5 were all the kind of defect this would have caught before shipping. Still
+  missing: anything covering Groups 3 and 4.
 
 ---
 
@@ -526,7 +593,7 @@ Per the linter, intermediate ints are not promoted, so the disable-at-init and f
 
 Checked while reading, and sound as written:
 
-- `find_active_campaign`'s `skip_int(fp, 18)` (`CampaignHandler.py:119`) lands exactly on `scenario_id`. Re-derived: active 0, ping 1, protocol 2, worldId 3, lastMessageId 4, item ids 5-16, completed 17, **scenarioId 18**.
+- `find_active_campaign`'s `skip_int(fp, 18)` lands exactly on `scenario_id`. Re-derived: active 0, ping 1, worldMajor 2, slotId 3, lastMessageId 4, item ids 5-16, completed 17, **scenarioId 18**. `worldMinor` was added at index 19 — the first reserved slot — precisely so this offset did not move; `test_identity.py` now asserts it.
 - Both implementations agree on the **30**-int reserved block (`AP.xs:47-49`, `GameClient.py:88`). Only the spec document disagrees — see §2a.
 - `Age2ScenarioData.id` and `Age2CampaignData.id` both exist.
 - `Items.ID_TO_ITEM` and `item.type_data` both exist.
@@ -553,18 +620,28 @@ Checked while reading, and sound as written:
 3. **3.2 — the generation hang.** A seed that never finishes generating is the worst failure mode in the list.
 4. **2.17 — the ack cursor over-advancing.** The one genuine defect in the item pipeline: it *loses* items permanently, which no amount of resending recovers. Note the framing: **2.16's replay is intended and must be preserved**, so the fix has to make replay safe rather than suppress it. Moving granted-id bookkeeping into XS does exactly that, and simultaneously removes 2.16's resource double-grant and 2.20's amplification. Fix 2.20's `index` handling alongside it so `unlocked_items` stops growing without bound.
 5. **2.18** — regression from 2.11's fix; a stale campaign flag now beats standalone-scenario detection. One line either way.
-6. **2.19 + 2.21 + 2.13** — the paths that can kill a task, hang the client, or disable reconnect.
+6. **2.19 + 2.13** — the paths that can hang the client or disable reconnect. 2.19's raise case is
+   closed; what is left is the missing `wait_for` timeout. 2.21 is fixed.
 7. **2.12** — `check_victory` fail-open; cheap, and the failure mode is "seed instantly won".
 8. **Group 3 remainder** — the `enabled_campaigns: []` `KeyError`, the `(A or B)` prerequisite bug and 3.3 are the ones players would actually hit.
 9. **Group 4 remainder** — 4.3 and 4.5 first; 4.11/4.12 if missions slow down late.
-10. **Group 5** — hygiene, cheapest first. Deleting the dead patcher (and with it 13 MB of vendored code) is the biggest single win; the round-trip `.xsdat` test is the highest-leverage new work now that the framing convention is settled.
+10. **Group 5** — hygiene, cheapest first. Note that two of its former headline items are done:
+    the `.xsdat` round-trip test exists, and the version skew is resolved. **Do not** delete the
+    vendored parser — see the corrected Group 5 entry. The remaining highest-leverage new work is
+    test coverage for Groups 3 and 4, which have none.
 
-Note the shape of the two regressions so far: 2.6's first attempt was dead code behind a `return`, and 2.11's fix silently narrowed `deactivate_scenario`. Both were in disconnect/detection paths with no test coverage — which is the argument for the round-trip test being worth more than its size suggests.
+Note the shape of the two regressions so far: 2.6's first attempt was dead code behind a `return`, and 2.11's fix silently narrowed `deactivate_scenario`. Both were in disconnect/detection paths with no test coverage — which was the argument for the round-trip test. That test now exists, and 0.3.0 added two more of the same kind: one pinning `AP.xs`'s declared version against `archipelago.json`, one pinning `_scenario_size` against `_pack_scenario_header`. Both guard conventions that nothing else asserts.
 
 ## How to verify
 
-- **XS static check:** run `xs-check` over `age 2 files/resources/_common/xs/`. All twelve entry points currently analyse with zero errors — only `[102] DiscardedFn` (4.2) and two `[109] NoNumPromo` (4.13). `Techsanity.xs` fails to lex; that is expected, see Group 5.
+- **XS static check:** run `xs-check -I .` from inside `age 2 files/resources/_common/xs/`.
+  **The `-I .` matters** — without it every `include` fails to resolve and the resulting cascade of
+  `NameError`s reads like real breakage. With it, all twelve entry points plus `AP.xs` and
+  `SlotData.xs` report **zero** findings, warnings included. `Techsanity.xs` fails to lex; that is
+  expected, see Group 5.
 - **Generation:** roll a seed with `enabled_campaigns: []` to reproduce the `KeyError`; roll a two-Age2-slot multiworld to reproduce the class-attribute leaks. For 3.1, check whether an Attila 3-6 unlock item appears in logic with no combat requirements.
-- **Protocol:** add a Python round-trip test that writes each `.xsdat` with the client writers and asserts the byte layout the XS readers expect. Assert **30** reserved ints, not the spec's 29.
+- **Protocol:** the round-trip test now exists (`test_identity.py`). The reserved block after
+  `ScenarioId` is **30 ints**, of which the first now carries `WorldMinor` — so a reader skips 29
+  after reading it. `communication_protocol.md` has been regenerated from the code and agrees.
 - **End-to-end:** launch the client, `/set_user_folder` at the numeric profile directory, then start Attila 1 **both** from the campaign and as a standalone scenario — the second path exercises 2.11/2.18. Drop and restore the server connection mid-scenario to exercise 2.16; check the player's resource totals before and after, since that is the observable symptom. For 4.1, check whether the Castle location fires before you build a Castle.
 - **Regression watch for 0.2.3:** the fixes for 2.1/2.3/2.6 all changed disconnect behaviour, and `connection_closed` now awaits `game_loop` on every path. See 2.19 — the raise case is live today, and an `asyncio.wait_for(self.game_loop, timeout=5)` in `Age2GameContext.disconnect` would turn both that and the hang case back into visible errors.
