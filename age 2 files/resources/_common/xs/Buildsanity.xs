@@ -76,7 +76,7 @@ void InitBuildsanityStructs() {
     structSetInt(buildsanity, "buildings", buildings);
 }
 
-void CreateLocations() {
+void CreateBuildingLocations() {
     int buildings = structGetInt(buildsanity, "buildings");
 
     vector wonder = createLocationLock("Wonder", WONDER, 3000.0, 200);
@@ -193,7 +193,7 @@ void CreateLocations() {
 
 void InitBuildsanity() {
     InitBuildsanityStructs();
-    CreateLocations();
+    CreateBuildingLocations();
     xsEnableRule("BuildsanityChecks");
 }
 

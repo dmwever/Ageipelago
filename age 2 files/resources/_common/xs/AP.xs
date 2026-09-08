@@ -1,6 +1,6 @@
+include "./SlotData.xs";
 include "./ItemHandler.xs";
 include "./APavilion.xs";
-include "./SlotData.xs";
 
 int itemArray = -1;
 
@@ -197,7 +197,7 @@ void InitAP() {
     InitLocations();
     InitBuildsanity();
     InitScenarioLocations();
-    xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, cAttributeDisable);
+    xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, 0.0);
 
     xsEnableRule("ConnectAP");
 }
