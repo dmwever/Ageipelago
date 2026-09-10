@@ -1,6 +1,5 @@
 include "./ItemHandler.xs";
 include "./APavilion.xs";
-include "./SlotData.xs";
 
 int itemArray = -1;
 
@@ -14,7 +13,9 @@ int scenarioId = 0;
 int worldMajor = 0;
 int worldMinor = 3;
 int reportedMismatch = 0;
-int lastMessageId = -1;
+int startupGranted = 0;
+int scenarioItemsRead = 0;
+int reportedMissingItems = 0;
 
 bool CheckScenario() {
     bool opened = xsOpenFile("AP");
@@ -30,38 +31,23 @@ bool CheckScenario() {
     return (true);
 }
 
-void ReportMismatch(string field = "", string received = "", string expected = "") {
-    if (reportedMismatch == 1) {
-        return;
-    }
-    reportedMismatch = 1;
-    xsChatData("<RED>Unexpected " + field + " from Client: " + received);
-    xsChatData("<RED>Expected " + field + ": " + expected);
-    xsChatData("<RED>These scenarios belong to a different seed or player slot. Reinstall the files generated for this slot.");
-    xsDisableRule("ReadAP");
-}
-
 void AP_Write()
 {
-    if (AP_SLOT_ID == -1) {
-        return;
-    }
     bool created = xsCreateFile(false);
     if (created == false) {
         return;
     }
     xsWriteInt(1);
     xsWriteInt(xsGetGameTime());
-    xsWriteInt(worldMajor);
-    xsWriteInt(AP_SLOT_ID);
+    xsWriteFloat(protocol);
+    xsWriteInt(worldId); 
     xsWriteInt(lastMessageId);
     for (i = 0; < 12) {
         xsWriteInt(xsArrayGetInt(itemArray, i));
     }
     xsWriteInt(completed);
     xsWriteInt(scenarioId);
-    xsWriteInt(worldMinor);
-    for (i = 0; < 29) {
+    for (i = 0; < 30) {
         xsWriteInt(i);
     }
     int sendingLocations = FilterCompletedNotSent();
@@ -99,21 +85,20 @@ void AP_Read()
         return;
     }
 
-    // Check World Version
-    int check_worldMajor = xsReadInt();
-    int check_worldMinor = xsReadInt();
-    if (check_worldMajor != worldMajor || check_worldMinor != worldMinor) {
-        ReportMismatch("Age2 version",
-            "" + check_worldMajor + "." + check_worldMinor,
-            "" + worldMajor + "." + worldMinor);
+    // Check World Protocol
+    float check_protocol = xsReadFloat();
+    if (check_protocol != protocol) {
+        xsChatData("<RED>Unexpected AP World Protocol from Client: " + check_protocol);
+        xsChatData("<RED>Expected Protocol: " + protocol);
         xsCloseFile();
         return;
     }
-
-    // Check Slot Id
-    int check_slotId = xsReadInt();
-    if (check_slotId != AP_SLOT_ID) {
-        ReportMismatch("AP Slot Id", "" + check_slotId, "" + AP_SLOT_ID);
+    
+    // Check World Id
+    int check_worldId = xsReadInt();
+    if (check_worldId != worldId) {
+        xsChatData("<RED>Unexpected AP World ID from Client: %d", check_worldId);
+        xsChatData("<RED>Expected World ID: %d", worldId);
         xsCloseFile();
         return;
     }
@@ -151,7 +136,6 @@ void SetScenarioId(int id = 0) {
 void ReadScenarioItemFile(string filename = "") {
     bool openFile = xsOpenFile(filename);
     if (openFile == false) {
-        xsCloseFile();
         return;
     }
     int itemCount = xsGetFileSize() / 4; // byte to int
@@ -161,6 +145,7 @@ void ReadScenarioItemFile(string filename = "") {
         GiveItem(itemId);
     }
     xsCloseFile();
+    scenarioItemsRead = 1;
 }
 
 void GiveVictory() {
@@ -211,20 +196,29 @@ rule ConnectAP
         xsChatData("<RED>Scenario Id is not defined. Please set the Scenario Id before initializing this scenario.");
         return;
     }
-    if (AP_SLOT_ID == -1) {
-        xsChatData("<RED>This install has no Archipelago slot. Connect the client and run /install.");
-        return;
+    if (startupGranted == 0) {
+        xsChatData("<YELLOW>Waiting for Client Connection");
     }
-    xsChatData("<YELLOW>Waiting for Client Connection");
     if (CheckScenario() == false) {
         return;
     }
 
-    xsChatData("<GREEN>Client Connected!");
+    if (startupGranted == 0) {
+        xsChatData("<GREEN>Client Connected!");
+        GiveStartupItems();
+        GiveStartupBuildings();
+        startupGranted = 1;
+    }
 
-    GiveStartupItems();
-    GiveStartupBuildings();
     GiveScenarioItems();
+    if (scenarioItemsRead == 0) {
+        if (reportedMissingItems == 0) {
+            reportedMissingItems = 1;
+            xsChatData("<RED>Waiting for this scenario's Archipelago items...");
+        }
+        return;
+    }
+
     xsEnableRule("ReadAP");
     xsDisableSelf();
 }
@@ -239,6 +233,9 @@ rule ReadItems
         return;
     }
     int itemCount = xsGetFileSize() / 4; // byte to int
+    if (itemCount > 12) {   // itemArray is 12 slots; never index past it
+        itemCount = 12;
+    }
     for (i = 0; < itemCount) {
         int itemId = xsReadInt();
         if (xsArrayGetInt(itemArray, i) == -1) {
@@ -259,14 +256,20 @@ rule FreeItems
     if (opened == false) {
         return;
     }
-    for (i = 0; < 12) {
+    int freeCount = xsGetFileSize() / 4; // byte to int
+    if (freeCount > 12) {
+        freeCount = 12;
+    }
+    int freed = 0;
+    for (i = 0; < freeCount) {
         int itemId = xsReadInt();
-        if (itemId == -1) {
-            continue;
-        }
-        for (j = 0; < 12) {
-            if (xsArrayGetInt(itemArray, i) == itemId) {
-                xsArraySetInt(itemArray, i, -1);
+        if (itemId != -1) {
+            freed = 0;
+            for (j = 0; < 12) {
+                if (freed == 0 && xsArrayGetInt(itemArray, j) == itemId) {
+                    xsArraySetInt(itemArray, j, -1);
+                    freed = 1;
+                }
             }
         }
     }
