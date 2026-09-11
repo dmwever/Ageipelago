@@ -16,9 +16,6 @@ int techLive = -1;
 int techLiveCount = 0;
 float techResearchCount = 0.0;
 
-int techPending = -1;
-int techPendingCount = 0;
-
 bool techsanityReady = false;
 
 vector techAt(int i = -1) {
@@ -76,53 +73,14 @@ int lockModeFor(vector tech = cInvalidVector) {
     return (AP_TS_LOCK);
 }
 
-bool effectIsDeferred(vector tech = cInvalidVector) {
-    if (AP_TS_UNIQUES == UNIQUES_NO || AP_TS_UNIQUES == UNIQUES_EVERYWHERE) {
+bool deferEffect(vector tech = cInvalidVector) {
+    if (AP_TS_UNIQUES == UNIQUES_UNSHUFFLED || AP_TS_UNIQUES == UNIQUES_SHUFFLED_EVERYWHERE) {
         return (false);
     }
     if (structGetBool(tech, "isUnique") == false) {
         return (false);
     }
     return (civCanResearch(tech) == false);
-}
-
-void sendTechCheck(vector tech = cInvalidVector) {
-    if (techPendingCount >= TECH_CAPACITY) {
-        return;
-    }
-    int locationId = structGetInt(tech, "itemId");
-    for (k = 0; < techPendingCount) {
-        if (xsArrayGetInt(techPending, k) == locationId) {
-            return;
-        }
-    }
-    xsArraySetInt(techPending, techPendingCount, locationId);
-    techPendingCount = techPendingCount + 1;
-}
-
-int TechPendingCount() {
-    return (techPendingCount);
-}
-
-int TechPendingAt(int k = -1) {
-    if (k < 0 || k >= techPendingCount) {
-        return (-1);
-    }
-    return (xsArrayGetInt(techPending, k));
-}
-
-bool IsTechLocation(int locationId = -1) {
-    return (locationId >= TECH_ITEM_OFFSET && locationId < TECH_ITEM_OFFSET + TECH_CAPACITY);
-}
-
-void AckTechLocation(int locationId = -1) {
-    for (k = 0; < techPendingCount) {
-        if (xsArrayGetInt(techPending, k) == locationId) {
-            xsArraySetInt(techPending, k, xsArrayGetInt(techPending, techPendingCount - 1));
-            techPendingCount = techPendingCount - 1;
-            return;
-        }
-    }
 }
 
 void liveAdd(int i = -1) {
@@ -225,7 +183,7 @@ void tryApplyEffect(int i = -1) {
     if (mustResearch && structGetBool(tech, "researched") == false) {
         return;
     }
-    if (effectIsDeferred(tech)) {
+    if (deferEffect(tech)) {
         return;
     }
     enqueueEffect(i);
@@ -243,7 +201,7 @@ void revealTech(vector tech = cInvalidVector) {
     structSetBool(tech, "locked", false);
 }
 
-void clampAvailable(int i = -1) {
+void ensureLocked(int i = -1) {
     vector tech = techAt(i);
     if (structGetBool(tech, "hasItem")) {
         return;
@@ -265,9 +223,7 @@ void onTechResearched(int i = -1) {
         return;
     }
     structSetBool(tech, "researched", true);
-    if (civCanResearch(tech)) {
-        sendTechCheck(tech);
-    }
+    AP_Check_Location(structGetInt(tech, "itemId"));
     tryApplyEffect(i);
 }
 
@@ -306,6 +262,7 @@ void initTech(int i = -1) {
         return;
     }
     stripTech(tech);
+    AddLocation(structGetInt(tech, "itemId"));
     liveAdd(i);
 }
 
@@ -374,7 +331,6 @@ void InitTechsanityStructs() {
     techByItem = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-by-item");
     techQueue = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-queue");
     techLive = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-live");
-    techPending = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-pending");
 }
 
 void InitTechsanity() {
@@ -433,7 +389,7 @@ rule TechsanityUpdate
     }
 
     for (c = 0; < techLiveCount) {
-        clampAvailable(xsArrayGetInt(techLive, c));
+        ensureLocked(xsArrayGetInt(techLive, c));
     }
 
     pumpEffects();

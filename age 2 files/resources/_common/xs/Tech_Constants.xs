@@ -22,9 +22,9 @@ extern const int LOCK_EFFECTS = 1;
 
 /* Shuffle Unique Techs */
 
-extern const int UNIQUES_NO = 0;
-extern const int UNIQUES_YES = 1;
-extern const int UNIQUES_EVERYWHERE = 2;
+extern const int UNIQUES_UNSHUFFLED = 0;
+extern const int UNIQUES_SHUFFLED = 1;
+extern const int UNIQUES_SHUFFLED_EVERYWHERE = 2;
 
 /* Existing Techs */
 
