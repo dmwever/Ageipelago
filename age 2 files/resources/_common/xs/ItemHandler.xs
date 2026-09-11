@@ -66,6 +66,18 @@ void GiveStartupBuildings() {
     bool closed = xsCloseFile();
 }
 
+void GiveStartupTechs() {
+    bool opened = xsOpenFile("techs");
+    if (opened == false) {
+        return;
+    }
+    int itemCount = xsGetFileSize() / 4; // byte to int
+    for (i = 0; < itemCount) {
+        UnlockTech(xsReadInt() - TECH_ITEM_OFFSET);
+    }
+    bool closed = xsCloseFile();
+}
+
 void GiveStartupItems() {
     bool opened = xsOpenFile("startup");
     if (opened == false) {

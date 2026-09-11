@@ -443,18 +443,6 @@ void InitTechsanity() {
     xsEnableRule("TechsanityUpdate");
 }
 
-void GiveStartupTechs() {
-    bool opened = xsOpenFile("techs");
-    if (opened == false) {
-        return;
-    }
-    int itemCount = xsGetFileSize() / 4; // byte to int
-    for (i = 0; < itemCount) {
-        UnlockTech(xsReadInt() - TECH_ITEM_OFFSET);
-    }
-    bool closed = xsCloseFile();
-}
-
 rule TechsanityUpdate
     inactive
     group Techsanity
