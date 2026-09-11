@@ -2,6 +2,7 @@ include "./ProgressionItems.xs";
 include "./MercenaryItems.xs";
 include "./ResourceItems.xs";
 include "./Buildsanity.xs";
+include "./Techsanity.xs";
 
 /*        0        Victory
  *        1 -   24 Resources
@@ -41,6 +42,10 @@ void GiveItem(int itemId = -1) {
     }
     if (itemId >= AP_PROGRESSION_ITEM_MIN && itemId < AP_PROGRESSION_ITEM_MAX) {
         GiveProgressionItem(itemId);
+        return;
+    }
+    if (itemId >= AP_TECH_ITEM_OFFSET && itemId < AP_TECH_ITEM_MAX) {
+        UnlockTech(itemId - AP_TECH_ITEM_OFFSET);
         return;
     }
     if (itemId >= AP_MERC_ITEM_MIN && itemId < AP_MERC_ITEM_MAX) {
