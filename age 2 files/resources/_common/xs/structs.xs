@@ -20,7 +20,7 @@
 bool STRUCTS_INITIALIZED = false;
 
 extern int MAX_STRUCT_COUNT = 10;
-extern int MAX_STRUCT_ATTRIBUTES = 13;
+extern int MAX_STRUCT_ATTRIBUTES = 12;
 extern int MAX_INSTANCE_PER_STRUCT = 400;
 extern int STRUCT_PRINT_BUFFER_SIZE = 200;
 
