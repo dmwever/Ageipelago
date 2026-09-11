@@ -196,6 +196,7 @@ void InitAP() {
     initializeStructsScript();
     InitLocations();
     InitBuildsanity();
+    InitTechsanity();
     InitScenarioLocations();
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, 0.0);
 
@@ -224,6 +225,7 @@ rule ConnectAP
 
     GiveStartupItems();
     GiveStartupBuildings();
+    GiveStartupTechs();
     GiveScenarioItems();
     xsEnableRule("ReadAP");
     xsDisableSelf();

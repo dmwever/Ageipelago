@@ -11,6 +11,7 @@ void GiveScenarioItems() {
 
 void main() {
   SetScenarioId(204);
+  SetVanillaAge(CASTLE_AGE);
   InitAP();
 }
 

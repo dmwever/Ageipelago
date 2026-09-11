@@ -1,5 +1,12 @@
 extern const int MIN_SCENARIO_ID = 101;
 
+/* Ages */
+
+extern const int DARK_AGE = 0;
+extern const int FEUDAL_AGE = 1;
+extern const int CASTLE_AGE = 2;
+extern const int IMPERIAL_AGE = 3;
+
 /* Building Ids */
 
 // Always

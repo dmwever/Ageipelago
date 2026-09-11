@@ -11,6 +11,7 @@ void GiveScenarioItems() {
 
 void main() {
   SetScenarioId(202);
+  SetVanillaAge(FEUDAL_AGE);
   InitAP();
 }
 

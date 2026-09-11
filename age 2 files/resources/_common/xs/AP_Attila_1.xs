@@ -11,6 +11,7 @@ void GiveScenarioItems() {
 
 void main() {
   SetScenarioId(101);
+  SetVanillaAge(DARK_AGE);
   InitAP();
 }
 

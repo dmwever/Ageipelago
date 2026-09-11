@@ -1,10 +1,3 @@
-/* addTech and addShadow are declared mutable in AP_Headers.xs, so the generated
- * TechData.xs can be included here at the top and still bind to the real
- * definitions below. Do not include AP_Headers.xs here -- Buildsanity.xs
- * already does and XS has no include guards, so a second include redefines
- * every symbol in structs.xs. ItemHandler.xs must include Buildsanity.xs
- * before this file. */
-
 include "./TechData.xs";
 
 const int TECH_CAPACITY = 400;
@@ -83,6 +76,7 @@ int techPending = -1;
 int techPendingCount = 0;
 
 bool techsanityReady = false;
+int techVanillaAge = -1;
 
 void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
              int isUpgrade = 0, int isUnique = 0, int age = 0) {
@@ -129,22 +123,8 @@ void LoadShadows() {
     addShadow(1505); addShadow(1506); addShadow(1507); addShadow(1508); addShadow(1509);
 }
 
-int vanillaAgeFor(int currentScenarioId = -1) {
-    switch(currentScenarioId) {
-        case 101: { return (0); }
-        case 102: { return (2); }
-        case 103: { return (2); }
-        case 104: { return (2); }
-        case 105: { return (2); }
-        case 106: { return (3); }
-        case 201: { return (2); }
-        case 202: { return (1); }
-        case 203: { return (1); }
-        case 204: { return (2); }
-        case 205: { return (3); }
-        case 206: { return (2); }
-    }
-    return (0);
+void SetVanillaAge(int age = -1) {
+    techVanillaAge = age;
 }
 
 bool civCanResearch(int i = -1) {
@@ -409,8 +389,12 @@ void initTech(int i = -1) {
     liveAdd(i);
 }
 
-void reconstructStartingState(int currentScenarioId = -1) {
-    int vanillaAge = vanillaAgeFor(currentScenarioId);
+void reconstructStartingState() {
+    int vanillaAge = techVanillaAge;
+    if (vanillaAge < 0) {
+        xsChatData("<RED>Techsanity: this scenario never called SetVanillaAge; assuming Dark Age.");
+        vanillaAge = DARK_AGE;
+    }
     if (vanillaAge >= 1) {
         xsEffectAmount(cModifyTech, FEUDAL_AGE_TECH, cAttrSetState, STATE_DONE, 1);
     }
@@ -460,7 +444,7 @@ void InitTechsanityArrays() {
     techPending = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-pending");
 }
 
-void InitTechsanity(int currentScenarioId = -1) {
+void InitTechsanity() {
     if (AP_TS_MODE == TECHSANITY_NONE) {
         return;
     }
@@ -481,7 +465,7 @@ void InitTechsanity(int currentScenarioId = -1) {
     }
 
     hardenShadows();
-    reconstructStartingState(currentScenarioId);
+    reconstructStartingState();
 
     for (j = 0; < techCount) {
         if (xsArrayGetInt(techActive, j) == 1 && xsArrayGetInt(techGranted, j) == 0) {
