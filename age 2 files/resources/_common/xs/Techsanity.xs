@@ -303,9 +303,10 @@ rule TechsanityUpdate
 
     if (AP_TS_LOCK == LOCK_ITEMS) {
         for (i = 0; < techCount) {
-            vector tech = getTech(i);
-            if (structGetBool(tech, "isLocation") && structGetBool(tech, "researched") == false) {
-                ensureLocked(tech);
+            vector lockableTech = getTech(i);
+            if (structGetBool(lockableTech, "isLocation")
+             && structGetBool(lockableTech, "researched") == false) {
+                ensureLocked(lockableTech);
             }
         }
     }
