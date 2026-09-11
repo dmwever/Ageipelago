@@ -307,15 +307,22 @@ void initTech(int i = -1) {
     liveAdd(i);
 }
 
+void completeIfPending(int id = -1) {
+    if (xsGetTechState(id, 1) == cTechStateDone) {
+        return;
+    }
+    xsEffectAmount(cModifyTech, id, cAttrSetState, STATE_DONE, 1);
+}
+
 void reconstructStartingState(int vanillaAge = -1) {
     if (vanillaAge >= 1) {
-        xsEffectAmount(cModifyTech, FEUDAL_AGE_TECH, cAttrSetState, STATE_DONE, 1);
+        completeIfPending(FEUDAL_AGE_TECH);
     }
     if (vanillaAge >= 2) {
-        xsEffectAmount(cModifyTech, CASTLE_AGE_TECH, cAttrSetState, STATE_DONE, 1);
+        completeIfPending(CASTLE_AGE_TECH);
     }
     if (vanillaAge >= 3) {
-        xsEffectAmount(cModifyTech, IMPERIAL_AGE_TECH, cAttrSetState, STATE_DONE, 1);
+        completeIfPending(IMPERIAL_AGE_TECH);
     }
     if (AP_TS_EXISTING == EXISTING_LOCK_TECHNOLOGIES) {
         return;
@@ -326,7 +333,7 @@ void reconstructStartingState(int vanillaAge = -1) {
             bool hold = (AP_TS_EXISTING == EXISTING_ONLY_LOCK_UNITS)
                      && structGetBool(tech, "isUpgrade");
             if (hold == false) {
-                xsEffectAmount(cModifyTech, structGetInt(tech, "id"), cAttrSetState, STATE_DONE, 1);
+                completeIfPending(structGetInt(tech, "id"));
                 structSetBool(tech, "researched", true);
                 structSetBool(tech, "effectDone", true);
             }
