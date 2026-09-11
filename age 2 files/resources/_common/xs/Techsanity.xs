@@ -20,7 +20,6 @@ int techPending = -1;
 int techPendingCount = 0;
 
 bool techsanityReady = false;
-int techVanillaAge = -1;
 
 vector techAt(int i = -1) {
     return (xsArrayGetVector(techArray, i));
@@ -56,10 +55,6 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
     xsArraySetVector(techArray, techCount, tech);
     xsArraySetInt(techByItem, offset, techCount);
     techCount = techCount + 1;
-}
-
-void SetVanillaAge(int age = -1) {
-    techVanillaAge = age;
 }
 
 bool hasNoEffect(vector tech = cInvalidVector) {
@@ -312,12 +307,7 @@ void initTech(int i = -1) {
     liveAdd(i);
 }
 
-void reconstructStartingState() {
-    int vanillaAge = techVanillaAge;
-    if (vanillaAge < 0) {
-        xsChatData("<RED>Techsanity: this scenario never called SetVanillaAge; assuming Dark Age.");
-        vanillaAge = DARK_AGE;
-    }
+void reconstructStartingState(int vanillaAge = -1) {
     if (vanillaAge >= 1) {
         xsEffectAmount(cModifyTech, FEUDAL_AGE_TECH, cAttrSetState, STATE_DONE, 1);
     }
@@ -386,7 +376,7 @@ void InitTechsanity() {
     }
 
     hardenShadow();
-    reconstructStartingState();
+    SetScenarioAge();
 
     for (j = 0; < techCount) {
         vector tech = techAt(j);

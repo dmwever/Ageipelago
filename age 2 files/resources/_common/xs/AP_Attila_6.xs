@@ -9,9 +9,12 @@ void GiveScenarioItems() {
   ReadScenarioItemFile("ATT6");
 }
 
+void SetScenarioAge() {
+  reconstructStartingState(IMPERIAL_AGE);
+}
+
 void main() {
   SetScenarioId(106);
-  SetVanillaAge(IMPERIAL_AGE);
   InitAP();
 }
 
