@@ -43,16 +43,13 @@ int techEffects = -1;
 int techCivs = -1;
 int techUpgrades = -1;
 int techUniques = -1;
-int techNoEffects = -1;
 int techAges = -1;
 
-int techActive = -1;
 int techHasItem = -1;
 int techResearched = -1;
 int techEffectDone = -1;
 int techQueued = -1;
 int techLocked = -1;
-int techGranted = -1;
 
 int techByItem = -1;
 int techCount = 0;
@@ -94,12 +91,6 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
     xsArraySetInt(techUpgrades, techCount, isUpgrade);
     xsArraySetInt(techUniques, techCount, isUnique);
     xsArraySetInt(techAges, techCount, age);
-    if (effectId < 0) {
-        xsArraySetInt(techNoEffects, techCount, 1);
-    }
-    else {
-        xsArraySetInt(techNoEffects, techCount, 0);
-    }
     xsArraySetInt(techByItem, offset, techCount);
     techCount = techCount + 1;
 }
@@ -127,13 +118,17 @@ void SetVanillaAge(int age = -1) {
     techVanillaAge = age;
 }
 
+bool hasNoEffect(int i = -1) {
+    return (xsArrayGetInt(techEffects, i) < 0);
+}
+
 bool civCanResearch(int i = -1) {
     int c = xsArrayGetInt(techCivs, i);
     return (c == -1 || c == xsGetPlayerCivilization(1));
 }
 
 int lockModeFor(int i = -1) {
-    if (xsArrayGetInt(techNoEffects, i) == 1) {
+    if (hasNoEffect(i)) {
         return (LOCK_ITEMS);
     }
     return (AP_TS_LOCK);
@@ -292,13 +287,10 @@ void tryApplyEffect(int i = -1) {
     if (xsArrayGetInt(techQueued, i) == 1) {
         return;
     }
-    if (xsArrayGetInt(techGranted, i) == 1) {
-        return;
-    }
     if (xsArrayGetInt(techHasItem, i) == 0) {
         return;
     }
-    if (xsArrayGetInt(techNoEffects, i) == 1) {
+    if (hasNoEffect(i)) {
         return;
     }
     bool mustResearch = (AP_TS_BEHAVIOR == BEHAVIOR_MUST_RESEARCH)
@@ -331,9 +323,6 @@ void clampAvailable(int i = -1) {
     if (xsArrayGetInt(techLocked, i) == 1) {
         return;
     }
-    if (xsArrayGetInt(techGranted, i) == 1) {
-        return;
-    }
     if (xsGetTechState(xsArrayGetInt(techIds, i), 1) != cTechStateReady) {
         return;
     }
@@ -346,7 +335,7 @@ void onTechResearched(int i = -1) {
         return;
     }
     xsArraySetInt(techResearched, i, 1);
-    if (xsArrayGetInt(techActive, i) == 1 && xsArrayGetInt(techGranted, i) == 0) {
+    if (civCanResearch(i)) {
         sendTechCheck(i);
     }
     tryApplyEffect(i);
@@ -364,7 +353,7 @@ void UnlockTech(int itemOffset = -1) {
         return;
     }
     xsArraySetInt(techHasItem, i, 1);
-    if (lockModeFor(i) == LOCK_ITEMS && xsArrayGetInt(techActive, i) == 1) {
+    if (lockModeFor(i) == LOCK_ITEMS && civCanResearch(i)) {
         revealTech(i);
     }
     tryApplyEffect(i);
@@ -408,12 +397,13 @@ void reconstructStartingState() {
         return;
     }
     for (i = 0; < techCount) {
-        if (xsArrayGetInt(techActive, i) == 1 && xsArrayGetInt(techAges, i) < vanillaAge) {
+        if (civCanResearch(i) && xsArrayGetInt(techAges, i) < vanillaAge) {
             bool hold = (AP_TS_EXISTING == EXISTING_ONLY_LOCK_UNITS)
                      && (xsArrayGetInt(techUpgrades, i) == 1);
             if (hold == false) {
                 xsEffectAmount(cModifyTech, xsArrayGetInt(techIds, i), cAttrSetState, STATE_DONE, 1);
-                xsArraySetInt(techGranted, i, 1);
+                xsArraySetInt(techResearched, i, 1);
+                xsArraySetInt(techEffectDone, i, 1);
             }
         }
     }
@@ -426,16 +416,13 @@ void InitTechsanityArrays() {
     techCivs = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-civs");
     techUpgrades = xsArrayCreateInt(TECH_CAPACITY, 0, "ts-upgrades");
     techUniques = xsArrayCreateInt(TECH_CAPACITY, 0, "ts-uniques");
-    techNoEffects = xsArrayCreateInt(TECH_CAPACITY, 0, "ts-no-effects");
     techAges = xsArrayCreateInt(TECH_CAPACITY, 0, "ts-ages");
 
-    techActive = xsArrayCreateInt(TECH_CAPACITY, 0, "ts-active");
     techHasItem = xsArrayCreateInt(TECH_CAPACITY, 0, "ts-has-item");
     techResearched = xsArrayCreateInt(TECH_CAPACITY, 0, "ts-researched");
     techEffectDone = xsArrayCreateInt(TECH_CAPACITY, 0, "ts-effect-done");
     techQueued = xsArrayCreateInt(TECH_CAPACITY, 0, "ts-queued");
     techLocked = xsArrayCreateInt(TECH_CAPACITY, 0, "ts-locked");
-    techGranted = xsArrayCreateInt(TECH_CAPACITY, 0, "ts-granted");
 
     techByItem = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-by-item");
     techShadowIds = xsArrayCreateInt(SHADOW_CAPACITY, -1, "ts-shadow-ids");
@@ -458,17 +445,11 @@ void InitTechsanity() {
         return;
     }
 
-    for (i = 0; < techCount) {
-        if (civCanResearch(i)) {
-            xsArraySetInt(techActive, i, 1);
-        }
-    }
-
     hardenShadows();
     reconstructStartingState();
 
     for (j = 0; < techCount) {
-        if (xsArrayGetInt(techActive, j) == 1 && xsArrayGetInt(techGranted, j) == 0) {
+        if (civCanResearch(j) && xsArrayGetInt(techResearched, j) == 0) {
             initTech(j);
         }
     }
