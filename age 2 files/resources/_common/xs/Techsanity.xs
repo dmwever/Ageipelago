@@ -77,7 +77,7 @@ int lockModeFor(vector tech = cInvalidVector) {
 }
 
 bool effectIsDeferred(vector tech = cInvalidVector) {
-    if (AP_TS_UNIQUES != UNIQUES_YES) {
+    if (AP_TS_UNIQUES == UNIQUES_NO || AP_TS_UNIQUES == UNIQUES_EVERYWHERE) {
         return (false);
     }
     if (structGetBool(tech, "isUnique") == false) {
@@ -302,8 +302,7 @@ void initTech(int i = -1) {
     }
     if (state == cTechStateDone) {
         structSetBool(tech, "researched", true);
-        sendTechCheck(tech);
-        tryApplyEffect(i);
+        structSetBool(tech, "effectDone", true);
         return;
     }
     stripTech(tech);
