@@ -18,7 +18,7 @@ mutable void SetScenarioAge() {
 }
 
 mutable void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
-                     int isUpgrade = 0, int isUnique = 0, int age = 0) {
+                     int isUpgrade = 0, int isUnique = 0, int age = 0, int isLocation = 1) {
     return;
 }
 

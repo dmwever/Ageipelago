@@ -26,12 +26,12 @@ vector techAt(int i = -1) {
 }
 
 void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
-             int isUpgrade = 0, int isUnique = 0, int age = 0) {
+             int isUpgrade = 0, int isUnique = 0, int age = 0, int isLocation = 1) {
     if (techCount >= TECH_CAPACITY || id < 1) {
         return;
     }
     int offset = itemId - TECH_ITEM_OFFSET;
-    if (offset < 0 || offset >= TECH_CAPACITY) {
+    if (isLocation == 1 && (offset < 0 || offset >= TECH_CAPACITY)) {
         return;
     }
     vector tech = new("Tech");
@@ -46,6 +46,7 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
     structSetInt(tech, "age", age);
     structSetBool(tech, "isUpgrade", isUpgrade == 1);
     structSetBool(tech, "isUnique", isUnique == 1);
+    structSetBool(tech, "isLocation", isLocation == 1);
     structSetBool(tech, "hasItem", false);
     structSetBool(tech, "researched", false);
     structSetBool(tech, "effectDone", false);
@@ -53,7 +54,9 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
     structSetBool(tech, "locked", false);
 
     xsArraySetVector(techArray, techCount, tech);
-    xsArraySetInt(techByItem, offset, techCount);
+    if (isLocation == 1) {
+        xsArraySetInt(techByItem, offset, techCount);
+    }
     techCount = techCount + 1;
 }
 
@@ -324,15 +327,20 @@ void reconstructStartingState(int vanillaAge = -1) {
     if (vanillaAge >= 3) {
         completeIfPending(IMPERIAL_AGE_TECH);
     }
-    if (AP_TS_EXISTING == EXISTING_LOCK_TECHNOLOGIES) {
-        return;
-    }
     for (i = 0; < techCount) {
         vector tech = techAt(i);
         if (civCanResearch(tech) && structGetInt(tech, "age") < vanillaAge) {
-            bool hold = (AP_TS_EXISTING == EXISTING_ONLY_LOCK_UNITS)
-                     && structGetBool(tech, "isUpgrade");
-            if (hold == false) {
+            bool grant = true;
+            if (structGetBool(tech, "isLocation")) {
+                if (AP_TS_EXISTING == EXISTING_LOCK_TECHNOLOGIES) {
+                    grant = false;
+                }
+                if (AP_TS_EXISTING == EXISTING_ONLY_LOCK_UNITS
+                 && structGetBool(tech, "isUpgrade")) {
+                    grant = false;
+                }
+            }
+            if (grant) {
                 completeIfPending(structGetInt(tech, "id"));
                 structSetBool(tech, "researched", true);
                 structSetBool(tech, "effectDone", true);
@@ -350,6 +358,7 @@ void InitTechsanityStructs() {
     defineStructAttribute("Tech", "age", TYPE_INT);
     defineStructAttribute("Tech", "isUpgrade", TYPE_BOOL);
     defineStructAttribute("Tech", "isUnique", TYPE_BOOL);
+    defineStructAttribute("Tech", "isLocation", TYPE_BOOL);
     defineStructAttribute("Tech", "hasItem", TYPE_BOOL);
     defineStructAttribute("Tech", "researched", TYPE_BOOL);
     defineStructAttribute("Tech", "effectDone", TYPE_BOOL);
@@ -387,7 +396,8 @@ void InitTechsanity() {
 
     for (j = 0; < techCount) {
         vector tech = techAt(j);
-        if (civCanResearch(tech) && structGetBool(tech, "researched") == false) {
+        if (structGetBool(tech, "isLocation") && civCanResearch(tech)
+         && structGetBool(tech, "researched") == false) {
             initTech(j);
         }
     }
