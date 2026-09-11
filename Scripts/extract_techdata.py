@@ -1,25 +1,5 @@
 """Generate TechData.xs (and an optional JSON mirror) from the AoE2:DE game files.
-
-Two sources, each used for what it is authoritative about:
-
-  CivTechTrees/*.json  -- which techs exist as researchable nodes, their age,
-                          their display name, and which civs can research them.
-                          The engine gates availability on the tech tree, so this
-                          decides whether a tech is reachable at all. The .dat
-                          still contains legacy records (494 "Pavise", 490
-                          "Saracens UT", 9 "Saracen Zealotry", 512 "Slavs UT",
-                          572 "Portuguese UT") that carry a research location but
-                          which no civ tree exposes -- Italians research Silk Road
-                          and Pirotechnia, not Pavise.
-
-  empires2_x2_p1.dat   -- effect_id, the numeric civ column, required techs, and
-                          the Blank Technology slots used as effect shadows.
-                          effect_id lives only here, and it is usually NOT the
-                          tech id (Fletching 199 -> effect 192).
-
-Neither path is hardcoded: pass --dat, or set AOE2_DAT.
 """
-
 import argparse
 import glob
 import io
@@ -111,9 +91,6 @@ def parse_techs(data, start, count):
 
 
 def find_tech_section(data):
-    """The tech section is a uint16 count followed by that many records. Locate it
-    by trying candidate counts near the tail and keeping the first where every
-    record name marker lands exactly where the layout predicts."""
     limit = max(0, len(data) - TECH_SECTION_SEARCH_TAIL)
     for off in range(len(data) - 4, limit, -1):
         count = struct.unpack_from("<H", data, off)[0]
@@ -128,8 +105,7 @@ def find_tech_section(data):
 
 
 def read_civ_trees(directory):
-    """-> (tech_id -> {name, age, upgrade}), (tech_id -> set of civ names), civs"""
-    info, have, civs = {}, defaultdict(set), []
+    research, upgrade, have, civs = {}, {}, defaultdict(set), []
     files = sorted(glob.glob(os.path.join(directory, "*.json")))
     if not files:
         raise SystemExit("no CivTechTrees JSON found in %s" % directory)
@@ -138,24 +114,22 @@ def read_civ_trees(directory):
         civs.append(civ)
         tree = json.load(io.open(path, encoding="utf-8-sig"))
         for node in tree["civ_techs_buildings"] + tree["civ_techs_units"]:
-            # Node ID is a tech id only on Research nodes. Elsewhere it is a unit
-            # or building id, and those id spaces collide (Villager 83 vs Bearded
-            # Axe 83). Unit upgrades carry Trigger Tech ID instead, on several
-            # node types including nodes carrying no Node Type at all.
             pairs = []
             if node.get("Node Type") == "Research":
-                pairs.append((node["Node ID"], False))
+                pairs.append((node["Node ID"], research))
             if "Trigger Tech ID" in node:
-                pairs.append((node["Trigger Tech ID"], True))
-            for tech_id, is_upgrade in pairs:
+                pairs.append((node["Trigger Tech ID"], upgrade))
+            for tech_id, table in pairs:
                 if tech_id is None or tech_id < 0:
                     continue
-                if tech_id not in info:
-                    info[tech_id] = dict(name=node["Name"],
-                                         age=node["Age ID"] - 1,
-                                         upgrade=is_upgrade)
+                table.setdefault(tech_id, (node["Name"], node["Age ID"] - 1))
                 if node["Node Status"] != "NotAvailable":
                     have[tech_id].add(civ)
+
+    info = {}
+    for tech_id in set(research) | set(upgrade):
+        name, age = research.get(tech_id) or upgrade[tech_id]
+        info[tech_id] = dict(name=name, age=age, upgrade=tech_id in upgrade)
     return info, have, civs
 
 
@@ -174,17 +148,15 @@ def build_table(techs, info, have):
             skipped.append((tech_id, name, "tech id beyond the .dat"))
             continue
         rec = techs[tech_id]
+        if not any(l[0] > 0 for l in rec["locs"]):
+            skipped.append((tech_id, name, "no research location"))
+            continue
         flags = TECH_NONE
         if info[tech_id]["upgrade"]:
             flags |= TECH_UPGRADE
         if rec["civ"] >= 0:
             flags |= TECH_UNIQUE
         if rec["effect"] < 0:
-            # No genie effect to rebind, so this tech can be neither stripped nor
-            # shadowed. Both cases (35 Galleon, 1156 Jian Swordsman) are unit
-            # upgrades whose upgrade the engine drives directly; the effect the
-            # player sees is not reachable through cAttrSetEffect at all. XS must
-            # fall back to items-locking for these regardless of Lock Techs.
             flags |= TECH_NO_EFFECT
         rows.append(dict(tech_id=tech_id,
                          effect_id=rec["effect"],
@@ -200,11 +172,6 @@ def build_table(techs, info, have):
 
 
 def find_shadows(techs):
-    """The spare techs used to fire rebound effects. They are named "Blank
-    Technology 0".."Blank Technology 39" -- numbered, so match on the prefix --
-    and each has effect -1 and no research location, which is exactly what makes
-    them safe to repurpose: nothing references them and no player can research
-    one."""
     out = []
     for t in techs:
         if not t["name"].strip().lower().startswith("blank technology"):
