@@ -19,6 +19,8 @@ int startupGranted = 0;
 int scenarioItemsRead = 0;
 int reportedMissingItems = 0;
 
+bool AP_INITIALIZED = false;
+
 bool CheckScenario() {
     bool opened = xsOpenFile("AP");
     if (opened == false) {
@@ -194,6 +196,13 @@ rule ReadAP
 }
 
 void InitAP() {
+    if (AP_INITIALIZED == true) {
+        if (xsArrayGetSize(itemArray) == 12) {
+            return;
+        }
+        xsChatData("<RED>AP session state was lost. Reinitializing.");
+    }
+
     itemArray = xsArrayCreateInt(12, -1, "Item Array");
 
     initializeStructsScript();
@@ -203,6 +212,7 @@ void InitAP() {
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, cAttributeDisable);
 
     xsEnableRule("ConnectAP");
+    AP_INITIALIZED = true;
 }
 
 rule ConnectAP
