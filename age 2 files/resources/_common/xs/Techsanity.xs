@@ -75,10 +75,6 @@ bool deferEffect(vector tech = cInvalidVector) {
     return (civCanResearch(tech) == false);
 }
 
-
-
-
-
 void hardenShadow() {
     if (xsGetTechState(TECH_SHADOW, 1) == cTechStateInvalid) {
         xsChatData("<RED>Techsanity: shadow tech " + TECH_SHADOW + " is unavailable, effects cannot be applied.");
@@ -101,7 +97,6 @@ void applyViaShadow(vector tech = cInvalidVector) {
     xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetEffect, effect, 1);
     xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetState, STATE_DONE, 1);
 }
-
 
 void tryApplyEffect(vector tech = cInvalidVector) {
     if (structGetBool(tech, "effectDone")) {
@@ -300,20 +295,23 @@ rule TechsanityUpdate
         return;
     }
 
-    bool detect = false;
     float researched = xsPlayerAttribute(1, cAttributeResearchCount);
     if (researched > techResearchCount) {
         techResearchCount = researched;
-        detect = true;
+        for (i = 0; < techCount) {
+            vector tech = getTech(i);
+            if (structGetBool(tech, "isLocation") &&
+                structGetBool(tech, "researched") == false &&
+                xsGetTechState(structGetInt(tech, "id"), 1) == cTechStateDone) {
+                    onTechResearched(tech);
+            }
+        }
     }
 
-    for (i = 0; < techCount) {
-        vector tech = getTech(i);
-        if (structGetBool(tech, "isLocation") && structGetBool(tech, "researched") == false) {
-            if (detect && xsGetTechState(structGetInt(tech, "id"), 1) == cTechStateDone) {
-                onTechResearched(tech);
-            }
-            else {
+    if (AP_TS_LOCK == LOCK_ITEMS) {
+        for (i = 0; < techCount) {
+            vector tech = getTech(i);
+            if (structGetBool(tech, "isLocation") && structGetBool(tech, "researched") == false) {
                 ensureLocked(tech);
             }
         }
