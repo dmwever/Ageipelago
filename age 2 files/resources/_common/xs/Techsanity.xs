@@ -18,7 +18,7 @@ float techResearchCount = 0.0;
 
 bool techsanityReady = false;
 
-vector techAt(int i = -1) {
+vector getTech(int i = -1) {
     return (xsArrayGetVector(techArray, i));
 }
 
@@ -52,7 +52,7 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
 
     xsArraySetVector(techArray, techCount, tech);
     if (isLocation == 1) {
-        xsArraySetInt(techByItem, offset, techCount);
+        xsArraySetVector(techByItem, offset, tech);
     }
     techCount = techCount + 1;
 }
@@ -83,11 +83,11 @@ bool deferEffect(vector tech = cInvalidVector) {
     return (civCanResearch(tech) == false);
 }
 
-void liveAdd(int i = -1) {
+void liveAdd(vector tech = cInvalidVector) {
     if (techLiveCount >= TECH_CAPACITY) {
         return;
     }
-    xsArraySetInt(techLive, techLiveCount, i);
+    xsArraySetVector(techLive, techLiveCount, tech);
     techLiveCount = techLiveCount + 1;
 }
 
@@ -95,19 +95,18 @@ void liveRemoveAt(int k = -1) {
     if (k < 0 || k >= techLiveCount) {
         return;
     }
-    xsArraySetInt(techLive, k, xsArrayGetInt(techLive, techLiveCount - 1));
+    xsArraySetVector(techLive, k, xsArrayGetVector(techLive, techLiveCount - 1));
     techLiveCount = techLiveCount - 1;
 }
 
-void enqueueEffect(int i = -1) {
-    vector tech = techAt(i);
+void enqueueEffect(vector tech = cInvalidVector) {
     if (structGetBool(tech, "queued")) {
         return;
     }
     if (techQueueCount >= TECH_CAPACITY) {
         return;
     }
-    xsArraySetInt(techQueue, techQueueTail, i);
+    xsArraySetVector(techQueue, techQueueTail, tech);
     techQueueTail = techQueueTail + 1;
     if (techQueueTail >= TECH_CAPACITY) {
         techQueueTail = 0;
@@ -116,18 +115,18 @@ void enqueueEffect(int i = -1) {
     structSetBool(tech, "queued", true);
 }
 
-int dequeueEffect() {
+vector dequeueEffect() {
     if (techQueueCount == 0) {
-        return (-1);
+        return (cInvalidVector);
     }
-    int i = xsArrayGetInt(techQueue, techQueueHead);
+    vector tech = xsArrayGetVector(techQueue, techQueueHead);
     techQueueHead = techQueueHead + 1;
     if (techQueueHead >= TECH_CAPACITY) {
         techQueueHead = 0;
     }
     techQueueCount = techQueueCount - 1;
-    structSetBool(techAt(i), "queued", false);
-    return (i);
+    structSetBool(tech, "queued", false);
+    return (tech);
 }
 
 void hardenShadow() {
@@ -155,17 +154,15 @@ void applyViaShadow(vector tech = cInvalidVector) {
 
 void pumpEffects() {
     while (techQueueCount > 0) {
-        int i = dequeueEffect();
-        if (i >= 0) {
-            vector tech = techAt(i);
+        vector tech = dequeueEffect();
+        if (tech != cInvalidVector) {
             applyViaShadow(tech);
             structSetBool(tech, "effectDone", true);
         }
     }
 }
 
-void tryApplyEffect(int i = -1) {
-    vector tech = techAt(i);
+void tryApplyEffect(vector tech = cInvalidVector) {
     if (structGetBool(tech, "effectDone")) {
         return;
     }
@@ -186,7 +183,7 @@ void tryApplyEffect(int i = -1) {
     if (deferEffect(tech)) {
         return;
     }
-    enqueueEffect(i);
+    enqueueEffect(tech);
 }
 
 void stripTech(vector tech = cInvalidVector) {
@@ -201,8 +198,7 @@ void revealTech(vector tech = cInvalidVector) {
     structSetBool(tech, "locked", false);
 }
 
-void ensureLocked(int i = -1) {
-    vector tech = techAt(i);
+void ensureLocked(vector tech = cInvalidVector) {
     if (structGetBool(tech, "hasItem")) {
         return;
     }
@@ -217,25 +213,23 @@ void ensureLocked(int i = -1) {
     structSetBool(tech, "locked", true);
 }
 
-void onTechResearched(int i = -1) {
-    vector tech = techAt(i);
+void onTechResearched(vector tech = cInvalidVector) {
     if (structGetBool(tech, "researched")) {
         return;
     }
     structSetBool(tech, "researched", true);
     AP_Check_Location(structGetInt(tech, "itemId"));
-    tryApplyEffect(i);
+    tryApplyEffect(tech);
 }
 
 void UnlockTech(int itemOffset = -1) {
     if (itemOffset < 0 || itemOffset >= TECH_CAPACITY) {
         return;
     }
-    int i = xsArrayGetInt(techByItem, itemOffset);
-    if (i < 0 || i >= techCount) {
+    vector tech = xsArrayGetVector(techByItem, itemOffset);
+    if (tech == cInvalidVector) {
         return;
     }
-    vector tech = techAt(i);
     if (structGetBool(tech, "hasItem")) {
         return;
     }
@@ -243,11 +237,10 @@ void UnlockTech(int itemOffset = -1) {
     if (lockModeFor(tech) == LOCK_ITEMS && civCanResearch(tech)) {
         revealTech(tech);
     }
-    tryApplyEffect(i);
+    tryApplyEffect(tech);
 }
 
-void initTech(int i = -1) {
-    vector tech = techAt(i);
+void initTech(vector tech = cInvalidVector) {
     int id = structGetInt(tech, "id");
     if (id < 1) {
         return;
@@ -263,7 +256,7 @@ void initTech(int i = -1) {
     }
     stripTech(tech);
     AddLocation(structGetInt(tech, "itemId"));
-    liveAdd(i);
+    liveAdd(tech);
 }
 
 void completeIfPending(int id = -1) {
@@ -284,7 +277,7 @@ void reconstructStartingState(int vanillaAge = -1) {
         completeIfPending(IMPERIAL_AGE_TECH);
     }
     for (i = 0; < techCount) {
-        vector tech = techAt(i);
+        vector tech = getTech(i);
         if (civCanResearch(tech) && structGetInt(tech, "age") < vanillaAge) {
             bool grant = true;
             if (structGetBool(tech, "isLocation")) {
@@ -328,9 +321,9 @@ void InitTechsanityStructs() {
     techArray = xsArrayCreateVector(TECH_CAPACITY, cInvalidVector, "ts-techs");
     structSetInt(techsanity, "techs", techArray);
 
-    techByItem = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-by-item");
-    techQueue = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-queue");
-    techLive = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-live");
+    techByItem = xsArrayCreateVector(TECH_CAPACITY, cInvalidVector, "ts-by-item");
+    techQueue = xsArrayCreateVector(TECH_CAPACITY, cInvalidVector, "ts-queue");
+    techLive = xsArrayCreateVector(TECH_CAPACITY, cInvalidVector, "ts-live");
 }
 
 void InitTechsanity() {
@@ -350,10 +343,10 @@ void InitTechsanity() {
     SetScenarioAge();
 
     for (j = 0; < techCount) {
-        vector tech = techAt(j);
+        vector tech = getTech(j);
         if (structGetBool(tech, "isLocation") && civCanResearch(tech)
          && structGetBool(tech, "researched") == false) {
-            initTech(j);
+            initTech(tech);
         }
     }
 
@@ -377,9 +370,9 @@ rule TechsanityUpdate
         techResearchCount = researched;
         int k = 0;
         while (k < techLiveCount) {
-            int i = xsArrayGetInt(techLive, k);
-            if (xsGetTechState(structGetInt(techAt(i), "id"), 1) == cTechStateDone) {
-                onTechResearched(i);
+            vector tech = xsArrayGetVector(techLive, k);
+            if (xsGetTechState(structGetInt(tech, "id"), 1) == cTechStateDone) {
+                onTechResearched(tech);
                 liveRemoveAt(k);
             }
             else {
@@ -389,7 +382,7 @@ rule TechsanityUpdate
     }
 
     for (c = 0; < techLiveCount) {
-        ensureLocked(xsArrayGetInt(techLive, c));
+        ensureLocked(xsArrayGetVector(techLive, c));
     }
 
     pumpEffects();
