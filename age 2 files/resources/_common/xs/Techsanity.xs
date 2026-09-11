@@ -58,13 +58,6 @@ bool civCanResearch(vector tech = cInvalidVector) {
     return (c == -1 || c == xsGetPlayerCivilization(1));
 }
 
-int lockModeFor(vector tech = cInvalidVector) {
-    if (hasNoEffect(tech)) {
-        return (LOCK_ITEMS);
-    }
-    return (AP_TS_LOCK);
-}
-
 bool deferEffect(vector tech = cInvalidVector) {
     if (AP_TS_UNIQUES == UNIQUES_UNSHUFFLED || AP_TS_UNIQUES == UNIQUES_SHUFFLED_EVERYWHERE) {
         return (false);
@@ -168,7 +161,7 @@ void UnlockTech(int itemOffset = -1) {
         return;
     }
     structSetBool(tech, "hasItem", true);
-    if (lockModeFor(tech) == LOCK_ITEMS && civCanResearch(tech)) {
+    if (AP_TS_LOCK == LOCK_ITEMS && civCanResearch(tech)) {
         revealTech(tech);
     }
     tryApplyEffect(tech);
