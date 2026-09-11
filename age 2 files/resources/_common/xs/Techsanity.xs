@@ -453,8 +453,7 @@ void InitTechsanity() {
 
     techsanityReady = true;
     techResearchCount = xsPlayerAttribute(1, cAttributeResearchCount);
-    xsEnableRule("TechsanityChecks");
-    xsEnableRule("TechsanityWatchdog");
+    xsEnableRule("TechsanityUpdate");
 }
 
 void GiveStartupTechs() {
@@ -469,42 +468,35 @@ void GiveStartupTechs() {
     bool closed = xsCloseFile();
 }
 
-rule TechsanityChecks
+rule TechsanityUpdate
     inactive
+    group Techsanity
     minInterval 1
     maxInterval 1
 {
     if (techsanityReady == false) {
         return;
     }
-    float researched = xsPlayerAttribute(1, cAttributeResearchCount);
-    if (researched <= techResearchCount) {
-        return;
-    }
-    techResearchCount = researched;
-    int k = 0;
-    while (k < techLiveCount) {
-        int i = xsArrayGetInt(techLive, k);
-        if (xsGetTechState(xsArrayGetInt(techIds, i), 1) == cTechStateDone) {
-            onTechResearched(i);
-            liveRemoveAt(k);
-        }
-        else {
-            k = k + 1;
-        }
-    }
-}
 
-rule TechsanityWatchdog
-    inactive
-    minInterval 2
-    maxInterval 3
-{
-    if (techsanityReady == false) {
-        return;
+    float researched = xsPlayerAttribute(1, cAttributeResearchCount);
+    if (researched > techResearchCount) {
+        techResearchCount = researched;
+        int k = 0;
+        while (k < techLiveCount) {
+            int i = xsArrayGetInt(techLive, k);
+            if (xsGetTechState(xsArrayGetInt(techIds, i), 1) == cTechStateDone) {
+                onTechResearched(i);
+                liveRemoveAt(k);
+            }
+            else {
+                k = k + 1;
+            }
+        }
     }
-    for (k = 0; < techLiveCount) {
-        clampAvailable(xsArrayGetInt(techLive, k));
+
+    for (c = 0; < techLiveCount) {
+        clampAvailable(xsArrayGetInt(techLive, c));
     }
+
     pumpEffects();
 }
