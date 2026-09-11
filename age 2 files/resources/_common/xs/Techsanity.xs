@@ -7,14 +7,10 @@ int techCount = 0;
 
 int techByItem = -1;
 
-int techShadowIds = -1;
-int techShadowCount = 0;
-
 int techQueue = -1;
 int techQueueHead = 0;
 int techQueueTail = 0;
 int techQueueCount = 0;
-int techQueueStalled = 0;
 
 int techLive = -1;
 int techLiveCount = 0;
@@ -62,27 +58,8 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
     techCount = techCount + 1;
 }
 
-void addShadow(int id = -1) {
-    if (techShadowCount >= SHADOW_CAPACITY || id < 1) {
-        return;
-    }
-    xsArraySetInt(techShadowIds, techShadowCount, id);
-    techShadowCount = techShadowCount + 1;
-}
-
 void SetVanillaAge(int age = -1) {
     techVanillaAge = age;
-}
-
-void LoadShadows() {
-    addShadow(1181); addShadow(1182); addShadow(1183); addShadow(1184); addShadow(1185);
-    addShadow(1186); addShadow(1187); addShadow(1188); addShadow(1189);
-    addShadow(1240); addShadow(1241); addShadow(1242); addShadow(1243); addShadow(1244);
-    addShadow(1245); addShadow(1246); addShadow(1247); addShadow(1248); addShadow(1249);
-    addShadow(1340); addShadow(1341); addShadow(1342); addShadow(1343); addShadow(1344);
-    addShadow(1345); addShadow(1346); addShadow(1347); addShadow(1348); addShadow(1349);
-    addShadow(1500); addShadow(1501); addShadow(1502); addShadow(1503); addShadow(1504);
-    addShadow(1505); addShadow(1506); addShadow(1507); addShadow(1508); addShadow(1509);
 }
 
 bool hasNoEffect(vector tech = cInvalidVector) {
@@ -197,55 +174,37 @@ int dequeueEffect() {
     return (i);
 }
 
-void hardenShadows() {
-    for (k = 0; < techShadowCount) {
-        int sid = xsArrayGetInt(techShadowIds, k);
-        xsEffectAmount(cModifyTech, sid, cAttrSetTime, 0.0, 1);
-        for (c = TECH_ATTR_COST_FIRST; <= TECH_ATTR_COST_LAST) {
-            xsEffectAmount(cModifyTech, sid, c, 0.0, 1);
-        }
-        xsEffectAmount(cModifyTech, sid, cAttrSetLocation, 0.0 - 1.0, 1);
-        xsEffectAmount(cModifyTech, sid, cAttrSetButton, 0.0, 1);
-        xsEffectAmount(cModifyTech, sid, cAttrSetStacking, 1.0, 1);
-        xsEffectAmount(cModifyTech, sid, cAttrSetStackingResearchCap, 1.0 * TECH_CAPACITY, 1);
-        xsEffectAmount(cModifyTech, sid, cAttrSetState, STATE_ENABLE, 1);
+void hardenShadow() {
+    if (xsGetTechState(TECH_SHADOW, 1) == cTechStateInvalid) {
+        xsChatData("<RED>Techsanity: shadow tech " + TECH_SHADOW + " is unavailable, effects cannot be applied.");
+        return;
     }
+    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetTime, 0.0, 1);
+    for (c = TECH_ATTR_COST_FIRST; <= TECH_ATTR_COST_LAST) {
+        xsEffectAmount(cModifyTech, TECH_SHADOW, c, 0.0, 1);
+    }
+    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetLocation, 0.0 - 1.0, 1);
+    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetButton, 0.0, 1);
+    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetStacking, 1.0, 1);
+    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetStackingResearchCap, 1.0 * TECH_CAPACITY, 1);
+    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetState, STATE_ENABLE, 1);
 }
 
-void applyViaShadow(vector tech = cInvalidVector, int shadowId = -1) {
+void applyViaShadow(vector tech = cInvalidVector) {
     float effect = 1.0 * structGetInt(tech, "effectId");
-    xsEffectAmount(cModifyTech, shadowId, cAttrSetState, STATE_ENABLE, 1);
-    xsEffectAmount(cModifyTech, shadowId, cAttrSetEffect, effect, 1);
-    xsEffectAmount(cModifyTech, shadowId, cAttrSetState, STATE_DONE, 1);
+    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetState, STATE_ENABLE, 1);
+    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetEffect, effect, 1);
+    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetState, STATE_DONE, 1);
 }
 
 void pumpEffects() {
-    if (techQueueCount == 0) {
-        techQueueStalled = 0;
-        return;
-    }
-    if (techShadowCount == 0) {
-        return;
-    }
-    int before = techQueueCount;
-    for (k = 0; < techShadowCount) {
-        if (techQueueCount > 0) {
-            int i = dequeueEffect();
-            if (i >= 0) {
-                vector tech = techAt(i);
-                applyViaShadow(tech, xsArrayGetInt(techShadowIds, k));
-                structSetBool(tech, "effectDone", true);
-            }
+    while (techQueueCount > 0) {
+        int i = dequeueEffect();
+        if (i >= 0) {
+            vector tech = techAt(i);
+            applyViaShadow(tech);
+            structSetBool(tech, "effectDone", true);
         }
-    }
-    if (techQueueCount >= before) {
-        techQueueStalled = techQueueStalled + 1;
-        if (techQueueStalled == STALL_TICKS) {
-            xsChatData("<RED>Techsanity: effect queue is not draining.");
-        }
-    }
-    else {
-        techQueueStalled = 0;
     }
 }
 
@@ -408,7 +367,6 @@ void InitTechsanityStructs() {
     structSetInt(techsanity, "techs", techArray);
 
     techByItem = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-by-item");
-    techShadowIds = xsArrayCreateInt(SHADOW_CAPACITY, -1, "ts-shadow-ids");
     techQueue = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-queue");
     techLive = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-live");
     techPending = xsArrayCreateInt(TECH_CAPACITY, -1, "ts-pending");
@@ -421,14 +379,13 @@ void InitTechsanity() {
 
     InitTechsanityStructs();
     LoadTechTable();
-    LoadShadows();
 
     if (techCount == 0) {
         xsChatData("<RED>Techsanity is enabled but no techs are installed. Run /install for this seed.");
         return;
     }
 
-    hardenShadows();
+    hardenShadow();
     reconstructStartingState();
 
     for (j = 0; < techCount) {

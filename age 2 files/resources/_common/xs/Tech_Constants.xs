@@ -1,8 +1,7 @@
 extern const int TECH_CAPACITY = 400;
 extern const int TECH_ITEM_OFFSET = 3600;
-extern const int SHADOW_CAPACITY = 40;
+extern const int TECH_SHADOW = 1181;
 extern const int NOOP_EFFECT = 0;
-extern const int STALL_TICKS = 12;
 
 /* Techsanity */
 

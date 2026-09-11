@@ -18,6 +18,3 @@ mutable void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = 
     return;
 }
 
-mutable void addShadow(int id = -1) {
-    return;
-}
