@@ -3,7 +3,6 @@ include "./TechData.xs";
 const int TECH_CAPACITY = 400;
 const int TECH_ITEM_OFFSET = 3600;
 const int SHADOW_CAPACITY = 40;
-const int SCAN_CHUNK = 64;
 const int NOOP_EFFECT = 0;
 const int STALL_TICKS = 12;
 
@@ -65,8 +64,6 @@ int techQueueStalled = 0;
 
 int techLive = -1;
 int techLiveCount = 0;
-int techScanCursor = 0;
-bool techScanPending = false;
 float techResearchCount = 0.0;
 
 int techPending = -1;
@@ -474,36 +471,27 @@ void GiveStartupTechs() {
 
 rule TechsanityChecks
     inactive
-    group Techsanity
-    highFrequency
+    minInterval 1
+    maxInterval 1
 {
     if (techsanityReady == false) {
         return;
     }
     float researched = xsPlayerAttribute(1, cAttributeResearchCount);
-    if (researched > techResearchCount) {
-        techResearchCount = researched;
-        techScanPending = true;
-        techScanCursor = 0;
-    }
-    if (techScanPending == false) {
+    if (researched <= techResearchCount) {
         return;
     }
-    int budget = SCAN_CHUNK;
-    while (budget > 0 && techScanCursor < techLiveCount) {
-        int i = xsArrayGetInt(techLive, techScanCursor);
+    techResearchCount = researched;
+    int k = 0;
+    while (k < techLiveCount) {
+        int i = xsArrayGetInt(techLive, k);
         if (xsGetTechState(xsArrayGetInt(techIds, i), 1) == cTechStateDone) {
             onTechResearched(i);
-            liveRemoveAt(techScanCursor);
+            liveRemoveAt(k);
         }
         else {
-            techScanCursor = techScanCursor + 1;
+            k = k + 1;
         }
-        budget = budget - 1;
-    }
-    if (techScanCursor >= techLiveCount) {
-        techScanPending = false;
-        techScanCursor = 0;
     }
 }
 
