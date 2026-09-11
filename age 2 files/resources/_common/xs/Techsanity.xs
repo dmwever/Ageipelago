@@ -1,8 +1,11 @@
-/* TechData.xs is included partway down this file, after addTech and addShadow
- * and before anything that calls LoadTechTable: XS resolves names in order.
- * Do not include AP_Headers.xs here -- Buildsanity.xs already does and XS has
- * no include guards, so a second include redefines every symbol in structs.xs.
- * ItemHandler.xs must include Buildsanity.xs before this file. */
+/* addTech and addShadow are declared mutable in AP_Headers.xs, so the generated
+ * TechData.xs can be included here at the top and still bind to the real
+ * definitions below. Do not include AP_Headers.xs here -- Buildsanity.xs
+ * already does and XS has no include guards, so a second include redefines
+ * every symbol in structs.xs. ItemHandler.xs must include Buildsanity.xs
+ * before this file. */
+
+include "./TechData.xs";
 
 const int TECH_CAPACITY = 400;
 const int TECH_ITEM_OFFSET = 3600;
@@ -114,8 +117,6 @@ void addShadow(int id = -1) {
     xsArraySetInt(techShadowIds, techShadowCount, id);
     techShadowCount = techShadowCount + 1;
 }
-
-include "./TechData.xs";
 
 void LoadShadows() {
     addShadow(1181); addShadow(1182); addShadow(1183); addShadow(1184); addShadow(1185);
