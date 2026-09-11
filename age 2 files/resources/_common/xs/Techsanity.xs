@@ -1,40 +1,5 @@
+include "./Tech_Constants.xs";
 include "./TechData.xs";
-
-const int TECH_CAPACITY = 400;
-const int TECH_ITEM_OFFSET = 3600;
-const int SHADOW_CAPACITY = 40;
-const int NOOP_EFFECT = 0;
-const int STALL_TICKS = 12;
-
-const int TECHSANITY_NONE = 0;
-const int TECHSANITY_UNITS = 1;
-const int TECHSANITY_GENERIC = 2;
-const int TECHSANITY_ALL = 3;
-
-const int BEHAVIOR_MUST_RESEARCH = 0;
-const int BEHAVIOR_INSTANT = 1;
-
-const int LOCK_ITEMS = 0;
-const int LOCK_EFFECTS = 1;
-
-const int UNIQUES_NO = 0;
-const int UNIQUES_YES = 1;
-const int UNIQUES_EVERYWHERE = 2;
-
-const int EXISTING_VANILLA = 0;
-const int EXISTING_LOCK_TECHNOLOGIES = 1;
-const int EXISTING_ONLY_LOCK_UNITS = 2;
-
-const int TECH_ATTR_COST_FIRST = 0;
-const int TECH_ATTR_COST_LAST = 3;
-
-const int FEUDAL_AGE_TECH = 101;
-const int CASTLE_AGE_TECH = 102;
-const int IMPERIAL_AGE_TECH = 103;
-
-const float STATE_DISABLE = 0.0;
-const float STATE_ENABLE = 1.0;
-const float STATE_DONE = 3.0;
 
 vector techsanity = cInvalidVector;
 int techArray = -1;
