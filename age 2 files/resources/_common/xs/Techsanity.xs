@@ -193,13 +193,13 @@ void completeIfPending(int id = -1) {
 }
 
 void reconstructStartingState(int vanillaAge = -1) {
-    if (vanillaAge >= 1) {
+    if (vanillaAge >= FEUDAL_AGE) {
         completeIfPending(FEUDAL_AGE_TECH);
     }
-    if (vanillaAge >= 2) {
+    if (vanillaAge >= CASTLE_AGE) {
         completeIfPending(CASTLE_AGE_TECH);
     }
-    if (vanillaAge >= 3) {
+    if (vanillaAge >= IMPERIAL_AGE) {
         completeIfPending(IMPERIAL_AGE_TECH);
     }
     for (i = 0; < techCount) {
