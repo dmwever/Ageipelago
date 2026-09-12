@@ -253,6 +253,10 @@ void InitTechsanity() {
     if (AP_TS_MODE == TECHSANITY_NONE) {
         return;
     }
+    if (AP_TECH_SEED_HIGH != AP_SEED_HIGH || AP_TECH_SEED_LOW != AP_SEED_LOW) {
+        xsChatData("<RED>Techsanity: TechData.xs belongs to another seed. Run /install for this one.");
+        return;
+    }
 
     InitTechsanityStructs();
     LoadTechTable();
