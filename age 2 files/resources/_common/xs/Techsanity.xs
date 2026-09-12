@@ -254,7 +254,7 @@ void InitTechsanity() {
         return;
     }
     if (AP_TECH_SEED_HIGH != AP_SEED_HIGH || AP_TECH_SEED_LOW != AP_SEED_LOW) {
-        xsChatData("<RED>Techsanity: TechData.xs belongs to another seed. Run /install for this one.");
+        xsChatData("<RED>Techsanity: tech data is from the wrong seed. Run /install in the Age 2 client.");
         return;
     }
 
