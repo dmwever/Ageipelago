@@ -253,7 +253,7 @@ void InitTechsanity() {
     if (AP_TS_MODE == TECHSANITY_NONE) {
         return;
     }
-    if (AP_TECH_SEED_HIGH != AP_SEED_HIGH || AP_TECH_SEED_LOW != AP_SEED_LOW) {
+    if (TS_SEED_HIGH != AP_SEED_HIGH || TS_SEED_LOW != AP_SEED_LOW) {
         xsChatData("<RED>Techsanity: tech data is from the wrong seed. Run /install in the Age 2 client.");
         return;
     }
