@@ -229,4 +229,3 @@ age 2 files/resources/_common/xs/Test.xs
 age 2 files/resources/_common/xs/TS_Spike.xs
 age 2 files/resources/_common/scenario/TS_Spike.aoe2scenario
 Data/techs.json
-Scripts/extract_techdata.py
