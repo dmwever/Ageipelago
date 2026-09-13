@@ -17,7 +17,7 @@ vector getTech(int i = -1) {
 
 void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
              int isUpgrade = 0, int isUnique = 0, int age = 0, int isLocation = 1,
-             int req1 = -1, int req2 = -1, int req3 = -1) {
+             int prerequisiteId = -1) {
     if (techCount >= TECH_CAPACITY || id < 1) {
         return;
     }
@@ -42,9 +42,7 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
     structSetBool(tech, "researched", false);
     structSetBool(tech, "effectDone", false);
     structSetBool(tech, "enabled", false);
-    structSetInt(tech, "req1", req1);
-    structSetInt(tech, "req2", req2);
-    structSetInt(tech, "req3", req3);
+    structSetInt(tech, "prerequisiteId", prerequisiteId);
 
     xsArraySetVector(techArray, techCount, tech);
     if (isLocation == 1) {
@@ -128,10 +126,22 @@ bool researchedAlready(int id = -1) {
     return (xsGetTechState(id, 1) == cTechStateDone);
 }
 
+int ageTechFor(int age = -1) {
+    if (age == FEUDAL_AGE) {
+        return (FEUDAL_AGE_TECH);
+    }
+    if (age == CASTLE_AGE) {
+        return (CASTLE_AGE_TECH);
+    }
+    if (age == IMPERIAL_AGE) {
+        return (IMPERIAL_AGE_TECH);
+    }
+    return (-1);
+}
+
 bool requirementsMet(vector tech = cInvalidVector) {
-    return (researchedAlready(structGetInt(tech, "req1"))
-         && researchedAlready(structGetInt(tech, "req2"))
-         && researchedAlready(structGetInt(tech, "req3")));
+    return (researchedAlready(ageTechFor(structGetInt(tech, "age")))
+         && researchedAlready(structGetInt(tech, "prerequisiteId")));
 }
 
 void revealTech(vector tech = cInvalidVector) {
@@ -257,9 +267,7 @@ void InitTechsanityStructs() {
     defineStructAttribute("Tech", "researched", TYPE_BOOL);
     defineStructAttribute("Tech", "effectDone", TYPE_BOOL);
     defineStructAttribute("Tech", "enabled", TYPE_BOOL);
-    defineStructAttribute("Tech", "req1", TYPE_INT);
-    defineStructAttribute("Tech", "req2", TYPE_INT);
-    defineStructAttribute("Tech", "req3", TYPE_INT);
+    defineStructAttribute("Tech", "prerequisiteId", TYPE_INT);
 
     defineStruct("Techsanity");
     defineStructAttribute("Techsanity", "techs", TYPE_STRUCT_ARRAY);
