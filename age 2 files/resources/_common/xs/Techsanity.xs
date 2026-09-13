@@ -16,7 +16,8 @@ vector getTech(int i = -1) {
 }
 
 void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
-             int isUpgrade = 0, int isUnique = 0, int age = 0, int isLocation = 1) {
+             int isUpgrade = 0, int isUnique = 0, int age = 0, int isLocation = 1,
+             int req1 = -1, int req2 = -1, int req3 = -1) {
     if (techCount >= TECH_CAPACITY || id < 1) {
         return;
     }
@@ -40,7 +41,10 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
     structSetBool(tech, "hasItem", false);
     structSetBool(tech, "researched", false);
     structSetBool(tech, "effectDone", false);
-    structSetBool(tech, "locked", false);
+    structSetBool(tech, "enabled", false);
+    structSetInt(tech, "req1", req1);
+    structSetInt(tech, "req2", req2);
+    structSetInt(tech, "req3", req3);
 
     xsArraySetVector(techArray, techCount, tech);
     if (isLocation == 1) {
@@ -117,27 +121,39 @@ void stripTech(vector tech = cInvalidVector) {
     xsEffectAmount(cModifyTech, structGetInt(tech, "id"), cAttrSetEffect, 1.0 * NOOP_EFFECT, 1);
 }
 
+bool researchedAlready(int id = -1) {
+    if (id < 0) {
+        return (true);
+    }
+    return (xsGetTechState(id, 1) == cTechStateDone);
+}
+
+bool requirementsMet(vector tech = cInvalidVector) {
+    return (researchedAlready(structGetInt(tech, "req1"))
+         && researchedAlready(structGetInt(tech, "req2"))
+         && researchedAlready(structGetInt(tech, "req3")));
+}
+
 void revealTech(vector tech = cInvalidVector) {
-    if (structGetBool(tech, "locked") == false) {
+    if (structGetBool(tech, "enabled")) {
+        return;
+    }
+    if (structGetBool(tech, "hasItem") == false) {
+        return;
+    }
+    if (civCanResearch(tech) == false) {
+        return;
+    }
+    if (requirementsMet(tech) == false) {
         return;
     }
     xsEffectAmount(cModifyTech, structGetInt(tech, "id"), cAttrSetState, STATE_ENABLE, 1);
-    structSetBool(tech, "locked", false);
+    structSetBool(tech, "enabled", true);
 }
 
-void ensureLocked(vector tech = cInvalidVector) {
-    if (structGetBool(tech, "hasItem")) {
-        return;
-    }
-    if (structGetBool(tech, "locked")) {
-        return;
-    }
-    int id = structGetInt(tech, "id");
-    if (xsGetTechState(id, 1) != cTechStateReady) {
-        return;
-    }
-    xsEffectAmount(cModifyTech, id, cAttrSetState, STATE_DISABLE, 1);
-    structSetBool(tech, "locked", true);
+void disableTech(vector tech = cInvalidVector) {
+    xsEffectAmount(cModifyTech, structGetInt(tech, "id"), cAttrSetState, STATE_DISABLE, 1);
+    structSetBool(tech, "enabled", false);
 }
 
 void onTechResearched(vector tech = cInvalidVector) {
@@ -161,7 +177,7 @@ void UnlockTech(int itemOffset = -1) {
         return;
     }
     structSetBool(tech, "hasItem", true);
-    if (AP_TS_LOCK == LOCK_ITEMS && civCanResearch(tech)) {
+    if (AP_TS_LOCK == LOCK_ITEMS) {
         revealTech(tech);
     }
     tryApplyEffect(tech);
@@ -182,6 +198,9 @@ void initTech(vector tech = cInvalidVector) {
         return;
     }
     stripTech(tech);
+    if (AP_TS_LOCK == LOCK_ITEMS) {
+        disableTech(tech);
+    }
     AddLocation(structGetInt(tech, "itemId"));
 }
 
@@ -237,7 +256,10 @@ void InitTechsanityStructs() {
     defineStructAttribute("Tech", "hasItem", TYPE_BOOL);
     defineStructAttribute("Tech", "researched", TYPE_BOOL);
     defineStructAttribute("Tech", "effectDone", TYPE_BOOL);
-    defineStructAttribute("Tech", "locked", TYPE_BOOL);
+    defineStructAttribute("Tech", "enabled", TYPE_BOOL);
+    defineStructAttribute("Tech", "req1", TYPE_INT);
+    defineStructAttribute("Tech", "req2", TYPE_INT);
+    defineStructAttribute("Tech", "req3", TYPE_INT);
 
     defineStruct("Techsanity");
     defineStructAttribute("Techsanity", "techs", TYPE_STRUCT_ARRAY);
@@ -307,10 +329,11 @@ rule TechsanityUpdate
 
     if (AP_TS_LOCK == LOCK_ITEMS) {
         for (i = 0; < techCount) {
-            vector lockableTech = getTech(i);
-            if (structGetBool(lockableTech, "isLocation")
-             && structGetBool(lockableTech, "researched") == false) {
-                ensureLocked(lockableTech);
+            vector ownedTech = getTech(i);
+            if (structGetBool(ownedTech, "hasItem")
+             && structGetBool(ownedTech, "enabled") == false
+             && structGetBool(ownedTech, "researched") == false) {
+                revealTech(ownedTech);
             }
         }
     }
