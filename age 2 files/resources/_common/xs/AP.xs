@@ -65,7 +65,7 @@ void AP_Write()
         xsWriteInt(i);
     }
     int sendingLocations = FilterCompletedNotSent();
-    for (i = 0; < filteredCount) {                      // NOT xsArrayGetSize: the array is reused
+    for (i = 0; < filteredCount) {
         vector location = xsArrayGetVector(sendingLocations, i);
         int locationId = structGetInt(location, "id");
         if (locationId != -1) {

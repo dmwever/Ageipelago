@@ -77,7 +77,7 @@ void hardenShadow() {
     for (c = TECH_ATTR_COST_FIRST; <= TECH_ATTR_COST_LAST) {
         xsEffectAmount(cModifyTech, TECH_SHADOW, c, 0.0, 1);
     }
-    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetLocation, 0.0 - 1.0, 1);
+    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetLocation, -1.0, 1);
     xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetButton, 0.0, 1);
     xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetStacking, 1.0, 1);
     xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetStackingResearchCap, 1.0 * TECH_CAPACITY, 1);

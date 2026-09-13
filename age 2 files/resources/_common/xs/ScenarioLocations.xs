@@ -1,25 +1,10 @@
-/* The Archipelago location ledger.
- *
- * Each location is a Location struct with an id and two flags: scenarioComplete
- * (the game has seen it happen) and serverComplete (the client has acked it).
- *
- * newLocationAddress is the fill count. Nothing may iterate the backing array's
- * full size -- slots past the fill count hold cInvalidVector, and every
- * structGet on one is a failed case-sensitive string lookup that also builds two
- * diagnostic strings. Iterating 1024 slots to read 52 was the single largest
- * per-tick cost in AP_Write.
- */
-
 const int LOCATION_CAPACITY = 1024;
 
 vector locationList = cInvalidVector;
 int newLocationAddress = 0;
 
-/* Allocated once in InitLocations and reused. FilterCompletedNotSent fills it
- * and sets filteredCount; callers must iterate filteredCount, never the array
- * size. Allocating a fresh array per call leaked one array per tick. */
 int filterArray = -1;
-int filteredCount = 0;
+extern int filteredCount = 0;
 
 vector GetLocationById(int id = -1) {
     if (id == -1) {
@@ -54,11 +39,6 @@ vector AddLocation(int id = -1, bool scenarioComplete = false, bool serverComple
         return (cInvalidVector);
     }
 
-    /* Ledger capacity and struct-instance capacity are separate limits:
-     * LOCATION_CAPACITY sizes the array, MAX_INSTANCE_PER_STRUCT (structs.xs)
-     * caps how many Location structs can exist at all. Storing a failed new()
-     * would put a cInvalidVector in the ledger and every later read of it would
-     * silently return -1. */
     vector location = new("Location");
     if (location == cInvalidVector) {
         xsChatData("<RED>AddLocation: out of Location struct instances, dropping location " + id);
@@ -109,9 +89,6 @@ void InitLocations() {
     filteredCount = 0;
 }
 
-/* Fills filterArray with locations the game has completed but the server has not
- * acked, and sets filteredCount. Returns the array id for convenience.
- * Entries past filteredCount are stale and must not be read. */
 int FilterCompletedNotSent() {
     int locations = structGetInt(locationList, "locations");
 
