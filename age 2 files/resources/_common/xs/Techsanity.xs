@@ -148,6 +148,9 @@ void revealTech(vector tech = cInvalidVector) {
     if (structGetBool(tech, "enabled")) {
         return;
     }
+    if (structGetBool(tech, "researched")) {
+        return;
+    }
     if (structGetBool(tech, "hasItem") == false) {
         return;
     }
