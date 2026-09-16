@@ -29,8 +29,8 @@ extern const int UNIQUES_SHUFFLED_EVERYWHERE = 2;
 /* Existing Techs */
 
 extern const int EXISTING_VANILLA = 0;
-extern const int EXISTING_LOCK_TECHNOLOGIES = 1;
-extern const int EXISTING_ONLY_LOCK_UNITS = 2;
+extern const int EXISTING_FIND_ITEMS = 1;
+extern const int EXISTING_ONLY_FIND_UNITS = 2;
 
 /* cModifyTech cost attributes; no prelude constant exists */
 

@@ -11,6 +11,8 @@ float techResearchCount = 0.0;
 
 bool techsanityReady = false;
 
+int techVanillaAge = 0;
+
 vector getTech(int i = -1) {
     return (xsArrayGetVector(techArray, i));
 }
@@ -60,6 +62,18 @@ bool civCanResearch(vector tech = cInvalidVector) {
     return (c == -1 || c == xsGetPlayerCivilization(1));
 }
 
+bool grantedByVanilla(vector tech = cInvalidVector) {
+    return (structGetInt(tech, "age") < techVanillaAge);
+}
+
+void discountTech(vector tech = cInvalidVector) {
+    int id = structGetInt(tech, "id");
+    for (c = TECH_ATTR_COST_FIRST; <= TECH_ATTR_COST_LAST) {
+        xsEffectAmount(cModifyTech, id, c, 0.0, 1);
+    }
+    xsEffectAmount(cModifyTech, id, cAttrSetTime, 1.0, 1);
+}
+
 bool deferEffect(vector tech = cInvalidVector) {
     if (AP_TS_UNIQUES == UNIQUES_UNSHUFFLED || AP_TS_UNIQUES == UNIQUES_SHUFFLED_EVERYWHERE) {
         return (false);
@@ -93,7 +107,7 @@ void applyViaShadow(vector tech = cInvalidVector) {
     xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetState, STATE_DONE, 1);
 }
 
-void tryApplyEffect(vector tech = cInvalidVector) {
+void tryApplyEffect(vector tech = cInvalidVector, bool atStartup = false) {
     if (structGetBool(tech, "effectDone")) {
         return;
     }
@@ -105,6 +119,9 @@ void tryApplyEffect(vector tech = cInvalidVector) {
     }
     bool mustResearch = (AP_TS_BEHAVIOR == BEHAVIOR_MUST_RESEARCH)
                      || structGetBool(tech, "isUpgrade");
+    if (atStartup && grantedByVanilla(tech)) {
+        mustResearch = false;
+    }
     if (mustResearch && structGetBool(tech, "researched") == false) {
         return;
     }
@@ -178,7 +195,7 @@ void onTechResearched(vector tech = cInvalidVector) {
     tryApplyEffect(tech);
 }
 
-void UnlockTech(int itemOffset = -1) {
+void UnlockTech(int itemOffset = -1, bool atStartup = false) {
     if (itemOffset < 0 || itemOffset >= TECH_CAPACITY) {
         return;
     }
@@ -190,10 +207,14 @@ void UnlockTech(int itemOffset = -1) {
         return;
     }
     structSetBool(tech, "hasItem", true);
+    if (atStartup && AP_TS_LOCK == LOCK_ITEMS && grantedByVanilla(tech)
+     && structGetBool(tech, "researched") == false) {
+        discountTech(tech);
+    }
     if (AP_TS_LOCK == LOCK_ITEMS) {
         revealTech(tech);
     }
-    tryApplyEffect(tech);
+    tryApplyEffect(tech, atStartup);
 }
 
 void initTech(vector tech = cInvalidVector) {
@@ -225,6 +246,7 @@ void completeIfPending(int id = -1) {
 }
 
 void reconstructStartingState(int vanillaAge = -1) {
+    techVanillaAge = vanillaAge;
     if (vanillaAge >= FEUDAL_AGE) {
         completeIfPending(FEUDAL_AGE_TECH);
     }
@@ -239,10 +261,10 @@ void reconstructStartingState(int vanillaAge = -1) {
         if (civCanResearch(tech) && structGetInt(tech, "age") < vanillaAge) {
             bool grant = true;
             if (structGetBool(tech, "isLocation")) {
-                if (AP_TS_EXISTING == EXISTING_LOCK_TECHNOLOGIES) {
+                if (AP_TS_EXISTING == EXISTING_FIND_ITEMS) {
                     grant = false;
                 }
-                if (AP_TS_EXISTING == EXISTING_ONLY_LOCK_UNITS
+                if (AP_TS_EXISTING == EXISTING_ONLY_FIND_UNITS
                  && structGetBool(tech, "isUpgrade")) {
                     grant = false;
                 }

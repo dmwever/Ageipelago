@@ -73,7 +73,7 @@ void GiveStartupTechs() {
     }
     int itemCount = xsGetFileSize() / 4; // byte to int
     for (i = 0; < itemCount) {
-        UnlockTech(xsReadInt() - TECH_ITEM_OFFSET);
+        UnlockTech(xsReadInt() - TECH_ITEM_OFFSET, true);
     }
     bool closed = xsCloseFile();
 }
