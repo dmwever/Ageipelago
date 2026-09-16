@@ -31,6 +31,7 @@ extern const int UNIQUES_SHUFFLED_EVERYWHERE = 2;
 extern const int EXISTING_VANILLA = 0;
 extern const int EXISTING_FIND_ITEMS = 1;
 extern const int EXISTING_ONLY_FIND_UNITS = 2;
+extern const int EXISTING_START_IN_DARK_AGE = 3;
 
 /* cModifyTech cost attributes; no prelude constant exists */
 

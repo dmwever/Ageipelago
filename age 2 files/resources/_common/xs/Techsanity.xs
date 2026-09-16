@@ -246,6 +246,9 @@ void completeIfPending(int id = -1) {
 }
 
 void reconstructStartingState(int vanillaAge = -1) {
+    if (AP_TS_EXISTING == EXISTING_START_IN_DARK_AGE) {
+        return;
+    }
     techVanillaAge = vanillaAge;
     if (vanillaAge >= FEUDAL_AGE) {
         completeIfPending(FEUDAL_AGE_TECH);
