@@ -61,7 +61,7 @@ one's files in place.
 ### Attila 2: The Great Ride
 
 - "Attila: The Great Ride: Villagers" item must be found before the player can obtain villagers from destroying Purple's houses.
-- Freeing the Tarkans location is awarded by destroying the Cyan castle or destroying the Cyan TC.
+- Destroying Cyan's Town Center and Castle frees the Tarkans and awards that location.
 - Defeat Rome check be given without needing a TC.
 
 ### Attila 3: The Walls of Constantinople
