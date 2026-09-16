@@ -15,8 +15,8 @@ Do this once per seed, in this order.
 4. **`/install`** — this sets your install up for *this* seed. It prints each file it wrote and
    finishes with `Installed slot <n>, seed tag <tag>.`
 5. **Play the campaign named with your own name and seed tag**, e.g.
-   `AP Joan of Arc_<name>_b435aa86`. The plain `AP Joan of Arc Template` is the untagged source and will
-   not talk to the client.
+   `AP Joan of Arc_<name>_b435aa86`. The plain `AP Joan of Arc` (the `AP Joan of Arc Template`
+   file) is the untagged source and will not talk to the client.
 
 `/install` only writes the campaigns your yaml enabled, and it never touches the untagged originals
 or the `scenario` folder — so re-running it is safe, and installing a second seed leaves the first
@@ -27,7 +27,7 @@ one's files in place.
 |---|---|
 | `Set your Age2 user folder first with /set_user_folder.` | Step 3 has not been done |
 | `Connect to your multiworld first, so the install knows your seed and slot.` | `/install` needs your slot number and seed name, which only arrive once connected |
-| `Could not find AP Joan of Arc.aoe2campaign in ...` | Step 1 is missing or the folder from step 3 is wrong |
+| `Could not find AP Joan of Arc Template.aoe2campaign in ...` | Step 1 is missing or the folder from step 3 is wrong |
 | `This seed was generated with Age2 X but this client is Y.` followed by `Nothing was written.` | Your apworld and the seed disagree. Update the apworld or regenerate the seed; nothing was changed |
 | `This slot has no campaigns to install.` | Your yaml enabled no campaigns |
 | `Your name "<name>" contains characters that cannot be used in a file name.` | Harmless. Your campaigns are installed under the cleaned-up name the message gives, so look for that one in the campaign list |

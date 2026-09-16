@@ -35,6 +35,7 @@ name is imposed by the engine, so it already carries identity, and the client in
 
 ```
 tag = crc32("<seed_name>:<slot>")            8 lowercase hex digits
+AP Joan of Arc Template.aoe2campaign           shipped source, read by /install, never written
 AP Joan of Arc_<name>_b435aa86.aoe2campaign    installed by /install
 AP Joan of Arc_<name>_b435aa86.xsdat           written by the game while playing
 ```
