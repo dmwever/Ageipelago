@@ -35,13 +35,25 @@ name is imposed by the engine, so it already carries identity, and the client in
 
 ```
 tag = crc32("<seed_name>:<slot>")            8 lowercase hex digits
-AP Joan of Arc_b435aa86.aoe2campaign         installed by /install
-AP Joan of Arc_b435aa86.xsdat                written by the game while playing
+AP Joan of Arc_<name>_b435aa86.aoe2campaign    installed by /install
+AP Joan of Arc_<name>_b435aa86.xsdat           written by the game while playing
 ```
 
 `crc32` deliberately, not Python's `hash()`, which is salted per process and would differ between
 the generator and the client. Only the **campaign** name is tagged: playing a mission from a campaign
 writes `<campaign>.xsdat`, so the scenario entries inside the bundle never affect the binding.
+
+The player name is cosmetic — it is there so a player with several seeds installed can find
+their own campaign in the in-game list without decoding hex. It carries no identity; the tag
+still does all the binding. It sits **before** the tag so that the tag remains the last
+segment, which is what `Identity.tag_of` matches on. Archipelago does not keep slot names
+legal on disk, so `Identity.sanitize_player` strips the reserved characters first; a name that
+survives as nothing is refused at generation, and a name that merely changes is warned about
+at generation and again at `/install`.
+
+Because the engine derives the `.xsdat` name from the installed campaign, this filename is not
+decoration: `CampaignHandler.campaign_read_name` has to compose exactly the same stem, player
+segment included, or the client never finds the active scenario.
 
 **Client → game: `SlotData.xs`.** The files the client writes have fixed names on both ends, so a tag
 cannot ride there. Instead the slot number is baked into an XS file that `AP.xs` includes, and
