@@ -262,6 +262,7 @@ rule ReadItems
 {
     bool opened = xsOpenFile("items");
     if (opened == false) {
+        xsDisableSelf();
         return;
     }
     int itemCount = xsGetFileSize() / 4; // byte to int
@@ -286,6 +287,7 @@ rule FreeItems
 {
     bool opened = xsOpenFile("free_items");
     if (opened == false) {
+        xsDisableSelf();
         return;
     }
     int freeCount = xsGetFileSize() / 4; // byte to int
@@ -316,6 +318,7 @@ rule MarkServerLocations
 {
     bool opened = xsOpenFile("locations");
     if (opened == false) {
+        xsDisableSelf();
         return;
     }
     int locationCount = xsGetFileSize() / 4; // byte to int
@@ -342,6 +345,7 @@ rule ReadMessages
 {
     bool opened = xsOpenFile("messages");
     if (opened == false) {
+        xsDisableSelf();
         return;
     }
     int messageCount = xsReadInt();
