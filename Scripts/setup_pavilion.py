@@ -41,15 +41,22 @@ class APavilionMaker():
             self.trigger_manager.add_trigger("-- APavilion --")
             
         pavilion_space = self.unit_manager.get_units_in_area(x1=self.x - 1, y1=self.y - 1, x2=self.x, y2=self.y)
-        if len(pavilion_space) == 0:
+        existing = [unit for unit in pavilion_space
+                    if unit.unit_const == BuildingInfo.PAVILION_A.ID]
+        if existing:
+            self.apavilion = existing[0]
+        elif pavilion_space:
+            # Adopting whatever stood here would rename it "APavilion" and make it indestructible.
+            occupants = ", ".join(str(unit.unit_const) for unit in pavilion_space)
+            raise ValueError(f"({self.x}, {self.y}) is occupied by unit consts {occupants}, "
+                             f"not a pavilion. Move the pavilion or clear the tile.")
+        else:
             self.apavilion = self.unit_manager.add_unit(
                 player = PlayerId.ONE,
                 unit_const = BuildingInfo.PAVILION_A.ID,
                 x=self.x,
                 y=self.y
             )
-        else:
-            self.apavilion = pavilion_space[0]
         
         self._color_trigger_id = self._add_color_rotation(PlayerColorId.RED, "Red", 1)
         self._add_color_rotation(PlayerColorId.GREEN, "Green")
