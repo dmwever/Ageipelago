@@ -36,7 +36,7 @@ void GreyMining() {
   AP_Check_Location(10204);
 }
 
-void CyanTC() {
+void CyanTCCastle() {
   AP_Check_Location(10205);
 }
 
@@ -50,28 +50,4 @@ void BuildTC() {
 
 void BeatTheRomans() {
   AP_Check_Location(10208);
-}
-
-void DefeatsanityRed() {
-  AP_Check_Location(10209);
-}
-
-void DefeatsanityGreen() {
-  AP_Check_Location(10210);
-}
-
-void DefeatsanityPurple() {
-  AP_Check_Location(10211);
-}
-
-void DefeatsanityGrey() {
-  AP_Check_Location(10212);
-}
-
-void DefeatsanityCyan() {
-  AP_Check_Location(10213);
-}
-
-void DefeatsanityOrange() {
-  AP_Check_Location(10214);
 }

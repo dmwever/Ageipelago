@@ -79,15 +79,3 @@ void DestroyWonder() {
 void BlueMonastery() {
     AP_Check_Location(10315);
 }
-
-void DefeatsanityBlue() {
-    AP_Check_Location(10316);
-}
-
-void DefeatsanityGreen() {
-    AP_Check_Location(10317);
-}
-
-void DefeatsanityRed() {
-    AP_Check_Location(10318);
-}
