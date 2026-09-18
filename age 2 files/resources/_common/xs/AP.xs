@@ -1,6 +1,6 @@
+include "./SlotData.xs";
 include "./ItemHandler.xs";
 include "./APavilion.xs";
-include "./SlotData.xs";
 
 int itemArray = -1;
 
@@ -70,7 +70,7 @@ void AP_Write()
         xsWriteInt(i);
     }
     int sendingLocations = FilterCompletedNotSent();
-    for (i = 0; < xsArrayGetSize(sendingLocations)) {
+    for (i = 0; < filteredCount) {
         vector location = xsArrayGetVector(sendingLocations, i);
         int locationId = structGetInt(location, "id");
         if (locationId != -1) {
@@ -208,8 +208,10 @@ void InitAP() {
     initializeStructsScript();
     InitLocations();
     InitBuildsanity();
+    InitAges();
+    InitTechsanity();
     InitScenarioLocations();
-    xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, cAttributeDisable);
+    xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, 0.0);
 
     xsEnableRule("ConnectAP");
     AP_INITIALIZED = true;
@@ -242,6 +244,9 @@ rule ConnectAP
         startupGranted = 1;
     }
 
+    GiveStartupItems();
+    GiveStartupBuildings();
+    GiveStartupTechs();
     GiveScenarioItems();
     if (scenarioItemsRead == 0) {
         if (reportedMissingItems == 0) {

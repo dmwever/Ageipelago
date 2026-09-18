@@ -226,5 +226,11 @@ age 2 files/resources/_common/scenario/C1_Attila_6.aoe2scenario
 age 2 files/Age 2 Files.zip
 age 2 files/resources/_common/scenario/XsTesting.aoe2scenario
 age 2 files/resources/_common/xs/Test.xs
-docs/ARCHITECTURE_AND_FINDINGS.md
-docs/ARCHITECTURE_AND_FINDINGS.md
+age 2 files/resources/_common/xs/TS_Spike.xs
+age 2 files/resources/_common/scenario/TS_Spike.aoe2scenario
+Data/techs.json
+TS_StateSpike.xs
+TS_CancelSpike.xs
+
+# Seed-tagged campaigns written by /install
+age 2 files/resources/_common/campaign/AP *_*.aoe2campaign
