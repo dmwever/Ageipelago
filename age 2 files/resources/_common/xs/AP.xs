@@ -241,12 +241,10 @@ rule ConnectAP
         xsChatData("<GREEN>Client Connected!");
         GiveStartupItems();
         GiveStartupBuildings();
+        GiveStartupTechs();
         startupGranted = 1;
     }
-
-    GiveStartupItems();
-    GiveStartupBuildings();
-    GiveStartupTechs();
+    
     GiveScenarioItems();
     if (scenarioItemsRead == 0) {
         if (reportedMissingItems == 0) {
