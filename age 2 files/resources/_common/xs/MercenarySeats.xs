@@ -1,6 +1,7 @@
 int seatMercenaries = -1;
 int seatUnitCounts = -1;
 int seatStates = -1;
+int seatUnits = -1;        // one xsArrayCreateInt handle per seat, holding that seat's unit ids
 
 extern const int SEAT_EMPTY = 0;
 extern const int SEAT_OFFERED = 1;
@@ -47,8 +48,32 @@ void InitMercenarySeats() {
     seatMercenaries = xsArrayCreateInt(MERCENARY_SEAT_COUNT, -1, "ap-seat-mercenaries");
     seatUnitCounts = xsArrayCreateInt(MERCENARY_SEAT_COUNT, 0, "ap-seat-units");
     seatStates = xsArrayCreateInt(MERCENARY_SEAT_COUNT, SEAT_EMPTY, "ap-seat-states");
+    seatUnits = xsArrayCreateInt(MERCENARY_SEAT_COUNT, -1, "ap-seat-unit-lists");
     for (seat = 0; < MERCENARY_SEAT_COUNT) {
+        xsArraySetInt(seatUnits, seat,
+                      xsArrayCreateInt(MERCENARY_MAX_UNITS, -1, "ap-seat-units-" + seat));
         HardenSeat(seat);
+    }
+}
+
+void SetSeatUnit(int seat = -1, int index = -1, int unitId = -1) {
+    if (index < 0 || index >= MERCENARY_MAX_UNITS) {
+        return;
+    }
+    xsArraySetInt(xsArrayGetInt(seatUnits, seat), index, unitId);
+}
+
+int SeatUnitAt(int seat = -1, int index = -1) {
+    if (index < 0 || index >= MERCENARY_MAX_UNITS) {
+        return (-1);
+    }
+    return (xsArrayGetInt(xsArrayGetInt(seatUnits, seat), index));
+}
+
+void ClearSeatUnits(int seat = -1) {
+    int units = xsArrayGetInt(seatUnits, seat);
+    for (i = 0; < MERCENARY_MAX_UNITS) {
+        xsArraySetInt(units, i, -1);
     }
 }
 
@@ -132,7 +157,7 @@ void ReadMercenaryQueue() {
             continue;
         }
         for (u = 0; < units) {
-            xsReadInt();
+            SetSeatUnit(seat, u, xsReadInt());
             consumed = consumed + 1;
         }
         SyncSeat(seat, mercenaryId);

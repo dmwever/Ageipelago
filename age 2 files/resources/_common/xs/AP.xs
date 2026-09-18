@@ -2,6 +2,7 @@ include "./ItemHandler.xs";
 include "./MercenaryLedger.xs";
 include "./MercenaryTable.xs";
 include "./MercenarySeats.xs";
+include "./MercenarySpawn.xs";
 include "./APavilion.xs";
 include "./SlotData.xs";
 
@@ -220,6 +221,8 @@ void InitAP() {
     InitMercenaryLedger();
     LoadMercenaries();
     InitMercenarySeats();
+    InitMercenarySpawn();
+    xsEnableRule("MercenarySpawnLoop");
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, cAttributeDisable);
 
     xsEnableRule("ConnectAP");
