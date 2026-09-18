@@ -1,0 +1,3 @@
+void LoadMercenaryTable() {
+    return;
+}
