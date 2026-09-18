@@ -143,19 +143,6 @@ bool researchedAlready(int id = -1) {
     return (xsGetTechState(id, 1) == cTechStateDone);
 }
 
-int ageTechFor(int age = -1) {
-    if (age == FEUDAL_AGE) {
-        return (FEUDAL_AGE_TECH);
-    }
-    if (age == CASTLE_AGE) {
-        return (CASTLE_AGE_TECH);
-    }
-    if (age == IMPERIAL_AGE) {
-        return (IMPERIAL_AGE_TECH);
-    }
-    return (-1);
-}
-
 bool requirementsMet(vector tech = cInvalidVector) {
     return (researchedAlready(ageTechFor(structGetInt(tech, "age")))
          && researchedAlready(structGetInt(tech, "prerequisiteId")));
@@ -325,7 +312,7 @@ void InitTechsanity() {
     }
 
     hardenShadow();
-    SetScenarioAge();
+    reconstructStartingState(apVanillaAge);
 
     for (j = 0; < techCount) {
         vector tech = getTech(j);

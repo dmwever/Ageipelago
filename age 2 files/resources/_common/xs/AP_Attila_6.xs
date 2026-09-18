@@ -10,7 +10,7 @@ void GiveScenarioItems() {
 }
 
 void SetScenarioAge() {
-  reconstructStartingState(IMPERIAL_AGE);
+  SetVanillaAge(IMPERIAL_AGE);
 }
 
 void main() {

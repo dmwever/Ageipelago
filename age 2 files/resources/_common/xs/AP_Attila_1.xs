@@ -10,7 +10,7 @@ void GiveScenarioItems() {
 }
 
 void SetScenarioAge() {
-  reconstructStartingState(DARK_AGE);
+  SetVanillaAge(DARK_AGE);
 }
 
 void main() {

@@ -196,6 +196,7 @@ void InitAP() {
     initializeStructsScript();
     InitLocations();
     InitBuildsanity();
+    InitAges();
     InitTechsanity();
     InitScenarioLocations();
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, 0.0);

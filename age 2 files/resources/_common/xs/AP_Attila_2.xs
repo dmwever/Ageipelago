@@ -10,7 +10,7 @@ void GiveScenarioItems() {
 }
 
 void SetScenarioAge() {
-  reconstructStartingState(CASTLE_AGE);
+  SetVanillaAge(CASTLE_AGE);
 }
 
 void main() {

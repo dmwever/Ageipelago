@@ -2,6 +2,7 @@ include "./ProgressionItems.xs";
 include "./MercenaryItems.xs";
 include "./ResourceItems.xs";
 include "./Buildsanity.xs";
+include "./Ages.xs";
 include "./Techsanity.xs";
 
 /*        0        Victory
@@ -19,6 +20,9 @@ include "./Techsanity.xs";
 const int AP_RESOURCE_ITEM_MIN    = 1;
 const int AP_RESOURCE_ITEM_MAX    = 25;
 
+const int AP_AGE_ITEM_MIN         = 25;
+const int AP_AGE_ITEM_MAX         = 30;
+
 const int AP_BUILDING_ITEM_OFFSET = 200;
 const int AP_BUILDING_ITEM_MAX    = 300;
 
@@ -34,6 +38,10 @@ const int AP_MERC_ITEM_MAX        = 5000;
 void GiveItem(int itemId = -1) {
     if (itemId >= AP_RESOURCE_ITEM_MIN && itemId < AP_RESOURCE_ITEM_MAX) {
         GiveResource(itemId);
+        return;
+    }
+    if (itemId >= AP_AGE_ITEM_MIN && itemId < AP_AGE_ITEM_MAX) {
+        UnlockAge(itemId);
         return;
     }
     if (itemId >= AP_BUILDING_ITEM_OFFSET && itemId < AP_BUILDING_ITEM_MAX) {

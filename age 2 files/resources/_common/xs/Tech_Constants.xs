@@ -37,15 +37,3 @@ extern const int EXISTING_START_IN_DARK_AGE = 3;
 
 extern const int TECH_ATTR_COST_FIRST = 0;
 extern const int TECH_ATTR_COST_LAST = 3;
-
-/* Age-up techs. Genie names mislead: 101 is "Middle Age" but grants Feudal. */
-
-extern const int FEUDAL_AGE_TECH = 101;
-extern const int CASTLE_AGE_TECH = 102;
-extern const int IMPERIAL_AGE_TECH = 103;
-
-/* cAttrSetState values. Float, because ints are not promoted in a call. */
-
-extern const float STATE_DISABLE = 0.0;
-extern const float STATE_ENABLE = 2.0;
-extern const float STATE_DONE = 3.0;

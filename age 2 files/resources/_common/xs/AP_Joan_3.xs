@@ -10,7 +10,7 @@ void GiveScenarioItems() {
 }
 
 void SetScenarioAge() {
-  reconstructStartingState(FEUDAL_AGE);
+  SetVanillaAge(FEUDAL_AGE);
 }
 
 void main() {
