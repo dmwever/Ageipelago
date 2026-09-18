@@ -87,19 +87,3 @@ void GiveHorses() {
 void DefeatFirstPlayer() {
   AP_Check_Location(10116);
 }
-
-void DefeatsanityBlue() {
-AP_Check_Location(10117);
-}
-
-void DefeatsanityRed() {
-AP_Check_Location(10118);
-}
-
-void DefeatsanityGreen() {
-AP_Check_Location(10119);
-}
-
-void DefeatsanityPurple() {
-AP_Check_Location(10120);
-}

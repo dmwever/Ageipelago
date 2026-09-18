@@ -3,6 +3,8 @@ from typing import Any
 
 from AoE2ScenarioParser.datasets.players import PlayerColorId, PlayerId
 from AoE2ScenarioParser.datasets.buildings import BuildingInfo
+from AoE2ScenarioParser.datasets.effects import EffectId
+from AoE2ScenarioParser.datasets.trigger_lists import Operation
 from AoE2ScenarioParser.objects.data_objects.trigger import Trigger
 from AoE2ScenarioParser.objects.data_objects.unit import Unit
 from AoE2ScenarioParser.scenarios.aoe2_de_scenario import AoE2DEScenario, TriggerManager, UnitManager
@@ -10,6 +12,13 @@ from AoE2ScenarioParser.scenarios.aoe2_de_scenario import AoE2DEScenario, Trigge
 # The path to your scenario folder
 
 # The scenario object.
+
+# Dropping the HP this far and then adding zero leaves the pavilion on 0 HP, which the engine
+# treats as indestructible. Both effects are needed; the drop alone does not do it.
+INDESTRUCTIBLE_HP_DROP = -500
+
+# The technology the player researches in the pavilion to end the scenario.
+VICTORY_TECHNOLOGY = 1180
 
 class APavilionMaker():
     trigger_manager: TriggerManager
@@ -32,15 +41,22 @@ class APavilionMaker():
             self.trigger_manager.add_trigger("-- APavilion --")
             
         pavilion_space = self.unit_manager.get_units_in_area(x1=self.x - 1, y1=self.y - 1, x2=self.x, y2=self.y)
-        if len(pavilion_space) == 0:
+        existing = [unit for unit in pavilion_space
+                    if unit.unit_const == BuildingInfo.PAVILION_A.ID]
+        if existing:
+            self.apavilion = existing[0]
+        elif pavilion_space:
+            # Adopting whatever stood here would rename it "APavilion" and make it indestructible.
+            occupants = ", ".join(str(unit.unit_const) for unit in pavilion_space)
+            raise ValueError(f"({self.x}, {self.y}) is occupied by unit consts {occupants}, "
+                             f"not a pavilion. Move the pavilion or clear the tile.")
+        else:
             self.apavilion = self.unit_manager.add_unit(
                 player = PlayerId.ONE,
                 unit_const = BuildingInfo.PAVILION_A.ID,
                 x=self.x,
                 y=self.y
             )
-        else:
-            self.apavilion = pavilion_space[0]
         
         self._color_trigger_id = self._add_color_rotation(PlayerColorId.RED, "Red", 1)
         self._add_color_rotation(PlayerColorId.GREEN, "Green")
@@ -49,11 +65,51 @@ class APavilionMaker():
         self._add_color_rotation(PlayerColorId.BLUE, "Blue")
         self._add_color_rotation(PlayerColorId.YELLOW, "Yellow", trigger_id=self._color_trigger_id)
         
-        if not any(trigger.name == "APavilion Startup" for trigger in self.trigger_manager.triggers):
+        self._add_startup()
+
+    def _add_startup(self) -> None:
+        pavilion_startup: Trigger = None
+        for trigger in self.trigger_manager.triggers:
+            if trigger.name == "APavilion Startup":
+                pavilion_startup = trigger
+                break
+        
+        if pavilion_startup == None:
             pavilion_startup = self.trigger_manager.add_trigger("APavilion Startup")
+
+        # Name
+        if not any(effect.effect_type == EffectId.CHANGE_OBJECT_NAME
+                   for effect in pavilion_startup.effects):
+            pavilion_startup.new_effect.change_object_name(selected_object_ids=[self.apavilion.reference_id], message="AP-vilion")
+
+        #Technology name
+        if not any(effect.effect_type == EffectId.CHANGE_TECHNOLOGY_NAME
+                   and effect.technology == VICTORY_TECHNOLOGY
+                   for effect in pavilion_startup.effects):
+            pavilion_startup.new_effect.change_technology_name(1, VICTORY_TECHNOLOGY, message="Declare Victory")
+
+        # Can't delete
+        if not any(effect.effect_type == EffectId.DISABLE_OBJECT_DELETION
+                   for effect in pavilion_startup.effects):
+            pavilion_startup.new_effect.disable_object_deletion(
+                source_player=PlayerId.ONE,
+                selected_object_ids=[self.apavilion.reference_id]
+            )
+        
+        # Indestructible, two effects: 1. -500 HP, 2. add 0 HP
+        for quantity in (INDESTRUCTIBLE_HP_DROP, 0):
+            if any(effect.effect_type == EffectId.CHANGE_OBJECT_HP
+                   and effect.operation == Operation.ADD
+                   and effect.quantity == quantity
+                   for effect in pavilion_startup.effects):
+                continue
             
-            pavilion_startup.new_effect.change_object_name(selected_object_ids=[self.apavilion.reference_id], message="APavilion")
-            pavilion_startup.new_effect.change_technology_name(1, 1180, message="Declare Victory")
+            pavilion_startup.new_effect.change_object_hp(
+                quantity=quantity,
+                operation=Operation.ADD,
+                source_player=PlayerId.ONE,
+                selected_object_ids=[self.apavilion.reference_id]
+            )
 
     def add_victory_triggers(self) -> None:
         if self.apavilion == None:
@@ -97,7 +153,7 @@ class APavilionMaker():
             
         declare_victory: Trigger = self.trigger_manager.add_trigger("AP Declare Victory")
         
-        declare_victory.new_condition.technology_state(technology=1180, quantity=3, source_player=1)
+        declare_victory.new_condition.technology_state(technology=VICTORY_TECHNOLOGY, quantity=3, source_player=1)
         
         declare_victory.new_effect.declare_victory(source_player=1)
 

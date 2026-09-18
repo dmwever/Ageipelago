@@ -35,11 +35,3 @@ void DefeatVisigoths() {
 void DefeatAlans() {
   AP_Check_Location(10503);
 }
-
-void DefeatsanityGrey() {
-  AP_Check_Location(10504);
-}
-
-void DefeatsanityRed() {
-  AP_Check_Location(10505);
-}

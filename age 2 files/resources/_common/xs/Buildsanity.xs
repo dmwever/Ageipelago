@@ -68,7 +68,7 @@ void InitBuildsanityStructs() {
     defineStruct("Buildsanity");
     defineStructAttribute("Buildsanity", "buildings", TYPE_STRUCT_ARRAY);
     defineStructAttribute("Buildsanity", "currentBuildingTotalCost", TYPE_FLOAT);
-    defineStructAttribute("Buildsanity", "CastlesBuilt", TYPE_FLOAT);
+    defineStructAttribute("Buildsanity", "castlesBuilt", TYPE_FLOAT);
     defineStructAttribute("Buildsanity", "wondersBuilt", TYPE_FLOAT);
 
     buildsanity = new("Buildsanity");
@@ -194,6 +194,10 @@ void CreateBuildingLocations() {
 void InitBuildsanity() {
     InitBuildsanityStructs();
     CreateBuildingLocations();
+    structSetFloat(buildsanity, "currentBuildingTotalCost", xsPlayerAttribute(1, cAttributeValueCurrentBuildings));
+    structSetFloat(buildsanity, "castlesBuilt", xsPlayerAttribute(1, cAttributeTotalCastlesBuilt));
+    structSetFloat(buildsanity, "wondersBuilt", xsPlayerAttribute(1, cAttributeTotalWondersBuilt));
+
     xsEnableRule("BuildsanityChecks");
 }
 
@@ -205,7 +209,7 @@ int getGatesCount() {
         xsGetObjectCount(1, gateDescendingOpenId) +
         xsGetObjectCount(1, gateHorizontalId) +
         xsGetObjectCount(1, gateHorizontalOpenId) +
-        xsGetObjectCount(1, gateVerticalId);
+        xsGetObjectCount(1, gateVerticalId) +
         xsGetObjectCount(1, gateVerticalOpenId);
     return (gateCount);
 }
@@ -218,7 +222,7 @@ int getPalisadeGatesCount() {
         xsGetObjectCount(1, palisadeGateDescendingOpenId) +
         xsGetObjectCount(1, palisadeGateHorizontalId) +
         xsGetObjectCount(1, palisadeGateHorizontalOpenId) +
-        xsGetObjectCount(1, palisadeGateVerticalId);
+        xsGetObjectCount(1, palisadeGateVerticalId) +
         xsGetObjectCount(1, palisadeGateVerticalOpenId);
     return (palisadeGateCount);
 } 

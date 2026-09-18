@@ -15,6 +15,11 @@ int worldMajor = 0;
 int worldMinor = 3;
 int reportedMismatch = 0;
 int lastMessageId = -1;
+int startupGranted = 0;
+int scenarioItemsRead = 0;
+int reportedMissingItems = 0;
+
+bool AP_INITIALIZED = false;
 
 bool CheckScenario() {
     bool opened = xsOpenFile("AP");
@@ -151,7 +156,6 @@ void SetScenarioId(int id = 0) {
 void ReadScenarioItemFile(string filename = "") {
     bool openFile = xsOpenFile(filename);
     if (openFile == false) {
-        xsCloseFile();
         return;
     }
     int itemCount = xsGetFileSize() / 4; // byte to int
@@ -161,6 +165,7 @@ void ReadScenarioItemFile(string filename = "") {
         GiveItem(itemId);
     }
     xsCloseFile();
+    scenarioItemsRead = 1;
 }
 
 void GiveVictory() {
@@ -191,6 +196,13 @@ rule ReadAP
 }
 
 void InitAP() {
+    if (AP_INITIALIZED == true) {
+        if (xsArrayGetSize(itemArray) == 12) {
+            return;
+        }
+        xsChatData("<RED>AP session state was lost. Reinitializing.");
+    }
+
     itemArray = xsArrayCreateInt(12, -1, "Item Array");
 
     initializeStructsScript();
@@ -202,6 +214,7 @@ void InitAP() {
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, 0.0);
 
     xsEnableRule("ConnectAP");
+    AP_INITIALIZED = true;
 }
 
 rule ConnectAP
@@ -217,17 +230,32 @@ rule ConnectAP
         xsChatData("<RED>This install has no Archipelago slot. Connect the client and run /install.");
         return;
     }
-    xsChatData("<YELLOW>Waiting for Client Connection");
+    if (startupGranted == 0) {
+        xsChatData("<YELLOW>Waiting for Client Connection");
+    }
     if (CheckScenario() == false) {
         return;
     }
 
-    xsChatData("<GREEN>Client Connected!");
+    if (startupGranted == 0) {
+        xsChatData("<GREEN>Client Connected!");
+        GiveStartupItems();
+        GiveStartupBuildings();
+        startupGranted = 1;
+    }
 
     GiveStartupItems();
     GiveStartupBuildings();
     GiveStartupTechs();
     GiveScenarioItems();
+    if (scenarioItemsRead == 0) {
+        if (reportedMissingItems == 0) {
+            reportedMissingItems = 1;
+            xsChatData("<RED>Waiting for this scenario's Archipelago items...");
+        }
+        return;
+    }
+
     xsEnableRule("ReadAP");
     xsDisableSelf();
 }
@@ -239,9 +267,13 @@ rule ReadItems
 {
     bool opened = xsOpenFile("items");
     if (opened == false) {
+        xsDisableSelf();
         return;
     }
     int itemCount = xsGetFileSize() / 4; // byte to int
+    if (itemCount > 12) {   // itemArray is 12 slots; never index past it
+        itemCount = 12;
+    }
     for (i = 0; < itemCount) {
         int itemId = xsReadInt();
         if (xsArrayGetInt(itemArray, i) == -1) {
@@ -260,16 +292,23 @@ rule FreeItems
 {
     bool opened = xsOpenFile("free_items");
     if (opened == false) {
+        xsDisableSelf();
         return;
     }
-    for (i = 0; < 12) {
+    int freeCount = xsGetFileSize() / 4; // byte to int
+    if (freeCount > 12) {
+        freeCount = 12;
+    }
+    int freed = 0;
+    for (i = 0; < freeCount) {
         int itemId = xsReadInt();
-        if (itemId == -1) {
-            continue;
-        }
-        for (j = 0; < 12) {
-            if (xsArrayGetInt(itemArray, i) == itemId) {
-                xsArraySetInt(itemArray, i, -1);
+        if (itemId != -1) {
+            freed = 0;
+            for (j = 0; < 12) {
+                if (freed == 0 && xsArrayGetInt(itemArray, j) == itemId) {
+                    xsArraySetInt(itemArray, j, -1);
+                    freed = 1;
+                }
             }
         }
     }
@@ -284,6 +323,7 @@ rule MarkServerLocations
 {
     bool opened = xsOpenFile("locations");
     if (opened == false) {
+        xsDisableSelf();
         return;
     }
     int locationCount = xsGetFileSize() / 4; // byte to int
@@ -310,6 +350,7 @@ rule ReadMessages
 {
     bool opened = xsOpenFile("messages");
     if (opened == false) {
+        xsDisableSelf();
         return;
     }
     int messageCount = xsReadInt();

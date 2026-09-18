@@ -67,7 +67,3 @@ void DestroyOrangeWonder() {
 void DestroyPurpleWonder2() {
   AP_Check_Location(10611);
 }
-
-void DefeatsanityBlue() {
-  AP_Check_Location(10612);
-}
