@@ -141,7 +141,8 @@ Game -> Client. Written by `AP_Write`, read by `Age2Packet`.
 |18|ScenarioCompleted|bool|Scenario global `completed`, 1 if the scenario has been completed|
 |19|ScenarioId|int|The id of the scenario, used when the player is playing a campaign. **Byte offset 72** — `find_active_campaign` depends on this|
 |20|WorldMinor|int|Minor `world_version`. First of the reserved block; see *Versioning*|
-|21-49|Reserved|int*29|Reserved for future use, currently written as `0..28`|
+|21|CompletedMercenaryId|int|A mercenary the game has finished spawning, `-1` when idle. Second of the reserved block. The game holds any others until this one is acknowledged; see *Mercenaries*|
+|22-49|Reserved|int*28|Reserved for future use, currently written as `0..27`|
 |50+|Locations (L)|int*L|All locations checked that have not been confirmed by AP client|
 
 `AP_Write` returns without creating the file at all while `AP_SLOT_ID` is `-1`, so the client never
@@ -166,9 +167,25 @@ Confirms that the client is still connected, and tells the game which other file
 |9|SendUnits|bool|If 1, the game reads `units.xsdat`. **Always 0** — see *units.xsdat* below|
 |10|SendMessages|bool|If 1, the game reads `messages.xsdat`|
 |11|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
+|12|AckMercenaryId|int|Echoes `CompletedMercenaryId` back. The game drops that mercenary from its pending list and may then name the next one|
 
 `AP_Read` validates in order — scenario, ping, version, slot — and returns early on the first
 failure, so no dispatch flag is acted on until the identity checks have passed.
+
+### Mercenaries
+
+A mercenary is spent the moment the game finishes spawning it, and that has to survive a reconnect,
+so it crosses as a two-flag ledger in the same shape as scenario locations.
+
+The game names one finished mercenary at a time in `CompletedMercenaryId`. The client acts on it and
+echoes the id back in `AckMercenaryId`; the game then drops it from `MercenaryLedger.xs` and is free
+to name the next. Only one id fits in the packet, so a second mercenary finishing before the first is
+acknowledged waits — at most four can be pending, because a seat cannot be refilled until the client
+sends a new queue.
+
+Both sides send the same value repeatedly while an acknowledgement is in flight. That is deliberate:
+the client's `Set` uses the server-side `or` operation and the game's `AckMercenary` ignores an id
+that is not at the head, so a repeat costs nothing and a dropped tick is recovered on the next one.
 
 ### `items.xsdat`
 

@@ -1,4 +1,5 @@
 include "./ItemHandler.xs";
+include "./MercenaryLedger.xs";
 include "./APavilion.xs";
 include "./SlotData.xs";
 
@@ -66,7 +67,8 @@ void AP_Write()
     xsWriteInt(completed);
     xsWriteInt(scenarioId);
     xsWriteInt(worldMinor);
-    for (i = 0; < 29) {
+    xsWriteInt(PendingMercenary());
+    for (i = 0; < 28) {
         xsWriteInt(i);
     }
     int sendingLocations = FilterCompletedNotSent();
@@ -141,6 +143,7 @@ void AP_Read()
         xsEnableRule("ReadMessages");
     }
     completed = xsReadInt();
+    AckMercenary(xsReadInt());
     xsCloseFile();
 }
 
@@ -209,6 +212,7 @@ void InitAP() {
     InitLocations();
     InitBuildsanity();
     InitScenarioLocations();
+    InitMercenaryLedger();
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, cAttributeDisable);
 
     xsEnableRule("ConnectAP");
