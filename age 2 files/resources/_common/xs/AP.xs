@@ -1,6 +1,7 @@
 include "./ItemHandler.xs";
 include "./MercenaryLedger.xs";
 include "./MercenaryTable.xs";
+include "./MercenarySeats.xs";
 include "./APavilion.xs";
 include "./SlotData.xs";
 
@@ -138,7 +139,10 @@ void AP_Read()
     if (free_locations == 1) {
         xsEnableRule("MarkServerLocations");
     }
-    int units = xsReadInt();
+    int mercenaries = xsReadInt();
+    if (mercenaries == 1) {
+        xsEnableRule("ReadMercenaries");
+    }
     int messages = xsReadInt();
     if (messages == 1) {
         xsEnableRule("ReadMessages");
@@ -215,6 +219,7 @@ void InitAP() {
     InitScenarioLocations();
     InitMercenaryLedger();
     LoadMercenaries();
+    InitMercenarySeats();
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, cAttributeDisable);
 
     xsEnableRule("ConnectAP");
@@ -378,5 +383,15 @@ rule ReadMessages
         }
     }
     xsCloseFile();
+    xsDisableSelf();
+}
+
+rule ReadMercenaries
+    inactive
+    minInterval 1
+    maxInterval 1
+{
+    ReadUsedMercenaries();
+    ReadMercenaryQueue();
     xsDisableSelf();
 }

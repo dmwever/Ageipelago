@@ -164,7 +164,7 @@ Confirms that the client is still connected, and tells the game which other file
 |6|SendItems|bool|If 1, the game reads `items.xsdat`|
 |7|FreeItems|bool|If 1, the game reads `free_items.xsdat`|
 |8|FreeLocations|bool|If 1, the game reads `locations.xsdat`|
-|9|SendUnits|bool|If 1, the game reads `units.xsdat`. **Always 0** — see *units.xsdat* below|
+|9|SendMercenaries|bool|If 1, the game reads `mercenaries.xsdat` and `mercenary_queue.xsdat`. Was `SendUnits`, which was never implemented and hardcoded to 0|
 |10|SendMessages|bool|If 1, the game reads `messages.xsdat`|
 |11|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
 |12|AckMercenaryId|int|Echoes `CompletedMercenaryId` back. The game drops that mercenary from its pending list and may then name the next one|

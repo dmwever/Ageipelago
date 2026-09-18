@@ -1,5 +1,28 @@
 extern const int MIN_SCENARIO_ID = 101;
 
+/* cAttrSetState values. Float, because ints are not promoted in a call. */
+
+extern const float STATE_DISABLE = 0.0;
+extern const float STATE_ENABLE = 2.0;
+extern const float STATE_DONE = 3.0;
+
+/* cModifyTech cost attributes; no prelude constant exists */
+
+extern const int TECH_ATTR_COST_FIRST = 0;
+extern const int TECH_ATTR_COST_LAST = 3;
+
+/* Binding a tech to this strips its effect, leaving the research action and nothing else. */
+
+extern const int NOOP_EFFECT = 0;
+
+/* Mercenary seats. 1180 is the victory tech and 1181 is Techsanity's effect donor, so these
+   start above both. Buttons 11-14 are the pavilion's third row; victory sits at button 1. */
+
+extern const int MERCENARY_SEAT_COUNT = 4;
+extern const int MERCENARY_SEAT_TECH_FIRST = 1182;
+extern const int MERCENARY_SEAT_BUTTON_FIRST = 11;
+extern const int PAVILION_BUILDING = 624;
+
 /* Building Ids */
 
 // Always
