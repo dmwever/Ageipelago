@@ -3,6 +3,11 @@ int seatUnitCounts = -1;
 int seatStates = -1;
 int seatUnits = -1;        // one xsArrayCreateInt handle per seat, holding that seat's unit ids
 
+// The serial of the queue this game has actually consumed, echoed back in the scenario packet. -1
+// until one is read, which is a mismatch against any serial the client has written, so a fresh game
+// asks for the queue without the client having to guess.
+int consumedQueueSerial = -1;
+
 extern const int SEAT_EMPTY = 0;
 extern const int SEAT_OFFERED = 1;
 extern const int SEAT_RUNNING = 2;
@@ -119,6 +124,10 @@ void SyncSeat(int seat = -1, int mercenaryId = -1) {
     OfferSeat(seat, mercenaryId);
 }
 
+int ConsumedQueueSerial() {
+    return (consumedQueueSerial);
+}
+
 bool IsSeatResearching(int seat = -1) {
     return (xsGetTechState(SeatTech(seat), 1) == cTechStateResearching);
 }
@@ -137,7 +146,13 @@ void ReadMercenaryQueue() {
         return;
     }
     int available = xsGetFileSize() / 4; // byte to int
-    int consumed = 0;
+    if (available < 1) {
+        xsCloseFile();
+        return;
+    }
+    // The serial leads the file, so it is consumed before any seat record.
+    consumedQueueSerial = xsReadInt();
+    int consumed = 1;
     for (seat = 0; < MERCENARY_SEAT_COUNT) {
         if (consumed >= available) {
             SyncSeat(seat, -1);

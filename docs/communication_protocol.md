@@ -142,7 +142,8 @@ Game -> Client. Written by `AP_Write`, read by `Age2Packet`.
 |19|ScenarioId|int|The id of the scenario, used when the player is playing a campaign. **Byte offset 72** — `find_active_campaign` depends on this|
 |20|WorldMinor|int|Minor `world_version`. First of the reserved block; see *Versioning*|
 |21|CompletedMercenaryId|int|A mercenary the game has finished spawning, `-1` when idle. Second of the reserved block. The game holds any others until this one is acknowledged; see *Mercenaries*|
-|22-49|Reserved|int*28|Reserved for future use, currently written as `0..27`|
+|22|ConsumedQueueSerial|int|The serial of the `mercenary_queue.xsdat` this game has read, `-1` before it has read one. Third of the reserved block|
+|23-49|Reserved|int*27|Reserved for future use, currently written as `0..26`|
 |50+|Locations (L)|int*L|All locations checked that have not been confirmed by AP client|
 
 `AP_Write` returns without creating the file at all while `AP_SLOT_ID` is `-1`, so the client never
@@ -164,7 +165,7 @@ Confirms that the client is still connected, and tells the game which other file
 |6|SendItems|bool|If 1, the game reads `items.xsdat`|
 |7|FreeItems|bool|If 1, the game reads `free_items.xsdat`|
 |8|FreeLocations|bool|If 1, the game reads `locations.xsdat`|
-|9|SendMercenaries|bool|If 1, the game reads `mercenaries.xsdat` and `mercenary_queue.xsdat`. Was `SendUnits`, which was never implemented and hardcoded to 0|
+|9|SendMercenaries|bool|If 1, the game reads `mercenaries.xsdat` and `mercenary_queue.xsdat`. Set while the client's queue serial differs from `ConsumedQueueSerial`, so it clears on acknowledgement rather than on client state. Was `SendUnits`, which was never implemented and hardcoded to 0|
 |10|SendMessages|bool|If 1, the game reads `messages.xsdat`|
 |11|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
 |12|AckMercenaryId|int|Echoes `CompletedMercenaryId` back. The game drops that mercenary from its pending list and may then name the next one|
@@ -251,6 +252,34 @@ unacknowledged; `LatestMessageId` in the scenario packet is the ack.
 |MessageId|int|Id of this message, compared against `LatestMessageId`|
 |Message|string|Length-prefixed text, with characters the engine dislikes stripped|
 |...|...|Repeated `Count` times|
+
+### `mercenary_queue.xsdat`
+
+Client -> Game. Read by `MercenarySeats.xs`.
+
+The four pavilion seats, **one record per seat in seat order**, so position is the seat and an
+emptied seat does not shift the others. There is no count and no length: a filled seat is an id
+followed by one int per soldier, and the reader finds the end of a seat by looking its unit count up
+in `MercenaryData.xs`. A table describing different mercenaries than this file makes every seat after
+the first read garbage.
+
+|Name|Type|Purpose|
+|---|---|---|
+|Serial|int|Advances only when the seats change. Echoed back as `ConsumedQueueSerial`|
+|MercenaryId|int|`-1` for an empty seat, and then nothing follows for that seat|
+|UnitIds|int*N|One id per soldier, N being the mercenary's unit count from `MercenaryData.xs`|
+|...|...|Repeated four times, once per seat|
+
+### `mercenaries.xsdat`
+
+Client -> Game. Read by `MercenarySeats.xs`.
+
+Every mercenary already spent, keyed by id rather than by position, so it needs no agreement with any
+other ordering.
+
+|Name|Type|Purpose|
+|---|---|---|
+|MercenaryIds (M)|int*M|Item ids of spent mercenaries|
 
 ### `units.xsdat` NOT IMPLEMENTED
 

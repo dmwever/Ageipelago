@@ -71,7 +71,8 @@ void AP_Write()
     xsWriteInt(scenarioId);
     xsWriteInt(worldMinor);
     xsWriteInt(PendingMercenary());
-    for (i = 0; < 28) {
+    xsWriteInt(ConsumedQueueSerial());
+    for (i = 0; < 27) {
         xsWriteInt(i);
     }
     int sendingLocations = FilterCompletedNotSent();
