@@ -51,3 +51,7 @@ void BuildTC() {
 void BeatTheRomans() {
   AP_Check_Location(10208);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(145, 10, 141, 14);
+}

@@ -47,3 +47,7 @@ void CastleBurgundyAll() {
 void DefeatOrAllyBurgundyAny() {
   AP_Check_Location(10407);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(144, 165, 140, 161);
+}

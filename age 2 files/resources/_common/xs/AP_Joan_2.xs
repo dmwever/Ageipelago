@@ -63,3 +63,7 @@ void SoutheastCastle() {
 void SouthwestCastle() {
   AP_Check_Location(20211);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(3, 182, 7, 178);
+}

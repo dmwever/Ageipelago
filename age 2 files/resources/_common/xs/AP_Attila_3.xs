@@ -79,3 +79,7 @@ void DestroyWonder() {
 void BlueMonastery() {
     AP_Check_Location(10315);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(101, 3, 97, 7);
+}

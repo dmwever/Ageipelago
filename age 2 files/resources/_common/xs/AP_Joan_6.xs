@@ -35,3 +35,7 @@ void FrenchArtillery() {
 void BurgundianTown() {
   AP_Check_Location(20604);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(141, 120, 137, 116);
+}

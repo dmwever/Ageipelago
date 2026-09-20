@@ -5,7 +5,7 @@ int mercenarySpawnY = -1;
 int mercenaryMusterX = -1;
 int mercenaryMusterY = -1;
 
-void SetMercenarySpawn(int spawnX = -1, int spawnY = -1, int musterX = -1, int musterY = -1) {
+void SetMercenarySpawnLocation(int spawnX = -1, int spawnY = -1, int musterX = -1, int musterY = -1) {
     mercenarySpawnX = spawnX;
     mercenarySpawnY = spawnY;
     mercenaryMusterX = musterX;

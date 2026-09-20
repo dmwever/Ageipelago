@@ -24,6 +24,8 @@ VICTORY_TECHNOLOGY = 1180
 # MERCENARY_TASK_VARIABLE in AP_Constants.xs; nothing checks that for you.
 MERCENARY_TASK_VARIABLE = 90
 
+MERCENARY_SPAWN_FUNCTION = "apSetMercenarySpawn"
+
 class APavilionMaker():
     trigger_manager: TriggerManager
     unit_manager: UnitManager
@@ -124,8 +126,7 @@ class APavilionMaker():
         only a teleport. So it places the unit and raises a variable, and this trigger does the
         tasking, selecting by area rather than by unit id because a trigger cannot be handed one."""
         startup = self._startup_trigger()
-        call = (f"SetMercenarySpawn({self.spawn['x']}, {self.spawn['y']}, "
-                f"{self.muster['x']}, {self.muster['y']});")
+        call = "SetMercenarySpawn();"
         if not any(effect.effect_type == EffectId.SCRIPT_CALL and effect.message == call
                    for effect in startup.effects):
             startup.new_effect.script_call(message=call)

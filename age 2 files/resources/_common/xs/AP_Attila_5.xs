@@ -31,3 +31,7 @@ void DefeatVisigoths() {
 void DefeatAlans() {
   AP_Check_Location(10503);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(125, 167, 121, 163);
+}

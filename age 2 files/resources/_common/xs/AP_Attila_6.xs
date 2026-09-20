@@ -63,3 +63,7 @@ void DestroyOrangeWonder() {
 void DestroyPurpleWonder2() {
   AP_Check_Location(10611);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(73, 3, 77, 7);
+}

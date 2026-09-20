@@ -75,3 +75,7 @@ void EscortJoan() {
 void Escort6Refugees() {
   AP_Check_Location(20514);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(8, 174, 12, 170);
+}

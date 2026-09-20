@@ -51,3 +51,7 @@ void DestroyRightCastle() {
 void DestroyRearCastle() {
   AP_Check_Location(20308);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(3, 98, 7, 94);
+}

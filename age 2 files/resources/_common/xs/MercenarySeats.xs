@@ -189,7 +189,7 @@ void ReadMercenaryQueue() {
             continue;
         }
         int units = MercenaryUnitCount(mercenaryId);
-        if (units < 1 || consumed + units > available) {
+        if (units < 1 || (consumed + units) > available) {
             xsChatData("<RED>ReadMercenaryQueue: mercenary " + mercenaryId + " does not match the installed table; the rest of the queue was skipped.");
             SyncSeat(seat, -1);
             consumed = available;
