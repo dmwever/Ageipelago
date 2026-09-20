@@ -165,7 +165,7 @@ Confirms that the client is still connected, and tells the game which other file
 |6|SendItems|bool|If 1, the game reads `items.xsdat`|
 |7|FreeItems|bool|If 1, the game reads `free_items.xsdat`|
 |8|FreeLocations|bool|If 1, the game reads `locations.xsdat`|
-|9|SendMercenaries|bool|If 1, the game reads `mercenaries.xsdat` and `mercenary_queue.xsdat`. Set while the client's queue serial differs from `ConsumedQueueSerial`, so it clears on acknowledgement rather than on client state. Was `SendUnits`, which was never implemented and hardcoded to 0|
+|9|SendMercenaries|bool|If 1, the game reads `mercenary_queue.xsdat`. Set while the client's queue serial differs from `ConsumedQueueSerial`, so it clears on acknowledgement rather than on client state. Was `SendUnits`, which was never implemented and hardcoded to 0|
 |10|SendMessages|bool|If 1, the game reads `messages.xsdat`|
 |11|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
 |12|AckMercenaryId|int|Echoes `CompletedMercenaryId` back. The game drops that mercenary from its pending list and may then name the next one|
@@ -185,8 +185,14 @@ acknowledged waits — at most four can be pending, because a seat cannot be ref
 sends a new queue.
 
 Both sides send the same value repeatedly while an acknowledgement is in flight. That is deliberate:
-the client's `Set` uses the server-side `or` operation and the game's `AckMercenary` ignores an id
-that is not at the head, so a repeat costs nothing and a dropped tick is recovered on the next one.
+the client's `Set` writes the whole spent mask with the server-side `replace` operation and the
+game's `AckMercenary` ignores an id that is not at the head, so a repeat costs nothing and a dropped
+tick is recovered on the next one.
+
+`replace` rather than `or` because the client's `APData/mercenaries_<player>_<tag>.json` is
+authoritative for what has been spent, and `or` is monotonic -- it can add a spend but never
+correct one. The server remains authoritative for what has been *unlocked*. One consequence worth
+knowing: two clients on the same slot would now clobber each other rather than merge.
 
 ### `items.xsdat`
 
@@ -258,28 +264,23 @@ unacknowledged; `LatestMessageId` in the scenario packet is the ack.
 Client -> Game. Read by `MercenarySeats.xs`.
 
 The four pavilion seats, **one record per seat in seat order**, so position is the seat and an
-emptied seat does not shift the others. There is no count and no length: a filled seat is an id
-followed by one int per soldier, and the reader finds the end of a seat by looking its unit count up
-in `MercenaryData.xs`. A table describing different mercenaries than this file makes every seat after
-the first read garbage.
+emptied seat does not shift the others. Each record is self-describing: the unit count is what tells
+the reader where one seat ends and the next begins, so nothing has to be installed alongside it and
+kept in agreement.
+
+`NameStringId` and `IconId` are indices into the Ageipelago mod, which ships the matching string and
+texture. The game holds no table to check them against -- a wrong one is a wrong name or picture on
+the seat button, never an error.
 
 |Name|Type|Purpose|
 |---|---|---|
 |Serial|int|Advances only when the seats change. Echoed back as `ConsumedQueueSerial`|
-|MercenaryId|int|`-1` for an empty seat, and then nothing follows for that seat|
-|UnitIds|int*N|One id per soldier, N being the mercenary's unit count from `MercenaryData.xs`|
+|MercenaryId|int|`-1` for an empty seat|
+|NameStringId|int|Modded string id, applied with `cAttrSetName`. `-1` when the seat is empty|
+|IconId|int|Modded tech icon index, applied with `cAttrSetIcon`. `-1` when the seat is empty|
+|UnitCount (N)|int|Soldiers in this mercenary. `0` when the seat is empty|
+|UnitIds|int*N|One id per soldier|
 |...|...|Repeated four times, once per seat|
-
-### `mercenaries.xsdat`
-
-Client -> Game. Read by `MercenarySeats.xs`.
-
-Every mercenary already spent, keyed by id rather than by position, so it needs no agreement with any
-other ordering.
-
-|Name|Type|Purpose|
-|---|---|---|
-|MercenaryIds (M)|int*M|Item ids of spent mercenaries|
 
 ### `units.xsdat` NOT IMPLEMENTED
 
