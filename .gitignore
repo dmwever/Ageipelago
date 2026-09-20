@@ -207,7 +207,10 @@ marimo/_lsp/
 __marimo__/
 xsscript/xs-check
 xsscript/xs-check.exe
-/age 2 files/mods
+/age 2 files/mods/*
+!/age 2 files/mods/local/
+/age 2 files/mods/local/*
+!/age 2 files/mods/local/Ageipelago/
 age 2 files/profile/Player.nfp
 age 2 files/resources/_common/xs/default0.xs
 age 2 files/resources/_common/xs/xs-check
