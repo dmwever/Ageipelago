@@ -1,6 +1,5 @@
 include "./ItemHandler.xs";
 include "./MercenaryLedger.xs";
-include "./MercenaryTable.xs";
 include "./MercenarySeats.xs";
 include "./MercenarySpawn.xs";
 include "./APavilion.xs";
@@ -220,7 +219,6 @@ void InitAP() {
     InitBuildsanity();
     InitScenarioLocations();
     InitMercenaryLedger();
-    LoadMercenaries();
     InitMercenarySeats();
     InitMercenarySpawn();
     xsEnableRule("MercenarySpawnLoop");
@@ -395,7 +393,6 @@ rule ReadMercenaries
     minInterval 1
     maxInterval 1
 {
-    ReadUsedMercenaries();
     ReadMercenaryQueue();
     xsDisableSelf();
 }

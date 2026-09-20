@@ -130,10 +130,6 @@ void SyncSeat(int seat = -1, int mercenaryId = -1, int unitCount = 0, int nameSt
         ClearSeat(seat);
         return;
     }
-    if (IsMercenaryUsed(mercenaryId)) {
-        ClearSeat(seat);
-        return;
-    }
     OfferSeat(seat, mercenaryId, unitCount, nameStringId, iconId);
 }
 
@@ -167,20 +163,6 @@ void ReadMercenaryQueue() {
         }
 
         SyncSeat(seat, mercenaryId, unitCount, nameStringId, iconId);
-    }
-    xsCloseFile();
-}
-
-// mercenaries.xsdat is the ids of every mercenary already spent, keyed by id rather than position,
-// so it needs no agreement with any other ordering.
-void ReadUsedMercenaries() {
-    bool opened = xsOpenFile("mercenaries");
-    if (opened == false) {
-        return;
-    }
-    int count = xsGetFileSize() / 4; // byte to int
-    for (i = 0; < count) {
-        SetMercenaryUsed(xsReadInt());
     }
     xsCloseFile();
 }
