@@ -77,7 +77,6 @@ void RunSeat(int seat = -1) {
         // The last soldier is what completes a mercenary, not the technology.
         MarkMercenaryComplete(SeatMercenary(seat));
         ClearSeat(seat);
-        ClearSeatUnits(seat);
         ResetSeatSpawn(seat);
         return;
     }

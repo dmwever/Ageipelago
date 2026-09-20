@@ -22,7 +22,7 @@ extern const int MERCENARY_SEAT_COUNT = 4;
 extern const int MERCENARY_SEAT_TECH_FIRST = 1182;
 extern const int MERCENARY_SEAT_BUTTON_FIRST = 11;
 extern const int PAVILION_BUILDING = 624;
-extern const int MERCENARY_MAX_UNITS = 64;
+extern const int MERCENARY_SEAT_RESEARCH_CAP = 1000;
 /* Scenario trigger variable the spawn loop raises to task a new soldier away. Attila 1
    already uses variable 2, so this sits well clear of the hand-authored ones. */
 extern const int MERCENARY_TASK_VARIABLE = 90;

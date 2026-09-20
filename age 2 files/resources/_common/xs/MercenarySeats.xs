@@ -57,7 +57,7 @@ void HardenSeat(int seat = -1) {
     }
     xsEffectAmount(cModifyTech, tech, cAttrSetEffect, 1.0 * NOOP_EFFECT, 1);
     xsEffectAmount(cModifyTech, tech, cAttrSetStacking, 1.0, 1);
-    xsEffectAmount(cModifyTech, tech, cAttrSetStackingResearchCap, 1.0 * MERCENARY_CAPACITY, 1);
+    xsEffectAmount(cModifyTech, tech, cAttrSetStackingResearchCap, 1.0 * MERCENARY_SEAT_RESEARCH_CAP, 1);
     xsEffectAmount(cModifyTech, tech, cAttrSetLocation, 1.0 * PAVILION_BUILDING, 1);
     xsEffectAmount(cModifyTech, tech, cAttrSetButton, 1.0 * SeatButton(seat), 1);
 }
@@ -76,48 +76,34 @@ void InitMercenarySeats() {
         structSetInt(emptySeat, "unitCount", 0);
         structSetInt(emptySeat, "state", SEAT_EMPTY);
         // new() seeds an array attribute with a one element array, so the real one replaces it.
-        structSetInt(emptySeat, "units",
-                     xsArrayCreateInt(MERCENARY_MAX_UNITS, -1, "ap-seat-units-" + seat));
+        structSetInt(emptySeat, "units", xsArrayCreateInt(1, -1, "ap-seat-units-" + seat));
         xsArraySetVector(seats, seat, emptySeat);
         HardenSeat(seat);
     }
 }
 
-void SetSeatUnit(int seat = -1, int index = -1, int unitId = -1) {
-    if (index < 0 || index >= MERCENARY_MAX_UNITS) {
-        return;
-    }
-    xsArraySetInt(SeatUnits(seat), index, unitId);
-}
-
 int SeatUnitAt(int seat = -1, int index = -1) {
-    if (index < 0 || index >= MERCENARY_MAX_UNITS) {
+    if (index < 0 || index >= SeatUnitCount(seat)) {
         return (-1);
     }
     return (xsArrayGetInt(SeatUnits(seat), index));
 }
 
-void ClearSeatUnits(int seat = -1) {
-    int units = SeatUnits(seat);
-    for (i = 0; < MERCENARY_MAX_UNITS) {
-        xsArraySetInt(units, i, -1);
-    }
-}
-
 void ClearSeat(int seat = -1) {
     xsEffectAmount(cModifyTech, SeatTech(seat), cAttrSetState, STATE_DISABLE, 1);
+    xsArrayResizeInt(SeatUnits(seat), 0);
     vector cleared = SeatAt(seat);
     structSetInt(cleared, "mercenaryId", -1);
     structSetInt(cleared, "unitCount", 0);
     structSetInt(cleared, "state", SEAT_EMPTY);
 }
 
-void OfferSeat(int seat = -1, int mercenaryId = -1) {
+void OfferSeat(int seat = -1, int mercenaryId = -1, int unitCount = 0, int nameStringId = -1,
+               int iconId = -1) {
     int tech = SeatTech(seat);
     if (xsGetTechState(tech, 1) == cTechStateInvalid) {
         return;
     }
-    int unitCount = MercenaryUnitCount(mercenaryId);
     if (unitCount < 1) {
         xsChatData("<RED>OfferSeat: mercenary " + mercenaryId + " has no units, so seat " + seat + " was left empty.");
         return;
@@ -125,6 +111,8 @@ void OfferSeat(int seat = -1, int mercenaryId = -1) {
 
     xsEffectAmount(cModifyTech, tech, cAttrSetState, STATE_DISABLE, 1);
     xsEffectAmount(cModifyTech, tech, cAttrSetTime, 1.0 * unitCount, 1);
+    xsEffectAmount(cModifyTech, tech, cAttrSetName, 1.0 * nameStringId, 1);
+    xsEffectAmount(cModifyTech, tech, cAttrSetIcon, 1.0 * iconId, 1);
     xsEffectAmount(cModifyTech, tech, cAttrSetState, STATE_ENABLE, 1);
 
     vector offered = SeatAt(seat);
@@ -133,7 +121,8 @@ void OfferSeat(int seat = -1, int mercenaryId = -1) {
     structSetInt(offered, "state", SEAT_OFFERED);
 }
 
-void SyncSeat(int seat = -1, int mercenaryId = -1) {
+void SyncSeat(int seat = -1, int mercenaryId = -1, int unitCount = 0, int nameStringId = -1,
+              int iconId = -1) {
     if (SeatMercenary(seat) == mercenaryId) {
         return;
     }
@@ -145,7 +134,7 @@ void SyncSeat(int seat = -1, int mercenaryId = -1) {
         ClearSeat(seat);
         return;
     }
-    OfferSeat(seat, mercenaryId);
+    OfferSeat(seat, mercenaryId, unitCount, nameStringId, iconId);
 }
 
 int ConsumedQueueSerial() {
@@ -160,46 +149,24 @@ void MarkSeatRunning(int seat = -1) {
     structSetInt(SeatAt(seat), "state", SEAT_RUNNING);
 }
 
-// mercenary_queue.xsdat carries one record per seat in seat order, so position is the seat: an empty
-// seat is a bare -1, a filled one is an id followed by one int per soldier. There is no length in
-// the file, which is why the unit count has to come from MercenaryTable -- a table describing
-// different mercenaries than the queue makes every seat after the first read garbage.
 void ReadMercenaryQueue() {
     bool opened = xsOpenFile("mercenary_queue");
     if (opened == false) {
         return;
     }
-    int available = xsGetFileSize() / 4; // byte to int
-    if (available < 1) {
-        xsCloseFile();
-        return;
-    }
-    // The serial leads the file, so it is consumed before any seat record.
     consumedQueueSerial = xsReadInt();
-    int consumed = 1;
     for (seat = 0; < MERCENARY_SEAT_COUNT) {
-        if (consumed >= available) {
-            SyncSeat(seat, -1);
-            continue;
-        }
         int mercenaryId = xsReadInt();
-        consumed = consumed + 1;
-        if (mercenaryId == -1) {
-            SyncSeat(seat, -1);
-            continue;
+        int nameStringId = xsReadInt();
+        int iconId = xsReadInt();
+        int unitCount = xsReadInt();
+
+        xsArrayResizeInt(SeatUnits(seat), unitCount);
+        for (u = 0; < unitCount) {
+            xsArraySetInt(SeatUnits(seat), u, xsReadInt());
         }
-        int units = MercenaryUnitCount(mercenaryId);
-        if (units < 1 || (consumed + units) > available) {
-            xsChatData("<RED>ReadMercenaryQueue: mercenary " + mercenaryId + " does not match the installed table; the rest of the queue was skipped.");
-            SyncSeat(seat, -1);
-            consumed = available;
-            continue;
-        }
-        for (u = 0; < units) {
-            SetSeatUnit(seat, u, xsReadInt());
-            consumed = consumed + 1;
-        }
-        SyncSeat(seat, mercenaryId);
+
+        SyncSeat(seat, mercenaryId, unitCount, nameStringId, iconId);
     }
     xsCloseFile();
 }
