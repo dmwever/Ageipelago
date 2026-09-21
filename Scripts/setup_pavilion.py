@@ -4,7 +4,7 @@ from typing import Any
 from AoE2ScenarioParser.datasets.players import PlayerColorId, PlayerId
 from AoE2ScenarioParser.datasets.buildings import BuildingInfo
 from AoE2ScenarioParser.datasets.effects import EffectId
-from AoE2ScenarioParser.datasets.trigger_lists import Operation
+from AoE2ScenarioParser.datasets.trigger_lists import Comparison, Operation
 from AoE2ScenarioParser.objects.data_objects.trigger import Trigger
 from AoE2ScenarioParser.objects.data_objects.unit import Unit
 from AoE2ScenarioParser.scenarios.aoe2_de_scenario import AoE2DEScenario, TriggerManager, UnitManager
@@ -20,21 +20,29 @@ INDESTRUCTIBLE_HP_DROP = -500
 # The technology the player researches in the pavilion to end the scenario.
 VICTORY_TECHNOLOGY = 1180
 
+# The scenario variable MercenarySpawn.xs raises after placing a soldier. Must match
+# MERCENARY_TASK_VARIABLE in AP_Constants.xs; nothing checks that for you.
+MERCENARY_TASK_VARIABLE = 90
+
 class APavilionMaker():
     trigger_manager: TriggerManager
     unit_manager: UnitManager
     apavilion: Unit
     x: int
     y: int
+    spawn: dict
+    muster: dict
     
     _color_trigger_id: int
     
-    def __init__(self, scenario: AoE2DEScenario, x: int, y: int):
+    def __init__(self, scenario: AoE2DEScenario, x: int, y: int, spawn: dict, muster: dict):
         self.trigger_manager = scenario.trigger_manager
         self.unit_manager = scenario.unit_manager
         self.apavilion = None
         self.x = x
         self.y = y
+        self.spawn = spawn
+        self.muster = muster
 
     def add_pavilion(self):
         if not any(trigger.name == "-- APavilion --" for trigger in self.trigger_manager.triggers):
@@ -66,16 +74,16 @@ class APavilionMaker():
         self._add_color_rotation(PlayerColorId.YELLOW, "Yellow", trigger_id=self._color_trigger_id)
         
         self._add_startup()
+        self._add_mercenary_muster()
 
-    def _add_startup(self) -> None:
-        pavilion_startup: Trigger = None
+    def _startup_trigger(self) -> Trigger:
         for trigger in self.trigger_manager.triggers:
             if trigger.name == "APavilion Startup":
-                pavilion_startup = trigger
-                break
-        
-        if pavilion_startup == None:
-            pavilion_startup = self.trigger_manager.add_trigger("APavilion Startup")
+                return trigger
+        return self.trigger_manager.add_trigger("APavilion Startup")
+
+    def _add_startup(self) -> None:
+        pavilion_startup: Trigger = self._startup_trigger()
 
         # Name
         if not any(effect.effect_type == EffectId.CHANGE_OBJECT_NAME
@@ -110,6 +118,41 @@ class APavilionMaker():
                 source_player=PlayerId.ONE,
                 selected_object_ids=[self.apavilion.reference_id]
             )
+
+    def _add_mercenary_muster(self) -> None:
+        """The game side can spawn a soldier but cannot order one to walk: XS has no move command,
+        only a teleport. So it places the unit and raises a variable, and this trigger does the
+        tasking, selecting by area rather than by unit id because a trigger cannot be handed one."""
+        startup = self._startup_trigger()
+        call = "SetMercenarySpawn();"
+        if not any(effect.effect_type == EffectId.SCRIPT_CALL and effect.message == call
+                   for effect in startup.effects):
+            startup.new_effect.script_call(message=call)
+
+        muster: Trigger = None
+        for trigger in self.trigger_manager.triggers:
+            if trigger.name == "AP Mercenary Muster":
+                muster = trigger
+                break
+
+        if muster is None:
+            muster = self.trigger_manager.add_trigger("AP Mercenary Muster")
+            muster.looping = 1
+            muster.new_condition.variable_value(
+                variable=MERCENARY_TASK_VARIABLE, quantity=1, comparison=Comparison.EQUAL)
+            muster.new_effect.task_object()
+            muster.new_effect.change_variable(
+                variable=MERCENARY_TASK_VARIABLE, quantity=0, operation=Operation.SET)
+
+        task = next(effect for effect in muster.effects
+                    if effect.effect_type == EffectId.TASK_OBJECT)
+        task.source_player = PlayerId.ONE
+        task.location_x = self.muster["x"]
+        task.location_y = self.muster["y"]
+        task.area_x1 = self.spawn["x"] - 1
+        task.area_y1 = self.spawn["y"] - 1
+        task.area_x2 = self.spawn["x"] + 1
+        task.area_y2 = self.spawn["y"] + 1
 
     def add_victory_triggers(self) -> None:
         if self.apavilion == None:

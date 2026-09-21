@@ -24,7 +24,8 @@ with open("Data/VictoryPavilionLocations.json", 'r') as file:
             
             ping.new_effect.script_call(message="AP_Write();")
         
-        pavilion_maker: APavilionMaker = APavilionMaker(scenario, x=location["x"], y=location["y"])
+        pavilion_maker: APavilionMaker = APavilionMaker(scenario, x=location["x"], y=location["y"],
+                                                       spawn=location["spawn"], muster=location["muster"])
         pavilion_maker.add_pavilion()
         pavilion_maker.add_victory_triggers()
         scenario.write_to_file(f"{file}.aoe2scenario")

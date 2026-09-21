@@ -67,3 +67,7 @@ void RiverBurgundians() {
 void BreakIntoBurgundy() {
   AP_Check_Location(20111);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(135, 85, 139, 85);
+}

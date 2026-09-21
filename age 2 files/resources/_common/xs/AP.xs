@@ -1,5 +1,9 @@
+include "./AP_Constants.xs";
 include "./SlotData.xs";
 include "./ItemHandler.xs";
+include "./MercenaryLedger.xs";
+include "./MercenarySeats.xs";
+include "./MercenarySpawn.xs";
 include "./APavilion.xs";
 
 int itemArray = -1;
@@ -66,7 +70,9 @@ void AP_Write()
     xsWriteInt(completed);
     xsWriteInt(scenarioId);
     xsWriteInt(worldMinor);
-    for (i = 0; < 29) {
+    xsWriteInt(PendingMercenary());
+    xsWriteInt(ConsumedQueueSerial());
+    for (i = 0; < 27) {
         xsWriteInt(i);
     }
     int sendingLocations = FilterCompletedNotSent();
@@ -135,12 +141,16 @@ void AP_Read()
     if (free_locations == 1) {
         xsEnableRule("MarkServerLocations");
     }
-    int units = xsReadInt();
+    int mercenaries = xsReadInt();
+    if (mercenaries == 1) {
+        xsEnableRule("ReadMercenaries");
+    }
     int messages = xsReadInt();
     if (messages == 1) {
         xsEnableRule("ReadMessages");
     }
     completed = xsReadInt();
+    AckMercenary(xsReadInt());
     xsCloseFile();
 }
 
@@ -211,6 +221,10 @@ void InitAP() {
     InitAges();
     InitTechsanity();
     InitScenarioLocations();
+    InitMercenaryLedger();
+    InitMercenarySeats();
+    InitMercenarySpawn();
+    xsEnableRule("MercenarySpawnLoop");
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, 0.0);
 
     xsEnableRule("ConnectAP");
@@ -375,5 +389,14 @@ rule ReadMessages
         }
     }
     xsCloseFile();
+    xsDisableSelf();
+}
+
+rule ReadMercenaries
+    inactive
+    minInterval 1
+    maxInterval 1
+{
+    ReadMercenaryQueue();
     xsDisableSelf();
 }

@@ -141,7 +141,9 @@ Game -> Client. Written by `AP_Write`, read by `Age2Packet`.
 |18|ScenarioCompleted|bool|Scenario global `completed`, 1 if the scenario has been completed|
 |19|ScenarioId|int|The id of the scenario, used when the player is playing a campaign. **Byte offset 72** — `find_active_campaign` depends on this|
 |20|WorldMinor|int|Minor `world_version`. First of the reserved block; see *Versioning*|
-|21-49|Reserved|int*29|Reserved for future use, currently written as `0..28`|
+|21|CompletedMercenaryId|int|A mercenary the game has finished spawning, `-1` when idle. Second of the reserved block. The game holds any others until this one is acknowledged; see *Mercenaries*|
+|22|ConsumedQueueSerial|int|The serial of the `mercenary_queue.xsdat` this game has read, `-1` before it has read one. Third of the reserved block|
+|23-49|Reserved|int*27|Reserved for future use, currently written as `0..26`|
 |50+|Locations (L)|int*L|All locations checked that have not been confirmed by AP client|
 
 `AP_Write` returns without creating the file at all while `AP_SLOT_ID` is `-1`, so the client never
@@ -163,12 +165,34 @@ Confirms that the client is still connected, and tells the game which other file
 |6|SendItems|bool|If 1, the game reads `items.xsdat`|
 |7|FreeItems|bool|If 1, the game reads `free_items.xsdat`|
 |8|FreeLocations|bool|If 1, the game reads `locations.xsdat`|
-|9|SendUnits|bool|If 1, the game reads `units.xsdat`. **Always 0** — see *units.xsdat* below|
+|9|SendMercenaries|bool|If 1, the game reads `mercenary_queue.xsdat`. Set while the client's queue serial differs from `ConsumedQueueSerial`, so it clears on acknowledgement rather than on client state. Was `SendUnits`, which was never implemented and hardcoded to 0|
 |10|SendMessages|bool|If 1, the game reads `messages.xsdat`|
 |11|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
+|12|AckMercenaryId|int|Echoes `CompletedMercenaryId` back. The game drops that mercenary from its pending list and may then name the next one|
 
 `AP_Read` validates in order — scenario, ping, version, slot — and returns early on the first
 failure, so no dispatch flag is acted on until the identity checks have passed.
+
+### Mercenaries
+
+A mercenary is spent the moment the game finishes spawning it, and that has to survive a reconnect,
+so it crosses as a two-flag ledger in the same shape as scenario locations.
+
+The game names one finished mercenary at a time in `CompletedMercenaryId`. The client acts on it and
+echoes the id back in `AckMercenaryId`; the game then drops it from `MercenaryLedger.xs` and is free
+to name the next. Only one id fits in the packet, so a second mercenary finishing before the first is
+acknowledged waits — at most four can be pending, because a seat cannot be refilled until the client
+sends a new queue.
+
+Both sides send the same value repeatedly while an acknowledgement is in flight. That is deliberate:
+the client's `Set` writes the whole spent mask with the server-side `replace` operation and the
+game's `AckMercenary` ignores an id that is not at the head, so a repeat costs nothing and a dropped
+tick is recovered on the next one.
+
+`replace` rather than `or` because the client's `APData/mercenaries_<player>_<tag>.json` is
+authoritative for what has been spent, and `or` is monotonic -- it can add a spend but never
+correct one. The server remains authoritative for what has been *unlocked*. One consequence worth
+knowing: two clients on the same slot would now clobber each other rather than merge.
 
 ### `items.xsdat`
 
@@ -234,6 +258,29 @@ unacknowledged; `LatestMessageId` in the scenario packet is the ack.
 |MessageId|int|Id of this message, compared against `LatestMessageId`|
 |Message|string|Length-prefixed text, with characters the engine dislikes stripped|
 |...|...|Repeated `Count` times|
+
+### `mercenary_queue.xsdat`
+
+Client -> Game. Read by `MercenarySeats.xs`.
+
+The four pavilion seats, **one record per seat in seat order**, so position is the seat and an
+emptied seat does not shift the others. Each record is self-describing: the unit count is what tells
+the reader where one seat ends and the next begins, so nothing has to be installed alongside it and
+kept in agreement.
+
+`NameStringId` and `IconId` are indices into the Ageipelago mod, which ships the matching string and
+texture. The game holds no table to check them against -- a wrong one is a wrong name or picture on
+the seat button, never an error.
+
+|Name|Type|Purpose|
+|---|---|---|
+|Serial|int|Advances only when the seats change. Echoed back as `ConsumedQueueSerial`|
+|MercenaryId|int|`-1` for an empty seat|
+|NameStringId|int|Modded string id, applied with `cAttrSetName`. `-1` when the seat is empty|
+|IconId|int|Modded tech icon index, applied with `cAttrSetIcon`. `-1` when the seat is empty|
+|UnitCount (N)|int|Soldiers in this mercenary. `0` when the seat is empty|
+|UnitIds|int*N|One id per soldier|
+|...|...|Repeated four times, once per seat|
 
 ### `units.xsdat` NOT IMPLEMENTED
 

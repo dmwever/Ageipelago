@@ -43,3 +43,7 @@ void DestroyChalonsTC() {
 void DestroyRheimsTC() {
   AP_Check_Location(20405);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(18, 73, 18, 69);
+}

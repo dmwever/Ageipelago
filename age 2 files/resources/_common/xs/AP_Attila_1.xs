@@ -87,3 +87,7 @@ void GiveHorses() {
 void DefeatFirstPlayer() {
   AP_Check_Location(10116);
 }
+
+void SetMercenarySpawn() {
+    SetMercenarySpawnLocation(106, 7, 106, 11);
+}

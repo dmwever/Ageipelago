@@ -1,5 +1,4 @@
 include "AP_Headers.xs";
-include "AP_Constants.xs";
 
 vector buildsanity = cInvalidVector;
 

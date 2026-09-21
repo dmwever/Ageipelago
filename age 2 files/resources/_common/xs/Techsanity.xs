@@ -1,4 +1,3 @@
-include "./Tech_Constants.xs";
 include "./TechData.xs";
 
 int techArray = -1;

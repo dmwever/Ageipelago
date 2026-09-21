@@ -19,6 +19,63 @@ extern const float STATE_DISABLE = 0.0;
 extern const float STATE_ENABLE = 2.0;
 extern const float STATE_DONE = 3.0;
 
+/* cModifyTech cost attributes; no prelude constant exists */
+
+extern const int TECH_ATTR_COST_FIRST = 0;
+extern const int TECH_ATTR_COST_LAST = 3;
+
+/* Binding a tech to this strips its effect, leaving the research action and nothing else. */
+
+extern const int NOOP_EFFECT = 0;
+
+/* Techs */
+
+extern const int TECH_CAPACITY = 400;
+extern const int TECH_ITEM_OFFSET = 3600;
+extern const int TECH_SHADOW = 1181;
+
+/* Techsanity */
+
+extern const int TECHSANITY_NONE = 0;
+extern const int TECHSANITY_UNITS = 1;
+extern const int TECHSANITY_GENERIC = 2;
+extern const int TECHSANITY_ALL = 3;
+
+/* Tech Behavior */
+
+extern const int BEHAVIOR_MUST_RESEARCH = 0;
+extern const int BEHAVIOR_INSTANT = 1;
+
+/* Lock Techs */
+
+extern const int LOCK_ITEMS = 0;
+extern const int LOCK_EFFECTS = 1;
+
+/* Shuffle Unique Techs */
+
+extern const int UNIQUES_UNSHUFFLED = 0;
+extern const int UNIQUES_SHUFFLED = 1;
+extern const int UNIQUES_SHUFFLED_EVERYWHERE = 2;
+
+/* Existing Techs */
+
+extern const int EXISTING_VANILLA = 0;
+extern const int EXISTING_FIND_ITEMS = 1;
+extern const int EXISTING_ONLY_FIND_UNITS = 2;
+extern const int EXISTING_START_IN_DARK_AGE = 3;
+
+/* Mercenary seats. 1180 is the victory tech and 1181 is Techsanity's effect donor, so these
+   start above both. Buttons 11-14 are the pavilion's third row; victory sits at button 1. */
+
+extern const int MERCENARY_SEAT_COUNT = 4;
+extern const int MERCENARY_SEAT_TECH_FIRST = 1182;
+extern const int MERCENARY_SEAT_BUTTON_FIRST = 11;
+extern const int PAVILION_BUILDING = 624;
+extern const int MERCENARY_SEAT_RESEARCH_CAP = 1000;
+/* Scenario trigger variable the spawn loop raises to task a new soldier away. Attila 1
+   already uses variable 2, so this sits well clear of the hand-authored ones. */
+extern const int MERCENARY_TASK_VARIABLE = 90;
+
 /* Building Ids */
 
 // Always

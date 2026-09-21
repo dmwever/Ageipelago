@@ -9,7 +9,7 @@
  * ##########################################################
  *
  * Created by MrKirby -- https://github.com/KSneijders/XsStructs
- * Version: 1.0.0 (2026-01-25)
+ * Version: 1.1.1 (2026-03-18)
  *
  * ######################## Credits #########################
  * XS-Check by Alian -- https://github.com/Divy1211/xs-check
@@ -74,6 +74,7 @@ void clearPrintBuffer() {
     STRUCT_PRINT_BUFFER_POINTER = 0;
 }
 
+/** @allow_discard */
 bool buffer(string str = "") {
     if (STRUCT_PRINT_BUFFER_POINTER > (STRUCT_PRINT_BUFFER_SIZE - 1)) {
         MOST_RECENT_ERROR = "PRINT BUFFER FULL";
@@ -86,6 +87,7 @@ bool buffer(string str = "") {
     return (true);
 }
 
+/** @allow_discard */
 bool bufferLine(string line = "") {
     bool success = buffer(line);
     if (success == false) {
@@ -98,6 +100,7 @@ bool bufferLine(string line = "") {
 }
 
 void printBuffer() {
+    static int count = 0;
     string line = "";
     for(i = 0; < xsArrayGetSize(STRUCT_PRINT_BUFFER)) {
         line = xsArrayGetString(STRUCT_PRINT_BUFFER, i);
@@ -110,10 +113,11 @@ void printBuffer() {
             prefix = "0" + prefix;
         }
 
-        xsChatData("|" + prefix + "| " + line);
+        xsChatData("|" + count + prefix + "| " + line);
     }
 
     clearPrintBuffer();
+    count++;
 }
 
 int findIndexString(int arrayId = -1, string match = "") {
@@ -140,6 +144,7 @@ int findStructIndex(string structName = "") {
     return (findIndexString(STRUCT_NAME_ARRAY, structName));
 }
 
+/** @allow_discard */
 bool defineStruct(string name = "") {
     if (STRUCTS_INITIALIZED == false) {
         xsChatData("The `initializeStructsScript()` has to be called before defining a struct!");
@@ -164,6 +169,7 @@ bool defineStruct(string name = "") {
     return (true);
 }
 
+/** @allow_discard */
 bool defineStructAttribute(string structName = "", string structAttribute = "", int structType = -1) {
     int structIndex = findStructIndex(structName);
     if (structIndex == -1) {
@@ -232,34 +238,34 @@ string getInstanceReferenceAsString(vector v = cInvalidVector) {
     return ("ref[" + xsVectorGetX(v) + ", " + xsVectorGetY(v) + "]");
 }
 
-int createTypeArray(int attributeType = -1, string arrayName = "") {
+int createTypeArray(int attributeType = -1, string arrayName = "", int size = 1) {
     string type = getReadableType(attributeType);
 
     switch (attributeType) {
         case TYPE_INT: {
-            return (xsArrayCreateInt(1, 0, "array"+type+arrayName));
+            return (xsArrayCreateInt(size, 0, "array"+type+arrayName));
         }
         case TYPE_BOOL: {
-            return (xsArrayCreateBool(1, false, "array"+type+arrayName));
+            return (xsArrayCreateBool(size, false, "array"+type+arrayName));
         }
         case TYPE_FLOAT: {
-            return (xsArrayCreateFloat(1, 0.0, "array"+type+arrayName));
+            return (xsArrayCreateFloat(size, 0.0, "array"+type+arrayName));
         }
         case TYPE_STRING: {
-            return (xsArrayCreateString(1, "", "array"+type+arrayName));
+            return (xsArrayCreateString(size, "", "array"+type+arrayName));
         }
         case TYPE_VECTOR: {
-            return (xsArrayCreateVector(1, vector(0, 0, 0), "array"+type+arrayName));
+            return (xsArrayCreateVector(size, vector(0, 0, 0), "array"+type+arrayName));
         }
         case TYPE_STRUCT: {
             // Same as vector
-            return (xsArrayCreateVector(1, cInvalidVector, "array"+type+arrayName));
+            return (xsArrayCreateVector(size, cInvalidVector, "array"+type+arrayName));
         }
     }
 
     if (attributeType >= 100) {
         // Array types: Same as int
-        return (xsArrayCreateInt(1, -1, "array"+type+arrayName));
+        return (xsArrayCreateInt(size, -1, "array"+type+arrayName));
     }
 
     return (-1);
@@ -308,7 +314,7 @@ void printStructDefinition(string structName = "") {
     printBuffer();
 }
 
-// This function exists so I don't have to repeat xsc-ignore :)
+/** This function exists so I don't have to repeat xsc-ignore :) */
 int toStructIndex(vector instance = cInvalidVector) {
     // xsc-ignore: NumDownCast
     int structIndex = xsVectorGetX(instance);
@@ -316,7 +322,7 @@ int toStructIndex(vector instance = cInvalidVector) {
     return (structIndex);
 }
 
-// This function exists so I don't have to repeat xsc-ignore :)
+/** This function exists so I don't have to repeat xsc-ignore :) */
 int toInstanceIndex(vector instance = cInvalidVector) {
     // xsc-ignore: NumDownCast
     int instanceIndex = xsVectorGetY(instance);
@@ -370,6 +376,7 @@ mutable void printStructInstance(vector instance = cInvalidVector, string prefix
     // XS needs functions to exist before the one you call them in.
 }
 
+/** @allow_discard */
 mutable bool printFromXsArray(int valueRefArray = -1, int attributeType = -1, string prefix = "", int getIndex = 0) {
     if (valueRefArray == -1) {
         MOST_RECENT_ERROR = "INVALID VALUE REF ARRAY";
@@ -391,6 +398,10 @@ mutable bool printFromXsArray(int valueRefArray = -1, int attributeType = -1, st
         case TYPE_VECTOR: { str = "" + xsArrayGetVector(valueRefArray, getIndex); }
         case TYPE_STRUCT: {
             vector struct = xsArrayGetVector(valueRefArray, getIndex);
+            if (struct == cInvalidVector) {
+                buffer("null");
+                return (true);
+            }
             if (isValidInstance(struct) == false) {
                 return (true);
             }
@@ -511,6 +522,7 @@ mutable vector new(string structName = "") {
     return (v);
 }
 
+/** @allow_discard */
 bool deleteInstance(vector instance = cInvalidVector) {
     bool isValid = isValidInstance(instance);
     if (isValid == false) {
@@ -623,6 +635,7 @@ string structGetString(vector instance = cInvalidVector, string attrName = "") {
     return (xsArrayGetString(getValueArrayRefAfterValidation(), 0));
 }
 
+/** @allow_discard */
 bool structSetString(vector instance = cInvalidVector, string attrName = "", string value = "") {
     bool success = validateInstanceAttribute(instance, attrName, TYPE_STRING);
     if (success == false) {
@@ -648,6 +661,7 @@ int structGetInt(vector instance = cInvalidVector, string attrName = "") {
     return (xsArrayGetInt(getValueArrayRefAfterValidation(), 0));
 }
 
+/** @allow_discard */
 bool structSetInt(vector instance = cInvalidVector, string attrName = "", int value = -1) {
     bool success = validateInstanceAttribute(instance, attrName, TYPE_INT);
     if (success == false) {
@@ -673,6 +687,7 @@ float structGetFloat(vector instance = cInvalidVector, string attrName = "") {
     return (xsArrayGetFloat(getValueArrayRefAfterValidation(), 0));
 }
 
+/** @allow_discard */
 bool structSetFloat(vector instance = cInvalidVector, string attrName = "", float value = -1.0) {
     bool success = validateInstanceAttribute(instance, attrName, TYPE_FLOAT);
     if (success == false) {
@@ -698,6 +713,7 @@ bool structGetBool(vector instance = cInvalidVector, string attrName = "") {
     return (xsArrayGetBool(getValueArrayRefAfterValidation(), 0));
 }
 
+/** @allow_discard */
 bool structSetBool(vector instance = cInvalidVector, string attrName = "", bool value = false) {
     bool success = validateInstanceAttribute(instance, attrName, TYPE_BOOL);
     if (success == false) {
@@ -723,6 +739,7 @@ vector structGetVector(vector instance = cInvalidVector, string attrName = "") {
     return (xsArrayGetVector(getValueArrayRefAfterValidation(), 0));
 }
 
+/** @allow_discard */
 bool structSetVector(vector instance = cInvalidVector, string attrName = "", vector value = cInvalidVector) {
     bool success = validateInstanceAttribute(instance, attrName, TYPE_VECTOR);
     if (success == false) {
@@ -733,6 +750,204 @@ bool structSetVector(vector instance = cInvalidVector, string attrName = "", vec
     xsArraySetVector(getValueArrayRefAfterValidation(), 0, value);
 
     return (true);
+}
+
+/** @allow_discard */
+mutable bool structWriteInstance(vector instance = cInvalidVector) {
+    // Overwritten later - Exists so this function and `writeValueToFile` can call each other recursively
+    // XS needs functions to exist before the one you call them in.
+    return (false);
+}
+
+mutable vector structReadInstance(string structName = "") {
+    // Overwritten later - Exists so this function and `readArrayFromFile` can call each other recursively
+    // XS needs functions to exist before the one you call them in.
+    return (cInvalidVector);
+}
+
+/** @allow_discard */
+mutable bool writeValueToFile(int valueRefArray = -1, int attributeType = -1, int index = 0) {
+    if (valueRefArray == -1) {
+        MOST_RECENT_ERROR = "INVALID VALUE REF ARRAY IN FILE WRITE";
+        return (false);
+    }
+
+    switch (attributeType) {
+        case TYPE_INT: {
+            xsWriteInt(xsArrayGetInt(valueRefArray, index));
+            return (true);
+        }
+        case TYPE_BOOL: {
+            if (xsArrayGetBool(valueRefArray, index)) {
+                xsWriteInt(1);
+            } else {
+                xsWriteInt(0);
+            }
+            return (true);
+        }
+        case TYPE_FLOAT: {
+            xsWriteFloat(xsArrayGetFloat(valueRefArray, index));
+            return (true);
+        }
+        case TYPE_STRING: {
+            xsWriteString(xsArrayGetString(valueRefArray, index));
+            return (true);
+        }
+        case TYPE_VECTOR: {
+            xsWriteVector(xsArrayGetVector(valueRefArray, index));
+            return (true);
+        }
+        case TYPE_STRUCT: {
+            vector nestedInst = xsArrayGetVector(valueRefArray, index);
+            if (nestedInst == cInvalidVector) {
+                xsWriteString("");
+                return (true);
+            }
+            if (isValidInstance(nestedInst) == false) {
+                MOST_RECENT_ORIGIN = "writeValueToFile(<type_struct>)";
+                return (false);
+            }
+            xsWriteString(xsArrayGetString(STRUCT_NAME_ARRAY, toStructIndex(nestedInst)));
+            return (structWriteInstance(nestedInst));
+        }
+    }
+
+    int arrSize = 0;
+    if (attributeType >= 100) {
+        int arr = xsArrayGetInt(valueRefArray, index);
+        if (arr != -1) {
+            arrSize = xsArrayGetSize(arr);
+        }
+        xsWriteInt(arrSize);
+        for(i = 0; < arrSize) {
+            writeValueToFile(arr, attributeType - 100, i);
+        }
+        return (true);
+    }
+
+    return (false);
+}
+
+/** @allow_discard */
+mutable bool structWriteInstance(vector instance = cInvalidVector) {
+    if (isValidInstance(instance) == false) {
+        MOST_RECENT_ORIGIN = "structWriteInstance("+getInstanceReferenceAsString(instance)+")";
+        return (false);
+    }
+
+    int structIndex = toStructIndex(instance);
+    int instanceIndex = toInstanceIndex(instance);
+
+    int instancesArray = xsArrayGetInt(STRUCT_INSTANCE_ARRAY_ARRAY, structIndex);
+    int instanceRef = xsArrayGetInt(instancesArray, instanceIndex);
+
+    int attributeCount = getStructAttributeCount(structIndex);
+    int attributesTypeArray = xsArrayGetInt(STRUCT_ATTRIBUTE_TYPES_ARRAY_ARRAY, structIndex);
+
+    for(i = 0; < attributeCount) {
+        int attributeType = xsArrayGetInt(attributesTypeArray, i);
+        int valueRefArray = xsArrayGetInt(instanceRef, i);
+        writeValueToFile(valueRefArray, attributeType, 0);
+    }
+
+    return (true);
+}
+
+int readArrayFromFile(int elementType = -1) {
+    static int STRUCT_FILE_READ_COUNTER = 0;
+
+    int size = xsReadInt();
+
+    if (size <= 0) {
+        return (-1);
+    }
+
+    STRUCT_FILE_READ_COUNTER++;
+    int arr = createTypeArray(elementType, "fileRead_" + STRUCT_FILE_READ_COUNTER, size);
+
+    if (arr == -1) {
+        return (-1);
+    }
+
+    for(i = 0; < size) {
+        switch (elementType) {
+            case TYPE_INT:    { xsArraySetInt(arr, i, xsReadInt()); }
+            case TYPE_FLOAT:  { xsArraySetFloat(arr, i, xsReadFloat()); }
+            case TYPE_STRING: { xsArraySetString(arr, i, xsReadString()); }
+            case TYPE_VECTOR: { xsArraySetVector(arr, i, xsReadVector()); }
+            case TYPE_STRUCT: { xsArraySetVector(arr, i, structReadInstance(xsReadString())); }
+        }
+
+        if (elementType == TYPE_BOOL) {
+            int boolAsInt = xsReadInt();
+            if (boolAsInt != 0) {
+                xsArraySetBool(arr, i, true);
+            } else {
+                xsArraySetBool(arr, i, false);
+            }
+        }
+
+        if (elementType >= 100) {
+            xsArraySetInt(arr, i, readArrayFromFile(elementType - 100));
+        }
+    }
+
+    return (arr);
+}
+
+mutable vector structReadInstance(string structName = "") {
+    if (structName == "") {
+        return (cInvalidVector);
+    }
+
+    int structIndex = findStructIndex(structName);
+
+    if (structIndex == -1) {
+        MOST_RECENT_ERROR = "UNKNOWN STRUCT ["+structName+"]";
+        MOST_RECENT_ORIGIN = "structReadInstance('"+structName+"')";
+        return (cInvalidVector);
+    }
+
+    vector instance = new(structName);
+    if (instance == cInvalidVector) {
+        MOST_RECENT_ORIGIN = "structReadInstance('"+structName+"') -> new('"+structName+"')";
+        return (cInvalidVector);
+    }
+
+    int instanceIndex = toInstanceIndex(instance);
+    int instancesArray = xsArrayGetInt(STRUCT_INSTANCE_ARRAY_ARRAY, structIndex);
+    int instanceRef = xsArrayGetInt(instancesArray, instanceIndex);
+
+    int attributeCount = getStructAttributeCount(structIndex);
+    int attributesTypeArray = xsArrayGetInt(STRUCT_ATTRIBUTE_TYPES_ARRAY_ARRAY, structIndex);
+
+    for(i = 0; < attributeCount) {
+        int attributeType = xsArrayGetInt(attributesTypeArray, i);
+        int valueRefArray = xsArrayGetInt(instanceRef, i);
+
+        switch (attributeType) {
+            case TYPE_INT:    { xsArraySetInt(valueRefArray, 0, xsReadInt()); }
+            case TYPE_FLOAT:  { xsArraySetFloat(valueRefArray, 0, xsReadFloat()); }
+            case TYPE_STRING: { xsArraySetString(valueRefArray, 0, xsReadString()); }
+            case TYPE_VECTOR: { xsArraySetVector(valueRefArray, 0, xsReadVector()); }
+            case TYPE_STRUCT: { xsArraySetVector(valueRefArray, 0, structReadInstance(xsReadString())); }
+        }
+
+        if (attributeType == TYPE_BOOL) {
+            int boolAsInt = xsReadInt();
+            if (boolAsInt != 0) {
+                xsArraySetBool(valueRefArray, 0, true);
+            } else {
+                xsArraySetBool(valueRefArray, 0, false);
+            }
+        }
+
+        if (attributeType >= 100) {
+            xsArraySetInt(valueRefArray, 0, readArrayFromFile(attributeType - 100));
+        }
+    }
+
+    return (instance);
 }
 
 mutable void initializeStructsScript() {
