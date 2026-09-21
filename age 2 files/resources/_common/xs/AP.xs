@@ -1,3 +1,4 @@
+include "./AP_Constants.xs";
 include "./SlotData.xs";
 include "./ItemHandler.xs";
 include "./MercenaryLedger.xs";
