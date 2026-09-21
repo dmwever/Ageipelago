@@ -211,11 +211,17 @@ has not yet acked, not a fixed twelve.
 
 Client -> Game
 
-The client echoes back the items that have been successfully received by the game. The game frees item slots in its local cache, allowing new items to be loaded into the game and activated.
+The client lists every item id the game echoed back that the client no longer holds in flight. The
+game frees those slots in its local cache, so a new window can be loaded.
+
+Freeing lags the acknowledgement by one pass: an id leaves the in-flight list when `ack_items`
+confirms it, and is therefore listed here on the *next* pass. Ids from a previous session that the
+client never sent are freed the same way. In the steady state, with a window still in flight and
+nothing acked since the last pass, this file is written empty.
 
 |Name|Type|Purpose|
 |---|---|---|
-|ItemIds (I)|int*I|The non-empty entries of `ItemId1-12` from the last packet|
+|ItemIds (I)|int*I|Echoed ids the client no longer has in flight: those acked on the previous pass, plus orphans from an earlier session|
 
 ### `locations.xsdat`
 
@@ -244,6 +250,17 @@ Client -> Game. Read by `ItemHandler.xs`.
 |Name|Type|Purpose|
 |---|---|---|
 |ItemIds (I)|int*I|Item ids of every unlocked building|
+
+### `techs.xsdat`
+
+Client -> Game. Read by `ItemHandler.xs`.
+
+Every unlocked technology item, rewritten whenever the unlocked set changes. `GiveStartupTechs`
+re-reads it on each connect, so a reconnect cannot strand a technology.
+
+|Name|Type|Purpose|
+|---|---|---|
+|ItemIds (I)|int*I|Item ids of every unlocked technology|
 
 ### `messages.xsdat`
 
