@@ -136,25 +136,25 @@ class APavilionMaker():
             if trigger.name == "AP Mercenary Muster":
                 muster = trigger
                 break
-        if muster is not None:
-            return
 
-        muster = self.trigger_manager.add_trigger("AP Mercenary Muster")
-        muster.looping = 1
-        muster.new_condition.variable_value(
-            variable=MERCENARY_TASK_VARIABLE, quantity=1, comparison=Comparison.EQUAL)
-        muster.new_effect.task_object(
-            source_player=PlayerId.ONE,
-            location_x=self.muster["x"],
-            location_y=self.muster["y"],
-            area_x1=self.spawn["x"] - 1,
-            area_y1=self.spawn["y"] - 1,
-            area_x2=self.spawn["x"] + 1,
-            area_y2=self.spawn["y"] + 1,
-        )
-        # Lowered again so the next soldier gets its own task rather than riding this one.
-        muster.new_effect.change_variable(
-            variable=MERCENARY_TASK_VARIABLE, quantity=0, operation=Operation.SET)
+        if muster is None:
+            muster = self.trigger_manager.add_trigger("AP Mercenary Muster")
+            muster.looping = 1
+            muster.new_condition.variable_value(
+                variable=MERCENARY_TASK_VARIABLE, quantity=1, comparison=Comparison.EQUAL)
+            muster.new_effect.task_object()
+            muster.new_effect.change_variable(
+                variable=MERCENARY_TASK_VARIABLE, quantity=0, operation=Operation.SET)
+
+        task = next(effect for effect in muster.effects
+                    if effect.effect_type == EffectId.TASK_OBJECT)
+        task.source_player = PlayerId.ONE
+        task.location_x = self.muster["x"]
+        task.location_y = self.muster["y"]
+        task.area_x1 = self.spawn["x"] - 1
+        task.area_y1 = self.spawn["y"] - 1
+        task.area_x2 = self.spawn["x"] + 1
+        task.area_y2 = self.spawn["y"] + 1
 
     def add_victory_triggers(self) -> None:
         if self.apavilion == None:
