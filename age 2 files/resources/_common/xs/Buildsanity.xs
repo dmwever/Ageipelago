@@ -76,7 +76,7 @@ void InitBuildsanityStructs() {
     structSetInt(buildsanity, "buildings", buildings);
 }
 
-void CreateLocations() {
+void CreateBuildingLocations() {
     int buildings = structGetInt(buildsanity, "buildings");
 
     vector wonder = createLocationLock("Wonder", WONDER, 3000.0, 200);
@@ -86,7 +86,7 @@ void CreateLocations() {
     xsArraySetVector(buildings, 1, outpost);
 
     // Economy
-    vector townCenter = createLocationLock("Town Center", 621, 275.0, 202);
+    vector townCenter = createLocationLock("Town Center", TOWN_CENTER_FOUNDATION, 275.0, 202);
     structSetInt(townCenter, "playerCount", xsGetObjectCount(1, townCenterId));
     xsArraySetVector(buildings, 2, townCenter);
 
@@ -178,7 +178,7 @@ void CreateLocations() {
     vector feitoria = createLocationLock("Feitoria", FEITORIA, 650.0, 230);
     xsArraySetVector(buildings, 30, feitoria);
 
-    vector settlement = createLocationLock("Settlement", 2556, 125.0, 231);
+    vector settlement = createLocationLock("Settlement", SETTLEMENT, 125.0, 231);
     xsArraySetVector(buildings, 31, settlement);
 
     vector fortifiedChurch = createLocationLock("Fortified Church", FORTIFIED_CHURCH, 200.0, 232);
@@ -193,7 +193,7 @@ void CreateLocations() {
 
 void InitBuildsanity() {
     InitBuildsanityStructs();
-    CreateLocations();
+    CreateBuildingLocations();
     structSetFloat(buildsanity, "currentBuildingTotalCost", xsPlayerAttribute(1, cAttributeValueCurrentBuildings));
     structSetFloat(buildsanity, "castlesBuilt", xsPlayerAttribute(1, cAttributeTotalCastlesBuilt));
     structSetFloat(buildsanity, "wondersBuilt", xsPlayerAttribute(1, cAttributeTotalWondersBuilt));
@@ -316,6 +316,7 @@ rule BuildsanityChecks
 void checkPrerequisites(vector building = cInvalidVector) {
     if (building == cInvalidVector) {
         xsChatData("checkPrerequisites: Building not found.");
+        return;
     }
 
     string name = structGetString(building, "name");

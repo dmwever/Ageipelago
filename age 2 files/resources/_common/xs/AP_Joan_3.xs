@@ -9,6 +9,10 @@ void GiveScenarioItems() {
   ReadScenarioItemFile("JOAN3");
 }
 
+void SetScenarioAge() {
+  SetVanillaAge(FEUDAL_AGE);
+}
+
 void main() {
   SetScenarioId(203);
   InitAP();

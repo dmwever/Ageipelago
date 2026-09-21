@@ -9,6 +9,10 @@ void GiveScenarioItems() {
   ReadScenarioItemFile("JOAN1");
 }
 
+void SetScenarioAge() {
+  SetVanillaAge(CASTLE_AGE);
+}
+
 void main() {
   SetScenarioId(201);
   InitAP();

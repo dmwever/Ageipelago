@@ -1,10 +1,10 @@
 //General Items
 void TOWN_CENTER_WOOD() {
-    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 275.0);
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 275.0, 1);
 }
 
 void TOWN_CENTER_STONE() {
-    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 100.0);
+    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 100.0, 1);
 }
 
 // Scenario-specific items

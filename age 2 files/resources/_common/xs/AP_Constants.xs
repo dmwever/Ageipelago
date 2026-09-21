@@ -1,5 +1,18 @@
 extern const int MIN_SCENARIO_ID = 101;
 
+/* Ages */
+
+extern const int DARK_AGE = 25;
+extern const int FEUDAL_AGE = 26;
+extern const int CASTLE_AGE = 27;
+extern const int IMPERIAL_AGE = 28;
+
+/* Age-up techs. Genie names mislead: 101 is "Middle Age" but grants Feudal. */
+
+extern const int FEUDAL_AGE_TECH = 101;
+extern const int CASTLE_AGE_TECH = 102;
+extern const int IMPERIAL_AGE_TECH = 103;
+
 /* cAttrSetState values. Float, because ints are not promoted in a call. */
 
 extern const float STATE_DISABLE = 0.0;

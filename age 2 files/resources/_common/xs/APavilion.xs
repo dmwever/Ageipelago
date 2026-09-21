@@ -4,7 +4,7 @@ void ShowVictory() {
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetLocation, 624.0);
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetButton, 1.0);
     xsEffectAmount(cModifyTech, victoryTech, cAttrSetIcon, 107.0);
-    xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, cAttributeForce);
+    xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, 2.0);
 }
 
 bool DeclareVictory() {
