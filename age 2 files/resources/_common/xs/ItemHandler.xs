@@ -29,7 +29,6 @@ const int AP_BUILDING_ITEM_MAX    = 300;
 const int AP_PROGRESSION_ITEM_MIN = 1000;
 const int AP_PROGRESSION_ITEM_MAX = 3000;
 
-const int AP_TECH_ITEM_OFFSET     = 3600;
 const int AP_TECH_ITEM_MAX        = 4000;
 
 const int AP_MERC_ITEM_MIN        = 4000;
@@ -52,8 +51,8 @@ void GiveItem(int itemId = -1) {
         GiveProgressionItem(itemId);
         return;
     }
-    if (itemId >= AP_TECH_ITEM_OFFSET && itemId < AP_TECH_ITEM_MAX) {
-        UnlockTech(itemId - AP_TECH_ITEM_OFFSET);
+    if (itemId >= TECH_ITEM_OFFSET && itemId < AP_TECH_ITEM_MAX) {
+        UnlockTech(itemId - TECH_ITEM_OFFSET);
         return;
     }
     if (itemId >= AP_MERC_ITEM_MIN && itemId < AP_MERC_ITEM_MAX) {

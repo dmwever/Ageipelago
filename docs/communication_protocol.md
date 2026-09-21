@@ -270,9 +270,11 @@ Each scenario has a shorthand file containing found items to be sent at level st
 
 Client -> Game, but **not** an `.xsdat` file.
 
-Written by `/install` into `resources/_common/xs/`, and `include`d by `AP.xs`. A default shipping with
-the mod declares `-1` for everything, so a fresh install fails with a legible in-game message rather
-than an unresolved-include error.
+Written by `/install` into `resources/_common/xs/`, and `include`d by `AP.xs`. A default ships with
+the mod so a fresh install fails with a legible in-game message rather than an unresolved-include
+error. It declares `-1` for the identity fields — `AP_SLOT_ID`, `AP_SEED_HIGH`, `AP_SEED_LOW` — and
+`0` for the option fields, so an install that `/install` has never touched reads as "no slot" and as
+every option off, rather than as a valid option value.
 
 ```xs
 extern const int AP_SLOT_ID = 2;

@@ -1,7 +1,6 @@
 include "./Tech_Constants.xs";
 include "./TechData.xs";
 
-vector techsanity = cInvalidVector;
 int techArray = -1;
 int techCount = 0;
 
@@ -284,12 +283,7 @@ void InitTechsanityStructs() {
     defineStructAttribute("Tech", "enabled", TYPE_BOOL);
     defineStructAttribute("Tech", "prerequisiteId", TYPE_INT);
 
-    defineStruct("Techsanity");
-    defineStructAttribute("Techsanity", "techs", TYPE_STRUCT_ARRAY);
-
-    techsanity = new("Techsanity");
     techArray = xsArrayCreateVector(TECH_CAPACITY, cInvalidVector, "ts-techs");
-    structSetInt(techsanity, "techs", techArray);
 
     techByItem = xsArrayCreateVector(TECH_CAPACITY, cInvalidVector, "ts-by-item");
 }

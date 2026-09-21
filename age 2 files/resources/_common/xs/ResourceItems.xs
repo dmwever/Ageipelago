@@ -1,97 +1,97 @@
 void FILLER_WOOD_SMALL() {
-    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 100.0);
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 100.0, 1);
 }
 
 void FILLER_FOOD_SMALL() {
-    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 100.0);
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 100.0, 1);
 }
 
 void FILLER_GOLD_SMALL() {
-    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 100.0);
+    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 100.0, 1);
 }
 
 void FILLER_STONE_SMALL() {
-    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 50.0);
+    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 50.0, 1);
 }
 
 void FILLER_WOOD_MEDIUM() {
-    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 250.0);
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 250.0, 1);
 }
 
 void FILLER_FOOD_MEDIUM() {
-    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 250.0);
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 250.0, 1);
 }
 
 void FILLER_GOLD_MEDIUM() {
-    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 250.0);
+    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 250.0, 1);
 }
 
 void FILLER_STONE_MEDIUM() {
-    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 125.0);
+    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 125.0, 1);
 }
 
 void FILLER_WOOD_LARGE() {
-    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 1000.0);
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 1000.0, 1);
 }
 
 void FILLER_FOOD_LARGE() {
-    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 1000.0);
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 1000.0, 1);
 }
 
 void FILLER_GOLD_LARGE() {
-    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 1000.0);
+    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 1000.0, 1);
 }
 
 void FILLER_STONE_LARGE() {
-    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 500.0);
+    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 500.0, 1);
 }
 
 void STARTING_WOOD_SMALL() {
-    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 50.0);
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 50.0, 1);
 }
 
 void STARTING_FOOD_SMALL() {
-    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 50.0);
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 50.0, 1);
 }
 
 void STARTING_GOLD_SMALL() {
-    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 50.0);
+    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 50.0, 1);
 }
 
 void STARTING_STONE_SMALL() {
-    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 25.0);
+    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 25.0, 1);
 }
 
 void STARTING_WOOD_MEDIUM() {
-    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 100.0);
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 100.0, 1);
 }
 
 void STARTING_FOOD_MEDIUM() {
-    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 100.0);
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 100.0, 1);
 }
 
 void STARTING_GOLD_MEDIUM() {
-    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 100.0);
+    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 100.0, 1);
 }
 
 void STARTING_STONE_MEDIUM() {
-    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 50.0);
+    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 50.0, 1);
 }
 
 void STARTING_WOOD_LARGE() {
-    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 250.0);
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 250.0, 1);
 }
 
 void STARTING_FOOD_LARGE() {
-    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 250.0);
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 250.0, 1);
 }
 
 void STARTING_GOLD_LARGE() {
-    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 250.0);
+    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 250.0, 1);
 }
 
 void STARTING_STONE_LARGE() {
-    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 125.0);
+    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 125.0, 1);
 }
 
 void GiveResource(int itemId = -1) {
