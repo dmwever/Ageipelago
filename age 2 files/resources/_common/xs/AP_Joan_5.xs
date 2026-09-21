@@ -77,5 +77,5 @@ void Escort6Refugees() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(8, 174, 12, 170);
+    SetMercenarySpawnLocation(8, 176, 12, 176);
 }

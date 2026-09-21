@@ -81,5 +81,5 @@ void BlueMonastery() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(101, 3, 97, 7);
+    SetMercenarySpawnLocation(103, 3, 103, 7);
 }

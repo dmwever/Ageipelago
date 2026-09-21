@@ -65,5 +65,5 @@ void BreakIntoBurgundy() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(131, 83, 127, 79);
+    SetMercenarySpawnLocation(135, 85, 139, 85);
 }

@@ -53,5 +53,5 @@ void BeatTheRomans() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(145, 10, 141, 14);
+    SetMercenarySpawnLocation(147, 10, 147, 14);
 }

@@ -37,5 +37,5 @@ void BurgundianTown() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(141, 120, 137, 116);
+    SetMercenarySpawnLocation(141, 122, 137, 122);
 }

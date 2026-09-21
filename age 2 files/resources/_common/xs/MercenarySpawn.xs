@@ -37,14 +37,7 @@ void ResetSeatSpawn(int seat = -1) {
 void ClearSpawnArea() {
     vector spawn = MercenarySpawnPoint();
     for (player = 0; <= 8) {
-        int nearby = xsGetPlayerUnitIds(player, cObjectTypeCreatable);
-        for (i = 0; < xsArrayGetSize(nearby)) {
-            int unitId = xsArrayGetInt(nearby, i);
-            if (unitId != -1 && xsVectorLength(xsGetUnitPosition(unitId) - spawn) < 1.5) {
-                xsSetUnitPosition(unitId, MercenaryMusterPoint(), false);
-            }
-        }
-        int buildings = xsGetPlayerUnitIds(player, cObjectTypeBuilding);
+        int buildings = xsGetPlayerUnitIds(player, cBuildingClass);
         for (b = 0; < xsArrayGetSize(buildings)) {
             int buildingId = xsArrayGetInt(buildings, b);
             if (buildingId != -1 && xsVectorLength(xsGetUnitPosition(buildingId) - spawn) < 1.5) {

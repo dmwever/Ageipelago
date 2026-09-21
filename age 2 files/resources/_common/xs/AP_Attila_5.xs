@@ -33,5 +33,5 @@ void DefeatAlans() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(125, 167, 121, 163);
+    SetMercenarySpawnLocation(127, 167, 127, 163);
 }

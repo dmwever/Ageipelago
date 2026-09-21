@@ -65,5 +65,5 @@ void DestroyPurpleWonder2() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(73, 3, 77, 7);
+    SetMercenarySpawnLocation(71, 3, 71, 7);
 }

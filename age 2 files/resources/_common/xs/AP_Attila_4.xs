@@ -49,5 +49,5 @@ void DefeatOrAllyBurgundyAny() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(144, 165, 140, 161);
+    SetMercenarySpawnLocation(146, 165, 146, 161);
 }

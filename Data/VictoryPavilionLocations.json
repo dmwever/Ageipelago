@@ -3,144 +3,156 @@
         "x": 106,
         "y": 5,
         "spawn": {
-            "x": 104,
+            "x": 106,
             "y": 7
         },
         "muster": {
-            "x": 100,
+            "x": 106,
             "y": 11
-        }
+        },
+        "direction": "SE"
     },
     "AP_Attila_2": {
         "x": 147,
         "y": 8,
         "spawn": {
-            "x": 145,
+            "x": 147,
             "y": 10
         },
         "muster": {
-            "x": 141,
+            "x": 147,
             "y": 14
-        }
+        },
+        "direction": "SE"
     },
     "AP_Attila_3": {
         "x": 103,
         "y": 1,
         "spawn": {
-            "x": 101,
+            "x": 103,
             "y": 3
         },
         "muster": {
-            "x": 97,
+            "x": 103,
             "y": 7
-        }
+        },
+        "direction": "SE"
     },
     "AP_Attila_4": {
         "x": 146,
         "y": 167,
         "spawn": {
-            "x": 144,
+            "x": 146,
             "y": 165
         },
         "muster": {
-            "x": 140,
+            "x": 146,
             "y": 161
-        }
+        },
+        "direction": "NW"
     },
     "AP_Attila_5": {
         "x": 127,
         "y": 169,
         "spawn": {
-            "x": 125,
+            "x": 127,
             "y": 167
         },
         "muster": {
-            "x": 121,
+            "x": 127,
             "y": 163
-        }
+        },
+        "direction": "NW"
     },
     "AP_Attila_6": {
         "x": 71,
         "y": 1,
         "spawn": {
-            "x": 73,
+            "x": 71,
             "y": 3
         },
         "muster": {
-            "x": 77,
+            "x": 71,
             "y": 7
-        }
+        },
+        "direction": "SE"
     },
     "AP_Joan_1": {
         "x": 133,
         "y": 85,
         "spawn": {
-            "x": 131,
-            "y": 83
+            "x": 135,
+            "y": 85
         },
         "muster": {
-            "x": 127,
-            "y": 79
-        }
+            "x": 139,
+            "y": 85
+        },
+        "direction": "NE"
     },
     "AP_Joan_2": {
         "x": 1,
         "y": 184,
         "spawn": {
             "x": 3,
-            "y": 182
+            "y": 184
         },
         "muster": {
             "x": 7,
-            "y": 178
-        }
+            "y": 184
+        },
+        "direction": "NE"
     },
     "AP_Joan_3": {
         "x": 1,
         "y": 100,
         "spawn": {
             "x": 3,
-            "y": 98
+            "y": 100
         },
         "muster": {
             "x": 7,
-            "y": 94
-        }
+            "y": 100
+        },
+        "direction": "NE"
     },
     "AP_Joan_4": {
         "x": 18,
         "y": 75,
         "spawn": {
-            "x": 20,
+            "x": 18,
             "y": 73
         },
         "muster": {
-            "x": 24,
+            "x": 18,
             "y": 69
-        }
+        },
+        "direction": "NW"
     },
     "AP_Joan_5": {
         "x": 6,
         "y": 176,
         "spawn": {
             "x": 8,
-            "y": 174
+            "y": 176
         },
         "muster": {
             "x": 12,
-            "y": 170
-        }
+            "y": 176
+        },
+        "direction": "NE"
     },
     "AP_Joan_6": {
         "x": 143,
         "y": 122,
         "spawn": {
             "x": 141,
-            "y": 120
+            "y": 122
         },
         "muster": {
             "x": 137,
-            "y": 116
-        }
+            "y": 122
+        },
+        "direction": "SW"
     }
 }

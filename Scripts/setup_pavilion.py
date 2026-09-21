@@ -24,8 +24,6 @@ VICTORY_TECHNOLOGY = 1180
 # MERCENARY_TASK_VARIABLE in AP_Constants.xs; nothing checks that for you.
 MERCENARY_TASK_VARIABLE = 90
 
-MERCENARY_SPAWN_FUNCTION = "apSetMercenarySpawn"
-
 class APavilionMaker():
     trigger_manager: TriggerManager
     unit_manager: UnitManager

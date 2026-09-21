@@ -65,5 +65,5 @@ void SouthwestCastle() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(3, 182, 7, 178);
+    SetMercenarySpawnLocation(3, 184, 7, 184);
 }

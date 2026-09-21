@@ -53,5 +53,5 @@ void DestroyRearCastle() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(3, 98, 7, 94);
+    SetMercenarySpawnLocation(3, 100, 7, 100);
 }

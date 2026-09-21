@@ -41,5 +41,5 @@ void DestroyRheimsTC() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(20, 73, 24, 69);
+    SetMercenarySpawnLocation(18, 73, 18, 69);
 }

@@ -85,5 +85,5 @@ void DefeatFirstPlayer() {
 }
 
 void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(104, 7, 100, 11);
+    SetMercenarySpawnLocation(106, 7, 106, 11);
 }
