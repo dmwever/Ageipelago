@@ -299,26 +299,6 @@ the seat button, never an error.
 |UnitIds|int*N|One id per soldier|
 |...|...|Repeated four times, once per seat|
 
-### `units.xsdat` NOT IMPLEMENTED
-
-Client -> Game
-
-`SendUnits` is hardcoded to 0 in `ping_game` and the game's `units` flag is read and discarded, so
-none of the following happens yet. The scenario packet has **no** unit-buffer fields — earlier
-revisions of this document listed `CurrentUnitBufferId` and `CurrentUnitBufferRemaining` in the
-layout, and they were never written.
-
-The intent: units will be loaded into the game by spawning at a predetermined "safe" location via a "buffer". For example, if an item contains 1 Militia and 1 Scout, such as the transport troop from the Joan mission **Seige of Paris**, `units.xsdat` will be a queue-loaded buffer of unit ids, read one-by-one until the in-game unit buffer reaches zero. The client would wait to receive a 0 in `CurrentUnitBufferRemaining` before loading the next buffer item.
-
-Implementing it needs two new fields in the scenario packet. Take them from the reserved block — do
-**not** insert them before `ScenarioId`.
-
-|Name|Type|Purpose|
-|---|---|---|
-|CurrentBufferItemId|int|Tells the game what the current buffer item is|
-|NumberOfUnits|int|Tells the game how many units are in this item|
-|UnitIds|int*NumberOfUnits|The ids of the units to be spawned in order|
-
 ### `<SCENARIO_SHORTHAND>.xsdat`
 
 Client -> Game. `ATT1`-`ATT6`, `JOAN1`-`JOAN6`.
