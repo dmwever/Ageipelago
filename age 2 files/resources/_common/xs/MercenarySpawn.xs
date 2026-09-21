@@ -43,6 +43,7 @@ int SpawnAreaClassAt(int index = -1) {
     if (index == 1) { return (cWallClass); }
     if (index == 2) { return (cGateClass); }
     if (index == 3) { return (cTowerClass); }
+    return (cMiscBuildingClass);
 }
 
 void ClearSpawnArea() {
