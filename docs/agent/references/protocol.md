@@ -94,8 +94,9 @@ All client → game, all in the profile folder, all fixed names (no seed tag).
 | `ATT1.xsdat` … `ATT6.xsdat`, `JOAN1.xsdat` … `JOAN6.xsdat` | a completed flag, then item ids to grant at level start | `ReadScenarioItemFile` |
 
 An earlier `units.xsdat` was specified but never implemented. Its `SendUnits` flag became
-`SendMercenaries`, and nothing on either side reads or writes a unit buffer now. The repo doc still
-carries the old section.
+`SendMercenaries`, and nothing on either side reads or writes a unit buffer now. The stale
+`units.xsdat NOT IMPLEMENTED` section has since been removed from `communication_protocol.md`; only a
+one-line mention under `SendMercenaries` remains.
 
 ## The 12-item window
 

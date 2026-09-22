@@ -16,7 +16,7 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-09-21a**
+Skill revision: **2026-09-21b**
 
 A randomizer in two halves that ship separately and must stay in step.
 
@@ -73,10 +73,17 @@ skill and its knowledge base. Do not answer them from here.
 6. **Struct fields are runtime strings**, case-sensitive, and a typo returns `-1` silently. Grep every
    occurrence before renaming one.
 7. **Id bands are duplicated by hand** between `ItemHandler.xs`'s header comment and `items/Items.py`.
-   Change both.
-8. **Both repos are LF.** A careless Python write flips a file to CRLF and produces a whole-file diff.
-9. **Lint entry points, not libraries.** `./xs-check.exe -I . -- AP_Attila_1.xs`; without `-I . --` it
-   silently prints usage. A library file linted alone reports errors for constants it never includes.
+   Change both. Two bands in those legends are dead: `30-199` (Civs) and `300-999` (Units) hold no
+   `Age2ItemData` member and have no `GiveItem` branch. The `4000-4999` band is labelled "Mercenaries"
+   in `ItemHandler.xs` and "Troops, Future Use" in `Items.py` — same range, stale name.
+8. **Both repos store LF in the index**, and both set `core.autocrlf=true` locally, so working trees
+   are CRLF and git normalizes on add. Neither repo has a `.gitattributes` eol rule, so the guarantee
+   is that local config, not the repo: on a clone without `autocrlf`, a tool that writes CRLF does
+   produce a whole-file diff.
+9. **Lint entry points, not libraries.** `./xs-check.exe -I . -- AP_Attila_1.xs`. A library file linted
+   alone reports errors for constants it never includes. Both halves of the invocation matter, and
+   they fail differently — see the Linting section of `references/xs-mod.md`. Note the linter is
+   gitignored and untracked: a fresh clone or worktree has no `xs-check.exe` at all.
 10. **Verify before trusting any doc, including these.** `communication_protocol.md` and these
     references have all drifted from the code at least once. The code is the authority.
 
@@ -88,8 +95,10 @@ live — a merged worktree still has files on disk and a branch pointer that goe
 
 Clean up after experiments. XS spikes go in a throwaway file that `.gitignore` covers, never in a live
 module, and get deleted once the answer is known. The same goes for one-off Python scripts used to
-probe or regenerate something: `Scripts/__pycache__` still holds bytecode for two scripts that exist
-in no commit.
+probe or regenerate something. `__pycache__` outlives the source that produced it, in both repos —
+`Archipelago/worlds/age2de/__pycache__` currently holds bytecode for six top-level modules
+(`World`, `Items`, `Locations`, `SlotData`, `Generation`, `Identity`) that no longer exist there, and
+a stale `.pyc` is not evidence that a module is still live.
 
 ## Cross-repo workflows
 
@@ -125,11 +134,12 @@ Each of these touches both halves. Doing only one side is the usual failure.
 2. Add its locations to `locations/Locations.py`.
 3. Write a `*StartingState` in `logic/` and a `*Rules` in `rules/`.
 4. **Bind both** in `locations/connections/ScenarioDataLogic.py` and `ScenarioDataRules.py`. A missed
-   binding shows up as `None` at generation.
+   binding leaves `scenario.rules` as `None`, and `Rules.set_rules()` then calls `None(self)` —
+   `TypeError: 'NoneType' object is not callable` at generation.
 5. Create `AP_<Campaign>_<n>.xs` from the template in `xs-mod.md`: the three stub overrides, `main()`,
    the wrappers, and `SetMercenarySpawn()`.
 6. Add the scenario's entry to `Data/VictoryPavilionLocations.json` with pavilion, spawn and muster
-   points, then run the pavilion tooling.
+   points, then run the pavilion tooling — `Scripts/setup_pavilion.py`.
 7. Run `py -3 Scripts\check_drift.py`.
 
 ### Adding a packet field
@@ -156,6 +166,12 @@ AGEIPELAGO_PATH=/path/to/Ageipelago python -m pytest worlds/age2de/test
 # the drift checks the tooling cannot catch at runtime
 py -3 Scripts\check_drift.py
 ```
+
+`check_drift.py` checks exactly three things: that `MERCENARY_TASK_VARIABLE` agrees between
+`AP_Constants.xs` and `Scripts/setup_pavilion.py`; that each scenario's `SetMercenarySpawnLocation(...)`
+call matches the spawn and muster coordinates in `Data/VictoryPavilionLocations.json`; and that no
+`script_call(...)` in `Scripts/*.py` passes arguments, since AoE2:DE silently no-ops a Script Call
+effect that has any.
 
 The XS repo has no CI and no test suite. Everything that protects it is either the linter, the
 apworld's cross-repo tests, or `check_drift.py`.

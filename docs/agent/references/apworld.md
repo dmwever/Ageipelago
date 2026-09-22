@@ -1,7 +1,7 @@
 # age2de — the Archipelago apworld
 
-Repo: the `Archipelago` fork, branch `v0.3.0` — a **separate checkout** from the one this skill
-ships in, by convention a sibling directory.
+Repo: the `Archipelago` fork — a **separate checkout** from the one this skill ships in, by convention
+a sibling directory.
 World: `worlds/age2de/`. All bare paths below are relative to that folder.
 
 This half runs in Archipelago: it generates the multiworld and runs the client that drives the game
@@ -24,7 +24,7 @@ over `.xsdat` files. The game-side mod is a separate repo — see `xs-mod.md` an
 | `client/` | `ApClient.py`, `GameClient.py`, `ApGui.py`, and `handlers/` |
 | `campaign/` | `.aoe2campaign` binary read/write plus the `.xsdat` struct helpers |
 | `generation/` | `Identity`, `WorldVersion`, `SlotData`, `TechPool`, `LocalStart` |
-| `test/` | 19 modules, two base classes |
+| `test/` | 25 `test_*.py` modules, two base classes in `bases.py` |
 | `AoE2ScenarioParser/`, `ordered_set/` | vendored. Do not edit piecemeal |
 
 `rule_builder/` sits at the **repo root**, not in the world. It is a fork-level addition, not stock
@@ -93,10 +93,17 @@ Dispatch on the payload type of each `Age2ItemData`:
 | `ProgressiveScenario` | `num_additional_scenarios` copies pooled |
 | `TCResources` | always pooled |
 | `Age2AgeData` | pooled if `shuffle_ages` and in `shuffled_ages`, else precollected |
-| `Building` | pooled if shuffled, else precollected |
-| `Tech` | pooled for every tech in `shuffled_techs` |
+| `Building` | `continue` in the dispatch — handled afterwards (see below) |
+| `Tech` | `continue` in the dispatch — handled afterwards (see below) |
 | `Resources`, `StartingResources` | skipped here; used for the filler top-up |
 | anything else | `ValueError` |
+
+**`Building` and `Tech` are not handled in the dispatch loop.** Both branches are a bare `continue`;
+the work happens in two loops that run *after* it, and those iterate their own tables rather than
+`Age2ItemData`: one over `Age2BuildingData`, pooling a building if it is in `self.shuffled_buildings`
+and precollecting it otherwise, and one over `self.shuffled_techs`, pooling each. The net effect is
+"pooled if shuffled, else precollected" for buildings and "pooled for every shuffled tech" — but if
+you go editing the `Building` branch in the dispatch, you are editing dead code.
 
 Filler: `smart_add_starting_resources(needed)` bin-packs toward
 `{WOOD:1000, FOOD:1000, GOLD:750, STONE:500}`, halving the targets whenever the worst case would
@@ -115,6 +122,10 @@ the `"Can Build"` exits at construction. Then `Rules.set_rules()` in fixed order
 
 `TechRules` skips the `set_rule` call when a tech's rule resolves to bare `True_`, which is equivalent
 to leaving it unset.
+
+`AgeRules.py` also defines `TwoBuildingsRequirement(NestedRule["Age2World"])`, with its own
+`Resolved._evaluate` and an `explain_json` override. It is the only hand-written `rule_builder`
+`NestedRule` in the codebase — copy it rather than inventing a second pattern.
 
 ### `logic/` versus `rules/`
 
@@ -221,13 +232,15 @@ Age2ScenarioData.AP_ATTILA_1.logic = Attila1StartingState   # ScenarioDataLogic.
 ```
 
 Consumers call the attribute as a constructor: `scenario.rules(self)`. `Rules.py` imports
-`ScenarioDataRules` purely for the side effect, marked `# noqa: F401`. A missed binding surfaces as
-`None` at generation time.
+`ScenarioDataRules` purely for the side effect, marked `# noqa: F401`. A missed binding leaves the
+attribute as `None`, and `Rules.set_rules()` then calls `None(self)` — the symptom is
+`TypeError: 'NoneType' object is not callable` at generation time, not a `None` flowing onward.
 
 Other enum-attribute monkey-patching: `CivilizationTechs.py` and `CivilizationBuildings.py` assign
 `included_techs` / `excluded_techs` / `excluded_buildings` onto `Age2CivData` members, then
 `CivilizationTechs.py` derives `CIV_TO_TECHS`. There is no `CIV_TO_BUILDINGS` counterpart — building
-eligibility per civ is computed ad hoc in `create_regions`.
+eligibility per civ is computed ad hoc in `create_regions`. Note `Age2CivData.included_buildings`
+defaults to `[]` and is **never assigned anywhere**; only `excluded_buildings` is ever populated.
 
 ## Mercenaries
 
@@ -303,10 +316,12 @@ The 12-item in-flight window:
 - `free_items` — any echoed id not in `in_flight` is an orphan from a previous session and is written
   to `free_items.xsdat` so the game releases the slot.
 
-Handlers: `FolderHandler` (base, holds the profile folder), `BuildingHandler` → `buildings.xsdat`,
-`TechHandler` → `techs.xsdat`, `MessageHandler` → `messages.xsdat` (with an ack-gated queue),
-`CampaignHandler` (unlock tracking, active-file discovery, per-scenario item files, victory),
-`InstallHandler` (`/install`).
+Handlers — eight files in `client/handlers/`: `FolderHandler` (base, holds the profile folder),
+`BuildingHandler` → `buildings.xsdat`, `TechHandler` → `techs.xsdat`, `MessageHandler` →
+`messages.xsdat` (with an ack-gated queue), `CampaignHandler` (unlock tracking, active-file discovery,
+per-scenario item files, victory), `InstallHandler` (`/install`), `MercenaryHandler` →
+`mercenary_queue.xsdat`, and `StorageHandler` (server data storage, plus the module-level
+`reconcile_spent(local, server)`). The last two are covered in the Mercenaries section below.
 
 `/install` writes, in order: the retagged `.aoe2campaign` bundles that are not already installed,
 then always `SlotData.xs`, then always `TechData.xs`. It rewrites scenarios through `ScenarioParser`
@@ -318,9 +333,11 @@ Nearly every file-write path is wrapped in `except Exception as ex: print(ex)`. 
 ## generation/
 
 - **`Identity.py`** — `seed_tag(seed_name, slot)` is `crc32("<seed>:<slot>")` as 8 lowercase hex.
-  `campaign_stem` puts the player name *before* the tag so the tag stays the last segment, which is
-  what `TAGGED_XSDAT` (`^AP[ _].*_([0-9a-f]{8})\.xsdat$`) and `tag_of` match on. `sanitize_player`
-  strips characters that are illegal in filenames.
+  `file_stem(stem, tag, player)` puts the player name *before* the tag so the tag stays the last
+  segment, which is what `TAGGED_XSDAT` (`^AP[ _].*_([0-9a-f]{8})\.xsdat$`) and `tag_of` match on.
+  Do not confuse it with `source_campaign_stem`, which only appends `" Template"` for the shipped
+  bundle and has nothing to do with tag placement. `sanitize_player` strips characters that are
+  illegal in filenames.
 - **`WorldVersion.py`** — `compatible(seed, client)` compares major and minor only; build is free.
 - **`SlotData.py`** — `OPTIONS` maps six options to their XS constant names; `render` emits
   `extern const int NAME = value;` lines. `DEFAULTS` is `-1` for the identity fields and for four
@@ -341,7 +358,7 @@ python -m pytest worlds/age2de/test
 AGEIPELAGO_PATH=/path/to/Ageipelago python -m pytest worlds/age2de/test
 ```
 
-384 tests, ~4950 subtests. Two base classes in `test/bases.py`: `Age2TestBase(WorldTestBase)` for
+25 modules, 451 tests, 4950 subtests. Two base classes in `test/bases.py`: `Age2TestBase(WorldTestBase)` for
 pool and generation tests, and `Age2RuleTestBase` which drives
 `generate_early → create_regions → create_items → set_rules` by hand and skips fill.
 

@@ -1,6 +1,6 @@
 # Ageipelago — the game-side XS mod
 
-Repo: **this one**, `Ageipelago`, branch `0.3.0`. Paths are relative to its root.
+Repo: **this one**, `Ageipelago`. Paths are relative to its root.
 XS source: `age 2 files/resources/_common/xs/`. All bare filenames below are in that folder.
 
 This half runs inside Age of Empires II: DE. It owns no network code — it talks to the Archipelago
@@ -11,8 +11,8 @@ use the `aoe2-modding` skill and its catalogs; this file does not restate them.
 
 | Path | Holds |
 |---|---|
-| `age 2 files/resources/_common/xs/` | all 31 `.xs` files plus the vendored `xs-check.exe` |
-| `age 2 files/resources/_common/scenario/` | 12 `.aoe2scenario` binaries, `AP_Attila_1..6`, `AP_Joan_1..6` |
+| `age 2 files/resources/_common/xs/` | 33 `.xs` files on disk — the 31 catalogued below plus `Test.xs` and `default0.xs` — and an untracked `xs-check.exe` |
+| `age 2 files/resources/_common/scenario/` | 15 `.aoe2scenario` binaries: the 12 real ones, `AP_Attila_1..6` and `AP_Joan_1..6`, plus the scratch files `The Siege`, `XsTesting` and `default1` |
 | `age 2 files/resources/_common/campaign/` | 2 untagged `.aoe2campaign` template bundles |
 | `age 2 files/mods/local/Ageipelago/` | local mod: mercenary seat names and tech icons |
 | `Scripts/` | `__init__.py`, `setup_pavilion.py`, `check_drift.py` — scenario authoring via AoE2ScenarioParser |
@@ -351,12 +351,25 @@ passes arguments. That last check only inspects string literals, so it cannot se
 ./xs-check.exe -I . -- AP_Attila_1.xs
 ```
 
-Without `-I . --` it silently prints usage.
+Both halves of that invocation matter, and dropping either fails in a different way:
+
+| Invocation | What happens |
+|---|---|
+| `./xs-check.exe -I . -- AP_Attila_1.xs` | correct |
+| `./xs-check.exe AP_Attila_1.xs` (no `-I`) | 1 `UnresolvedInclude` + 25 `NameError` — it cannot find `./AP.xs`. **Not** a usage banner; it looks like real breakage |
+| `./xs-check.exe -I . AP_Attila_1.xs` (no `--`) | prints usage. `-I`/`--include-dirs` is variadic, so it swallows the filename and no positional filepath is left |
+
+The linter is **not vendored** — `xs-check.exe` is gitignored (`.gitignore:208-216`) and untracked, so
+a fresh clone or a new worktree has none. Copies currently live in the `xs/` folder and in `xsscript/`.
 
 **Lint the twelve scenario entry points, not the library files.** Only an entry point pulls in the
-whole include chain. A clean entry point currently reports **0 errors and 3 warnings**; linting
-`ItemHandler.xs` on its own reports 139 `NameError`s, because the constants it uses are included by
-`AP.xs` one level above it.
+whole include chain. A clean entry point currently reports **2 errors and 240 warnings** (identical
+across all twelve); linting `ItemHandler.xs` on its own reports 139 `NameError`s, because the
+constants it uses are included by `AP.xs` one level above it.
+
+Both of those 2 errors are **linter prelude gaps, not code bugs** — `xs-check` 0.2.15 does not know
+`xsRemoveUnit` (`MercenarySpawn.xs:59`) or `xsCreateUnit` (`MercenarySpawn.xs:75`), both of which the
+engine does provide. Do not "fix" them. The 240 warnings are all `DiscardedFn`.
 
 What the linter cannot catch here: a misspelled struct field-name string, a missing `extern`, an empty
 function body, a `switch` with no `default`, a mistyped rule name in `xsEnableRule`. See
@@ -364,6 +377,10 @@ function body, a `switch` with no `default`, a mistyped rule name in `xsEnableRu
 
 ## Gotchas
 
+- **`Test.xs` and `default0.xs` are not part of the mod.** `Test.xs` (6 lines) is a scratch file whose
+  `include "./BuildsanityItems.xs"` points at a file that exists nowhere in the repo — never build or
+  lint it. `default0.xs` (3 lines) is engine-generated boilerplate. Neither appears in the file table
+  below; an `ls *.xs` will show them anyway.
 - **`Unitsanity.xs` is dead.** Nothing includes it, nothing calls any of its twelve functions, and it
   uses `defineStruct`/`new` without including `structs.xs`, so it would not resolve on its own if it
   were included. Its `Unit`/`Unitsanity` structs mirror Buildsanity's but the driver was never written.
