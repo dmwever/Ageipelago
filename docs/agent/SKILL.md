@@ -16,7 +16,7 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-09-21b**
+Skill revision: **2026-09-22**
 
 A randomizer in two halves that ship separately and must stay in step.
 
@@ -76,15 +76,23 @@ skill and its knowledge base. Do not answer them from here.
    Change both. Two bands in those legends are dead: `30-199` (Civs) and `300-999` (Units) hold no
    `Age2ItemData` member and have no `GiveItem` branch. The `4000-4999` band is labelled "Mercenaries"
    in `ItemHandler.xs` and "Troops, Future Use" in `Items.py` — same range, stale name.
-8. **Both repos store LF in the index**, and both set `core.autocrlf=true` locally, so working trees
+8. **The repo `age 2 files/` IS the live game folder.** They are the same files — verified by
+   identical inodes for `AP.xs`, `Buildsanity.xs` and others — so editing the checkout writes
+   straight into the game and nothing needs copying. The live path is
+   `C:/Users/dmwev/Games/Age of Empires 2 DE/<steamid>/resources/_common/xs/`.
+   **A git worktree breaks this**: a worktree is a separate, unlinked copy, so a file created there
+   is invisible to the game and the scenario reports *"extern 1 failed to open <name>"*. Work in the
+   primary checkout.
+
+9. **Both repos store LF in the index**, and both set `core.autocrlf=true` locally, so working trees
    are CRLF and git normalizes on add. Neither repo has a `.gitattributes` eol rule, so the guarantee
    is that local config, not the repo: on a clone without `autocrlf`, a tool that writes CRLF does
    produce a whole-file diff.
-9. **Lint entry points, not libraries.** `./xs-check.exe -I . -- AP_Attila_1.xs`. A library file linted
+10. **Lint entry points, not libraries.** `./xs-check.exe -I . -- AP_Attila_1.xs`. A library file linted
    alone reports errors for constants it never includes. Both halves of the invocation matter, and
    they fail differently — see the Linting section of `references/xs-mod.md`. Note the linter is
    gitignored and untracked: a fresh clone or worktree has no `xs-check.exe` at all.
-10. **Verify before trusting any doc, including these.** `communication_protocol.md` and these
+11. **Verify before trusting any doc, including these.** `communication_protocol.md` and these
     references have all drifted from the code at least once. The code is the authority.
 
 ## Working in these repos

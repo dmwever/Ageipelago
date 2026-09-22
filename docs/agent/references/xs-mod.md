@@ -28,7 +28,7 @@ them. There is no CI and no test suite in this repo.
 | File | Lines | Purpose |
 |---|---|---|
 | `structs.xs` | 990 | vendored XsStructs 1.1.1. Do not audit or edit |
-| `Unitsanity.xs` | 571 | **dead** — included by nothing, called by nothing. See Gotchas |
+| ~~`Unitsanity.xs`~~ | — | **deleted.** Was a 571-line unwired prototype; its id table is replaced by `Age2UnitData` and a generated `UnitData.xs` |
 | `AP.xs` | 402 | the bridge: `AP_Write`/`AP_Read`, identity checks, `InitAP`, 7 rules |
 | `Buildsanity.xs` | 371 | building unlocks and placement detection |
 | `Techsanity.xs` | 356 | technology unlocks, the shadow-tech effect injector |
@@ -381,9 +381,12 @@ function body, a `switch` with no `default`, a mistyped rule name in `xsEnableRu
   `include "./BuildsanityItems.xs"` points at a file that exists nowhere in the repo — never build or
   lint it. `default0.xs` (3 lines) is engine-generated boilerplate. Neither appears in the file table
   below; an `ls *.xs` will show them anyway.
-- **`Unitsanity.xs` is dead.** Nothing includes it, nothing calls any of its twelve functions, and it
-  uses `defineStruct`/`new` without including `structs.xs`, so it would not resolve on its own if it
-  were included. Its `Unit`/`Unitsanity` structs mirror Buildsanity's but the driver was never written.
+- **`Unitsanity.xs` has been deleted.** It was a 571-line prototype nothing included: a `Unit`
+  struct mirroring Buildsanity's, ~250 hand-typed unit-id constants and ten bulk-disable functions,
+  with no driver. It also carried a live bug - `gbeto` and `elite_gbeto` were `1213`/`1215`, which
+  are *bridge terrain objects*; the Gbeto is `1013`/`1015` - and named the Eagle line one tier off,
+  after the techs rather than the units. The id table now lives in `Age2UnitData` and reaches the
+  game as a generated `UnitData.xs`, on the `TechData.py` model.
 - **`SlotData.xs` and `TechData.xs` in the repo are stubs.** `/install` overwrites them per seed. With
   the tracked versions, `AP_SLOT_ID` is -1 so `AP_Write` never creates a packet, and `LoadTechTable()`
   is empty so techsanity bails. The identity fields ship as -1 and the option fields as 0, so an
