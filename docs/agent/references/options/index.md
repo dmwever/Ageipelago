@@ -1,6 +1,6 @@
 # Player options
 
-Thirteen fields on `Age2Options` in `worlds/age2de/Options.py`. One file here per option.
+Eighteen fields on `Age2Options` in `worlds/age2de/Options.py`. One file here per option.
 
 **The yaml key is the dataclass field name** on `Age2Options` — not `display_name`, and not the
 world's own `internal_name` attribute, which is not core Archipelago API and exists only so
@@ -25,6 +25,11 @@ does `getattr(self.options, option_name)` with the internal name. All six curren
 | [lock-techs](lock-techs.md) | `lock_techs` | Choice | items | yes | `AP_TS_LOCK` |
 | [shuffle-unique-techs](shuffle-unique-techs.md) | `shuffle_unique_techs` | Choice | unshuffled | yes | `AP_TS_UNIQUES` |
 | [existing-techs](existing-techs.md) | `existing_techs` | Choice | vanilla | yes | `AP_TS_EXISTING` |
+| [unitsanity](unitsanity.md) | `unitsanity` | Choice | none | not yet | not yet |
+| [unitsanity-items](unitsanity-items.md) | `unitsanity_items` | Choice | unit_line | not yet | not yet |
+| [shuffle-villager](shuffle-villager.md) | `shuffle_villager` | Choice | no | not yet | not yet |
+| [include-unique-units](include-unique-units.md) | `include_unique_units` | Choice | none | not yet | not yet |
+| [caveman](caveman.md) | `caveman` | Toggle | off | not yet | not yet |
 | [start-inventory-pool](start-inventory-pool.md) | `startInventoryPool` | core AP | — | — | — |
 
 Only six options reach the game. The rest are generation-only: they shape the item pool, the location
@@ -46,6 +51,11 @@ Age Of Empires II: Definitive Edition:
   lock_techs: items
   shuffle_unique_techs: unshuffled
   existing_techs: vanilla
+  unitsanity: none
+  unitsanity_items: unit_line
+  shuffle_villager: no
+  include_unique_units: none
+  caveman: false
 ```
 
 `startInventoryPool` is core Archipelago's and takes its usual form. Note `startInventoryPool` is the
@@ -59,6 +69,12 @@ default to `UNSET` (-1), and so do `AP_TS_BEHAVIOR`, `AP_TS_LOCK`, `AP_TS_UNIQUE
 install that `/install` has never touched reads as "off" rather than as a valid mode.
 
 ## Interaction map
+
+- `unitsanity` gates `unitsanity_items`, `include_unique_units` and `caveman`.
+  `shuffle_villager` is independent of it.
+- The five unit options are **generation-only for now**: none is in `SlotData.OPTIONS`, so the
+  slot_data shape is unchanged and `world_version` stays `0.3.0`. Unitsanity is a 0.3.0
+  feature, not a new version. They join the wire in Phase 13, with the XS constants.
 
 - `enabled_campaigns` decides what exists; `starting_campaigns` decides what begins unlocked. The
   second must name at least one of the first.

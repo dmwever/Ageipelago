@@ -10,7 +10,9 @@ include "./Techsanity.xs";
  *       25 -   29 Ages
  *       30 -  199 Civs
  *      200 -  299 Buildings
- *      300 -  999 Units
+ *      300 -  499 Unit lines
+ *      500 -  599 Unit upgrades
+ *      600 -  699 Building units
  *     1000 - 2999 Scenario progression
  *     3000 - 3499 Progressive scenarios
  *     3500 - 3599 Campaign unlocks
