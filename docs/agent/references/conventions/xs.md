@@ -79,10 +79,9 @@ breakage; dropping only the `--` prints usage, because `-I` is variadic and eats
 Linting section of `xs-mod.md` for the full table.
 
 **Lint the twelve scenario entry points, not the library files.** Only an entry point pulls the whole
-include chain; `ItemHandler.xs` alone reports `NameError`s for constants that `AP.xs` includes one
-level up. A clean entry point reports **2 errors and 240 warnings**: the warnings are all
-`DiscardedFn` from ignored return values, and the two errors are linter prelude gaps for
-`xsRemoveUnit`/`xsCreateUnit` in `MercenarySpawn.xs`, not code defects.
+include chain; `ItemHandler.xs` alone reports 139 `NameError`s for constants that `AP.xs` includes one
+level up. A clean entry point reports **0 errors and 3 warnings**, identical across all twelve, and
+the warnings are all `DiscardedFn` from ignored return values.
 
 `// xsc-ignore: <Rule>` is the escape hatch — smallest possible scope, always with a reason.
 

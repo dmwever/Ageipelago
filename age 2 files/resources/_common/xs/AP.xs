@@ -150,6 +150,9 @@ void AP_Read()
         xsEnableRule("ReadMessages");
     }
     completed = xsReadInt();
+    if (completed == 1) {
+        AnnounceVictory();
+    }
     AckMercenary(xsReadInt());
     xsCloseFile();
 }
@@ -170,6 +173,9 @@ void ReadScenarioItemFile(string filename = "") {
     }
     int itemCount = xsGetFileSize() / 4; // byte to int
     completed = xsReadInt();
+    if (completed == 1) {
+        AnnounceVictory();
+    }
     for (i = 1; < itemCount) {
         int itemId = xsReadInt();
         GiveItem(itemId);
@@ -180,6 +186,7 @@ void ReadScenarioItemFile(string filename = "") {
 
 void GiveVictory() {
     completed = 1;
+    AnnounceVictory();
     AP_Write();
 }
 
@@ -224,9 +231,9 @@ void InitAP() {
     InitMercenaryLedger();
     InitMercenarySeats();
     InitMercenarySpawn();
+    InitPavilion();
     xsEnableRule("MercenarySpawnLoop");
-    xsEffectAmount(cModifyTech, victoryTech, cAttrSetState, 0.0);
-
+    
     xsEnableRule("ConnectAP");
     AP_INITIALIZED = true;
 }

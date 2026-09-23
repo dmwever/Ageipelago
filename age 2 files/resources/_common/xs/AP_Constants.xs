@@ -70,11 +70,50 @@ extern const int EXISTING_START_IN_DARK_AGE = 3;
 extern const int MERCENARY_SEAT_COUNT = 4;
 extern const int MERCENARY_SEAT_TECH_FIRST = 1182;
 extern const int MERCENARY_SEAT_BUTTON_FIRST = 11;
-extern const int PAVILION_BUILDING = 624;
 extern const int MERCENARY_SEAT_RESEARCH_CAP = 1000;
-/* Scenario trigger variable the spawn loop raises to task a new soldier away. Attila 1
-   already uses variable 2, so this sits well clear of the hand-authored ones. */
-extern const int MERCENARY_TASK_VARIABLE = 90;
+
+/* APavilion. The hub building, created by XS in every scenario: indestructible, colour-cycling,
+   and the only UI surface the randomizer has. PAVILION_BUILDING moved here from the mercenary
+   block above, which is where it used to sit. */
+
+extern const int PAVILION_BUILDING = 624;
+extern const int PAVILION_OWNER = 1;
+extern const int PAVILION_VICTORY_TECH = 1180;
+extern const int PAVILION_VICTORY_BUTTON = 1;
+extern const int PAVILION_VICTORY_ICON = 107;
+
+/* Spawn and muster are derived, never authored: two and six tiles out from the pavilion along
+   its facing. That relationship holds in all twelve scenarios. */
+
+extern const int PAVILION_SPAWN_OFFSET = 2;
+extern const int PAVILION_MUSTER_OFFSET = 6;
+
+/* Facing. With x and y, the whole of a scenario's pavilion layout. */
+
+extern const int PAVILION_FACE_SE = 0;   // +y
+extern const int PAVILION_FACE_NW = 1;   // -y
+extern const int PAVILION_FACE_NE = 2;   // +x
+extern const int PAVILION_FACE_SW = 3;   // -x
+
+/* Engine colour ids as the scenario binaries store them: 0-based, one lower than the editor's
+   list. Order matches the trigger chain this replaces. The base is unconfirmed - the guide
+   documents cUnitColorId with a templating artifact and no value range - so read it back with
+   xsGetUnitProperty once before trusting these. */
+
+extern const int PAVILION_COLOR_COUNT = 6;
+extern const int PAVILION_COLOR_RED = 1;
+extern const int PAVILION_COLOR_GREEN = 2;
+extern const int PAVILION_COLOR_PURPLE = 5;
+extern const int PAVILION_COLOR_ORANGE = 7;
+extern const int PAVILION_COLOR_BLUE = 0;
+extern const int PAVILION_COLOR_YELLOW = 3;
+
+/* Invulnerability Level (attribute 129) is a damage threshold, not a flag: a value > 0 is a
+   multiplier of base HP, < 0 a fixed HP value. Float, because ints are not promoted in a call.
+   cUnitDeletable's polarity is likewise unconfirmed; 0 is the assumption. */
+
+extern const float PAVILION_INVULNERABILITY = 1.0;
+extern const float PAVILION_DELETABLE = 0.0;
 
 /* Building Ids */
 

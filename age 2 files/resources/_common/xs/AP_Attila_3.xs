@@ -84,6 +84,6 @@ void BlueMonastery() {
     AP_Check_Location(10315);
 }
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(103, 3, 103, 7);
+void SetPavilionLayout() {
+    SetPavilionPlacement(103, 1, PAVILION_FACE_SE);
 }

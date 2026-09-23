@@ -44,6 +44,6 @@ void DestroyRheimsTC() {
   AP_Check_Location(20405);
 }
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(18, 73, 18, 69);
+void SetPavilionLayout() {
+    SetPavilionPlacement(18, 75, PAVILION_FACE_NW);
 }

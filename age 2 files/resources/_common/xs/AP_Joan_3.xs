@@ -56,6 +56,6 @@ void DestroyRearCastle() {
   AP_Check_Location(20308);
 }
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(3, 100, 7, 100);
+void SetPavilionLayout() {
+    SetPavilionPlacement(1, 100, PAVILION_FACE_NE);
 }

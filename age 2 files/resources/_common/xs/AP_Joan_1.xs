@@ -68,6 +68,6 @@ void BreakIntoBurgundy() {
   AP_Check_Location(20111);
 }
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(135, 85, 139, 85);
+void SetPavilionLayout() {
+    SetPavilionPlacement(133, 85, PAVILION_FACE_NE);
 }

@@ -36,6 +36,6 @@ void DefeatAlans() {
   AP_Check_Location(10503);
 }
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(127, 167, 127, 163);
+void SetPavilionLayout() {
+    SetPavilionPlacement(127, 169, PAVILION_FACE_NW);
 }

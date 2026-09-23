@@ -88,6 +88,6 @@ void DefeatFirstPlayer() {
   AP_Check_Location(10116);
 }
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(106, 7, 106, 11);
+void SetPavilionLayout() {
+    SetPavilionPlacement(106, 5, PAVILION_FACE_SE);
 }
