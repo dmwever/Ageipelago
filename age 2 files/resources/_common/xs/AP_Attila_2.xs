@@ -56,6 +56,6 @@ void BeatTheRomans() {
   AP_Check_Location(10208);
 }
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(147, 10, 147, 14);
+void SetPavilionLayout() {
+    SetPavilionPlacement(147, 8, PAVILION_FACE_SE);
 }

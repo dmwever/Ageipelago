@@ -52,6 +52,6 @@ void DefeatOrAllyBurgundyAny() {
   AP_Check_Location(10407);
 }
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(146, 165, 146, 161);
+void SetPavilionLayout() {
+    SetPavilionPlacement(146, 167, PAVILION_FACE_NW);
 }

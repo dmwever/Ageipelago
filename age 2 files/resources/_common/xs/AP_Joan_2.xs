@@ -68,6 +68,6 @@ void SouthwestCastle() {
   AP_Check_Location(20211);
 }
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(3, 184, 7, 184);
+void SetPavilionLayout() {
+    SetPavilionPlacement(1, 184, PAVILION_FACE_NE);
 }

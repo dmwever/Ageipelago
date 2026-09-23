@@ -68,6 +68,6 @@ void DestroyPurpleWonder2() {
   AP_Check_Location(10611);
 }
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(71, 3, 71, 7);
+void SetPavilionLayout() {
+    SetPavilionPlacement(71, 1, PAVILION_FACE_SE);
 }

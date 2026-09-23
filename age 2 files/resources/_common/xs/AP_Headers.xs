@@ -27,6 +27,10 @@ mutable void SetPavilionLayout() {
     xsChatData("<RED>This scenario does not define SetPavilionLayout.");
 }
 
+mutable bool HasPavilionPlacement() {
+    return (false);
+}
+
 mutable vector PavilionSpawnPoint() {
     return (cInvalidVector);
 }

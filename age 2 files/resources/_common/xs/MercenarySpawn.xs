@@ -3,30 +3,7 @@ int seatLastSpawn = -1;    // game time in seconds of the last placement
 int spawnAreaScan = -1;    // reused by every ClearSpawnArea scan; see InitMercenarySpawn
 int musterTask = -1;       // one slot, reused for every xsTaskUnits call
 int pendingMuster = -1;    // soldier placed this pass, tasked on the next one
-int mercenarySpawnX = -1;
-int mercenarySpawnY = -1;
-int mercenaryMusterX = -1;
-int mercenaryMusterY = -1;
 bool spawnPointWarned = false;
-
-void SetMercenarySpawnLocation(int spawnX = -1, int spawnY = -1, int musterX = -1, int musterY = -1) {
-    mercenarySpawnX = spawnX;
-    mercenarySpawnY = spawnY;
-    mercenaryMusterX = musterX;
-    mercenaryMusterY = musterY;
-}
-
-bool HasMercenarySpawn() {
-    return (mercenarySpawnX >= 0 && mercenarySpawnY >= 0);
-}
-
-vector MercenarySpawnPoint() {
-    return (xsVectorSet(1.0 * mercenarySpawnX, 1.0 * mercenarySpawnY, 0.0));
-}
-
-vector MercenaryMusterPoint() {
-    return (xsVectorSet(1.0 * mercenaryMusterX, 1.0 * mercenaryMusterY, 0.0));
-}
 
 void InitMercenarySpawn() {
     seatSpawned = xsArrayCreateInt(MERCENARY_SEAT_COUNT, 0, "ap-seat-spawned");
@@ -40,7 +17,7 @@ void MusterPending() {
         return;
     }
     xsArraySetInt(musterTask, 0, pendingMuster);
-    xsTaskUnits(musterTask, cActionTypeMove, MercenaryMusterPoint());
+    xsTaskUnits(musterTask, cActionTypeMove, PavilionMusterPoint());
     pendingMuster = -1;
 }
 
@@ -60,7 +37,7 @@ int SpawnAreaClassAt(int index = -1) {
 }
 
 void ClearSpawnArea() {
-    vector spawn = MercenarySpawnPoint();
+    vector spawn = PavilionSpawnPoint();
     for (c = 0; < SPAWN_AREA_CLASS_COUNT) {
         int classId = SpawnAreaClassAt(c);
         for (player = 0; <= 8) {
@@ -85,7 +62,7 @@ bool SpawnNextSoldier(int seat = -1) {
                    + xsArrayGetSize(SeatUnits(seat)) + ". Nothing placed.");
         return (false);
     }
-    int created = xsCreateUnit(unitId, 1, MercenarySpawnPoint(), false, true, false);
+    int created = xsCreateUnit(unitId, 1, PavilionSpawnPoint(), false, true, false);
     if (created == -1) {
         return (false);
     }
@@ -119,10 +96,10 @@ rule MercenarySpawnLoop
     MusterPending();
     for (seat = 0; < MERCENARY_SEAT_COUNT) {
         if (SeatState(seat) == SEAT_OFFERED && IsSeatResearching(seat)) {
-            if (HasMercenarySpawn() == false) {
+            if (HasPavilionPlacement() == false) {
                 if (spawnPointWarned == false) {
                     xsChatData("<RED>MercenarySpawn: seat " + seat + " is researching, but this"
-                               + " scenario never called SetMercenarySpawn(). Nothing can spawn.");
+                               + " scenario never called SetPavilionLayout(). Nothing can spawn.");
                     spawnPointWarned = true;
                 }
                 return;

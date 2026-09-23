@@ -80,6 +80,6 @@ void Escort6Refugees() {
   AP_Check_Location(20514);
 }
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(8, 176, 12, 176);
+void SetPavilionLayout() {
+    SetPavilionPlacement(6, 176, PAVILION_FACE_NE);
 }

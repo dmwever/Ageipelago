@@ -1,8 +1,9 @@
 """Constants that have to agree across files, with nothing else enforcing it.
 
 Every one of these has already gone wrong or is one edit away from it, and none of them fails
-loudly in game: a mismatched coordinate puts soldiers somewhere they were not meant to go, and a
-Script Call with arguments is accepted and silently does nothing.
+loudly in game: a mismatched coordinate puts the pavilion, and the spawn and muster points
+derived from it, somewhere they were not meant to go, and a Script Call with arguments is
+accepted and silently does nothing.
 
     py -3 Scripts\\check_drift.py
 
@@ -21,29 +22,33 @@ LOCATIONS = os.path.join(AGEIPELAGO, "Data", "VictoryPavilionLocations.json")
 problems = []
 
 
-def check_spawn_coordinates() -> None:
-    """Each scenario's SetMercenarySpawn() wrapper against the JSON the pavilion is placed from."""
+def check_pavilion_placement() -> None:
+    """Each scenario's SetPavilionLayout() against the JSON.
 
+    The pavilion's own coordinate was never checked before, only the spawn and muster points
+    derived from it -- which is how AP_Joan_2 came to sit a tile away from what the JSON said
+    without anything noticing.
+    """
+    facing_for = {"SE": "PAVILION_FACE_SE", "NW": "PAVILION_FACE_NW",
+                  "NE": "PAVILION_FACE_NE", "SW": "PAVILION_FACE_SW"}
     locations = json.load(open(LOCATIONS, encoding="utf-8"))
     for scenario, location in locations.items():
         path = os.path.join(XS, scenario + ".xs")
         if not os.path.isfile(path):
-            problems.append(f"{scenario}.xs is missing, so its spawn point cannot be checked")
+            problems.append(f"{scenario}.xs is missing, so its pavilion cannot be checked")
             continue
         source = open(path, encoding="utf-8").read()
-        match = re.search(r"SetMercenarySpawnLocation\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,"
-                          r"\s*(\d+)\s*\)", source)
+        match = re.search(r"SetPavilionPlacement\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\w+)\s*\)", source)
         if not match:
-            problems.append(f"{scenario}.xs has no SetMercenarySpawn() wrapper, so the pavilion "
-                            "would arm no spawn point")
+            problems.append(f"{scenario}.xs has no SetPavilionLayout() override, so it would "
+                            "create no pavilion, no victory button and no mercenary seats")
             continue
-        found = tuple(int(value) for value in match.groups())
-        expected = (location["spawn"]["x"], location["spawn"]["y"],
-                    location["muster"]["x"], location["muster"]["y"])
+        found = (int(match.group(1)), int(match.group(2)), match.group(3))
+        expected = (location["x"], location["y"], facing_for[location["direction"]])
         if found != expected:
             problems.append(
-                f"{scenario}: wrapper says {found} but VictoryPavilionLocations.json says "
-                f"{expected}. Soldiers would spawn and muster somewhere unintended.")
+                f"{scenario}: SetPavilionPlacement says {found} but "
+                f"VictoryPavilionLocations.json says {expected}.")
 
 
 def check_script_calls_take_no_arguments() -> None:
@@ -66,7 +71,7 @@ def check_script_calls_take_no_arguments() -> None:
                     "call that instead.")
 
 
-check_spawn_coordinates()
+check_pavilion_placement()
 check_script_calls_take_no_arguments()
 
 if problems:
@@ -74,4 +79,4 @@ if problems:
         print("  " + problem)
     raise SystemExit(f"\n{len(problems)} disagreement(s).")
 
-print("spawn coordinates and script calls all agree.")
+print("pavilion placement and script calls all agree.")
