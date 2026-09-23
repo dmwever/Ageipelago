@@ -12,11 +12,9 @@ use the `aoe2-modding` skill and its catalogs; this file does not restate them.
 | Path | Holds |
 |---|---|
 | `age 2 files/resources/_common/xs/` | 33 `.xs` files on disk — the 31 catalogued below plus `Test.xs` and `default0.xs` — and an untracked `xs-check.exe` |
-| `age 2 files/resources/_common/scenario/` | 15 `.aoe2scenario` binaries: the 12 real ones, `AP_Attila_1..6` and `AP_Joan_1..6`, plus the scratch files `The Siege`, `XsTesting` and `default1` |
+| `age 2 files/resources/_common/scenario/` | 12 `.aoe2scenario` binaries: `AP_Attila_1..6` and `AP_Joan_1..6` |
 | `age 2 files/resources/_common/campaign/` | 2 untagged `.aoe2campaign` template bundles |
 | `age 2 files/mods/local/Ageipelago/` | local mod: mercenary seat names and tech icons |
-| `Scripts/` | `__init__.py`, `setup_pavilion.py`, `check_drift.py` — scenario authoring via AoE2ScenarioParser |
-| `Data/VictoryPavilionLocations.json` | per scenario: pavilion `x`/`y`, `spawn`, `muster`, `direction` |
 | `docs/` | `communication_protocol.md` (authority for the wire format), `AP FAQ.md`, `Logic Requirements/` |
 
 Only **Attila the Hun** and **Joan of Arc** are implemented — 12 scenarios. The 25 spreadsheets in
@@ -29,7 +27,7 @@ them. There is no CI and no test suite in this repo.
 |---|---|---|
 | `structs.xs` | 990 | vendored XsStructs 1.1.1. Do not audit or edit |
 | `Unitsanity.xs` | 571 | **dead** — included by nothing, called by nothing. See Gotchas |
-| `AP.xs` | 402 | the bridge: `AP_Write`/`AP_Read`, identity checks, `InitAP`, 7 rules |
+| `AP.xs` | 409 | the bridge: `AP_Write`/`AP_Read`, identity checks, `InitAP`, 7 rules |
 | `Buildsanity.xs` | 371 | building unlocks and placement detection |
 | `Techsanity.xs` | 356 | technology unlocks, the shadow-tech effect injector |
 | `ProgressionItems.xs` | 293 | per-scenario one-shot flag items, ids 1000-1023 |
@@ -37,13 +35,13 @@ them. There is no CI and no test suite in this repo.
 | `MercenarySeats.xs` | 168 | the four pavilion seats and the queue reader |
 | `MercenaryItems.xs` | 155 | mercenary flag items, ids 4000-4011 |
 | `ScenarioLocations.xs` | 147 | the location ledger |
-| `AP_Constants.xs` | 147 | **every** shared `extern const` |
-| `MercenarySpawn.xs` | 125 | spawn point, area clearing, the per-soldier loop |
+| `AP_Constants.xs` | 186 | **every** shared `extern const` |
+| `MercenarySpawn.xs` | 116 | area clearing, the per-soldier loop, the muster task |
 | `ItemHandler.xs` | 98 | `GiveItem` band dispatcher, startup-file readers |
 | `Ages.xs` | 70 | age shuffle |
 | `MercenaryLedger.xs` | 55 | the pending completed-mercenary queue |
-| `AP_Headers.xs` | 25 | the five `mutable` stubs |
-| `APavilion.xs` | 11 | victory tech (`victoryTech = 1180`) |
+| `AP_Headers.xs` | 55 | the nine `mutable` stubs, each of which warns when it runs |
+| `APavilion.xs` | 172 | creates the pavilion, hardens it, owns the victory flow and colour cycle |
 | `SlotData.xs` | 9 | per-seed identity and options, written by `/install` |
 | `TechData.xs` | 6 | per-seed tech table, written by `/install` |
 | `AP_Attila_1..6.xs` | 41-93 | scenario entry points, ids 101-106 |
@@ -121,19 +119,19 @@ void DefeatRomans() {
 
 ...
 
-void SetMercenarySpawn() {
-    SetMercenarySpawnLocation(127, 167, 127, 163);
+void SetPavilionLayout() {
+    SetPavilionPlacement(127, 169, PAVILION_FACE_NW);
 }
 ```
 
 Both comment lines appear verbatim in all twelve files. `Victory()` is always
-`GiveVictory(); AP_Check_Location(<idStart>);` and is always the first wrapper. `SetMercenarySpawn()`
+`GiveVictory(); AP_Check_Location(<idStart>);` and is always the first wrapper. `SetPavilionLayout()`
 is last, and all twelve have one.
 
 The wrapper functions are called from `script_call` effects baked into the `.aoe2scenario` binary, not
 from XS. So a wrapper with no caller looks dead in a grep of the `xs/` folder and is not. Note that
-AoE2 silently ignores arguments passed through `script_call`, which is why `SetMercenarySpawn()` is a
-no-arg wrapper around the four-argument `SetMercenarySpawnLocation`.
+AoE2 silently ignores arguments passed through `script_call`, which is why every wrapper called that
+way takes none.
 
 | Scenario | id | Locations | Vanilla age |
 |---|---|---|---|
@@ -146,19 +144,28 @@ from a location with `locationId / 10 / 10`. Scenario ids 107-200 are unused hea
 
 ## The `mutable` stub pattern
 
-`AP_Headers.xs` declares five no-op `mutable` functions. This is the mod's only polymorphism: a later
-plain definition replaces the stub, and every call site binds to the last definition.
+`AP_Headers.xs` declares nine `mutable` functions. This is the mod's only polymorphism: a later
+plain definition replaces the stub, and every call site binds to the last definition — which is also
+what lets a file call something defined in a file included *after* it, as `MercenarySpawn.xs` does
+with the pavilion points.
 
 | Stub | Overridden by |
 |---|---|
 | `AP_Check_Location(int locationId)` | `AP.xs`, once, shared |
 | `addTech(...)` 9 params | `Techsanity.xs`, once, shared |
+| `HasPavilionPlacement()` | `APavilion.xs`, once, shared |
+| `PavilionSpawnPoint()` | `APavilion.xs`, once, shared |
+| `PavilionMusterPoint()` | `APavilion.xs`, once, shared |
 | `InitScenarioLocations()` | each of the 12 scenario files |
 | `GiveScenarioItems()` | each of the 12 scenario files |
 | `SetScenarioAge()` | each of the 12 scenario files |
+| `SetPavilionLayout()` | each of the 12 scenario files |
 
-A scenario file that forgets one falls back to the stub. Four of the five return silently;
-`SetScenarioAge` is the only one that announces itself, with a `<RED>` chat line.
+**Every stub announces itself in red when it runs.** A stub still holding the floor means the real
+definition never arrived — a scenario forgot an override, or an include moved and a library one is
+out of reach — and the symptom would otherwise be a feature that quietly never happens. There is no
+once-only guard, so the ones reached from rules repeat; a broken build is meant to be loud. This is
+what replaced the build-time drift checks.
 
 ## Item id bands
 
@@ -319,31 +326,45 @@ The five one-shot readers are armed by `AP_Read` when the client raises the matc
 bootstrap: poll until the client answers, grant startup items once, wait for the scenario's own item
 file, then enable `ReadAP` and disable itself.
 
-## The AP pavilion and the tooling
+## The AP pavilion
 
-A Pavilion placed in each scenario by `Scripts/setup_pavilion.py` at the coordinates in
-`Data/VictoryPavilionLocations.json`, renamed "AP-vilion", hosting tech `1180` renamed "Declare
-Victory" plus the four mercenary seat techs. `APavilionMaker` makes it indestructible by applying
-`change_object_hp` twice, `-500` then `+0` — both effects are required; the drop alone does not do it.
+`APavilion.xs` owns it end to end. There is no tooling and no coordinate file: each scenario's
+`SetPavilionLayout()` passes a tile and a facing to `SetPavilionPlacement(x, y, facing)`, and
+`InitPavilion()` — called from `InitAP()` — creates the building with `xsCreateUnit` and keeps the
+id it returns. Nothing searches the map for a pavilion; a scenario that already has one of its own
+would be found first and then renamed, recoloured and made indestructible.
 
-Triggers it authors: `-- APavilion --` divider; a six-step colour rotation chained by trigger-id
-arithmetic; `APavilion Startup` (rename, disable deletion, the HP pair, the `SetMercenarySpawn();`
-script call); `AP Has Victory` (condition `script_call("HasVictory();")`, effects include
-`script_call(message="ShowVictory();")`); `AP Declare Victory` (a `technology_state` condition on tech
-1180 firing `declare_victory`); and the looping `AP Mercenary Muster`.
+Spawn and muster are **derived**, not authored: two and six tiles out from the pavilion along its
+facing. That held in all twelve scenarios when it was checked, which is why the JSON that used to
+carry them is gone.
 
-`Scripts/__init__.py` additionally ensures a `-- AP --` divider and a looping `AP Ping` trigger whose
-effect is `script_call(message="AP_Write();")` — that trigger drives every outgoing packet. It is
-module-level code with no `__main__` guard, reads from
-`os.getcwd() + "/age 2 files/resources/_common/scenario/"` and writes to the bare filename, so the
-rewritten scenarios land in the working directory and are moved into place by hand. Its import of
-`setup_pavilion` is a bare top-level import, so run the file directly; do not `import Scripts`.
+`SetupPavilion()` does the building — `xsSetUnitName`, `cInvulnerabilityLevel` via
+`xsEffectAmount(cSetUnitAttribute, ...)`, and `cUnitDeletable` off. `SetupVictory()` does tech 1180
+— location, button, icon, state, then `xsSetTechName` and `xsSetTechDescription`, which take literal
+strings and so need no entry in the local mod.
 
-`py -3 Scripts\check_drift.py` checks the three things that fail silently: that
-`MERCENARY_TASK_VARIABLE` agrees between `setup_pavilion.py` and `AP_Constants.xs`; that each
-scenario's `SetMercenarySpawnLocation(...)` matches the JSON; and that no authored `script_call`
-passes arguments. That last check only inspects string literals, so it cannot see
-`script_call(message=call)` in `setup_pavilion.py` — the very call site it exists to protect.
+`AnnounceVictory()` runs once when the scenario's objective completes. It is called directly from
+each of the three places `AP.xs` writes `completed` — `GiveVictory`, `AP_Read` and
+`ReadScenarioItemFile` — and guarded by `pavilionVictoryShown`, so there is no watcher rule. It
+flips the victory tech to enabled, moves the view, flashes the building, prints the instruction, and
+arms the two rules below.
+
+| Rule | Armed by | What it does |
+|---|---|---|
+| `PavilionColorCycle` | `AnnounceVictory()` | one colour per second through `cUnitColorId`, six-colour loop |
+| `PavilionDeclareWatch` | `AnnounceVictory()` | polls tech 1180; on `cTechStateDone`, `xsDeclareVictory(1, true)` and disables itself |
+
+Pass `xsDeclareVictory`'s second argument explicitly — left off, it **defeats** the player.
+
+Two values in `AP_Constants.xs` are assumptions, not documented facts: the `cUnitColorId` base
+(0-based here, one lower than the editor's list) and `cUnitDeletable`'s polarity. The guide
+documents the Unit Property constants with a templating artifact and gives no value ranges. Read
+them back with `xsGetUnitProperty` if either behaves oddly.
+
+What remains in the `.aoe2scenario` binaries: `-- AP --`, the looping `AP Ping` whose effect is
+`script_call(message="AP_Write();")`, `AP Victory`, and the ~140 per-location triggers. Everything
+else the old tooling authored — eleven triggers per scenario, plus the placed pavilion unit — was
+removed once, by a migration that is no longer in the repo.
 
 ## Linting
 

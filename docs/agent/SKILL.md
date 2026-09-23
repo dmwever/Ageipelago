@@ -16,7 +16,7 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-09-22a**
+Skill revision: **2026-09-23a**
 
 A randomizer in two halves that ship separately and must stay in step.
 
@@ -137,11 +137,11 @@ Each of these touches both halves. Doing only one side is the usual failure.
 4. **Bind both** in `locations/connections/ScenarioDataLogic.py` and `ScenarioDataRules.py`. A missed
    binding leaves `scenario.rules` as `None`, and `Rules.set_rules()` then calls `None(self)` —
    `TypeError: 'NoneType' object is not callable` at generation.
-5. Create `AP_<Campaign>_<n>.xs` from the template in `xs-mod.md`: the three stub overrides, `main()`,
-   the wrappers, and `SetMercenarySpawn()`.
-6. Add the scenario's entry to `Data/VictoryPavilionLocations.json` with pavilion, spawn and muster
-   points, then run the pavilion tooling — `Scripts/setup_pavilion.py`.
-7. Run `py -3 Scripts\check_drift.py`.
+5. Create `AP_<Campaign>_<n>.xs` from the template in `xs-mod.md`: the stub overrides, `main()`,
+   the wrappers, and `SetPavilionLayout()`.
+6. Give `SetPavilionLayout()` the pavilion's tile and facing. Spawn and muster are derived from
+   them, two and six tiles out along the facing, so there is nothing else to author and no
+   tooling to run — `APavilion.xs` creates the building at run time.
 
 ### Adding a packet field
 
@@ -161,18 +161,14 @@ Each of these touches both halves. Doing only one side is the usual failure.
 # AGEIPELAGO_PATH must point at this repo, or the two cross-repo checks silently skip.
 AGEIPELAGO_PATH=/path/to/Ageipelago python -m pytest worlds/age2de/test
 
-# XS lint, from the xs folder
+# XS lint, from the xs folder. Needs v0.2.30 or later for Update 185872.
 ./xs-check.exe -I . -- AP_Attila_1.xs
-
-# the drift checks the tooling cannot catch at runtime
-py -3 Scripts\check_drift.py
 ```
 
-`check_drift.py` checks exactly three things: that `MERCENARY_TASK_VARIABLE` agrees between
-`AP_Constants.xs` and `Scripts/setup_pavilion.py`; that each scenario's `SetMercenarySpawnLocation(...)`
-call matches the spawn and muster coordinates in `Data/VictoryPavilionLocations.json`; and that no
-`script_call(...)` in `Scripts/*.py` passes arguments, since AoE2:DE silently no-ops a Script Call
-effect that has any.
+There is no Python tooling left in this repo — no `Scripts/`, no `Data/`. The pavilion is created
+by `APavilion.xs` at run time, so nothing authors triggers any more and there is nothing to keep
+in step across files.
 
-The XS repo has no CI and no test suite. Everything that protects it is either the linter, the
-apworld's cross-repo tests, or `check_drift.py`.
+The XS repo has no CI and no test suite. What protects it is the linter, the apworld's cross-repo
+tests, and the `mutable` stubs in `AP_Headers.xs`: each one announces itself in red when it runs,
+so a missing override says so in game instead of silently doing nothing.
