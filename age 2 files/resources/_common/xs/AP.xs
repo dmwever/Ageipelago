@@ -17,7 +17,6 @@ int scenarioId = 0;
 
 int worldMajor = 0;
 int worldMinor = 3;
-int reportedMismatch = 0;
 int lastMessageId = -1;
 int startupGranted = 0;
 int scenarioItemsRead = 0;
@@ -40,10 +39,6 @@ bool CheckScenario() {
 }
 
 void ReportMismatch(string field = "", string received = "", string expected = "") {
-    if (reportedMismatch == 1) {
-        return;
-    }
-    reportedMismatch = 1;
     xsChatData("<RED>Unexpected " + field + " from Client: " + received);
     xsChatData("<RED>Expected " + field + ": " + expected);
     xsChatData("<RED>These scenarios belong to a different seed or player slot. Reinstall the files generated for this slot.");
@@ -194,6 +189,17 @@ bool HasVictory() {
     return (completed == 1);
 }
 
+/* What the looping "AP Ping" trigger used to do. Not highFrequency: AP_Write recreates the whole
+   packet file on every call, and nothing on either side is atomic, so a reader polling a file its
+   writer rewrites 60 times a second is asking to catch a torn read. */
+rule WriteAP
+    inactive
+    minInterval 1
+    maxInterval 1
+{
+    AP_Write();
+}
+
 rule ReadAP
     inactive
     minInterval 2
@@ -233,6 +239,7 @@ void InitAP() {
     InitMercenarySpawn();
     InitPavilion();
     xsEnableRule("MercenarySpawnLoop");
+    xsEnableRule("WriteAP");
     
     xsEnableRule("ConnectAP");
     AP_INITIALIZED = true;

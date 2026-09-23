@@ -27,7 +27,7 @@ them. There is no CI and no test suite in this repo.
 |---|---|---|
 | `structs.xs` | 990 | vendored XsStructs 1.1.1. Do not audit or edit |
 | `Unitsanity.xs` | 571 | **dead** — included by nothing, called by nothing. See Gotchas |
-| `AP.xs` | 409 | the bridge: `AP_Write`/`AP_Read`, identity checks, `InitAP`, 7 rules |
+| `AP.xs` | 419 | the bridge: `AP_Write`/`AP_Read`, identity checks, `InitAP`, 8 rules |
 | `Buildsanity.xs` | 371 | building unlocks and placement detection |
 | `Techsanity.xs` | 356 | technology unlocks, the shadow-tech effect injector |
 | `ProgressionItems.xs` | 293 | per-scenario one-shot flag items, ids 1000-1023 |
@@ -313,6 +313,7 @@ the item, a `HasX()` getter, dispatched from one `switch`. `ResourceItems.xs` gr
 | Rule | File | Shape | Ends |
 |---|---|---|---|
 | `ConnectAP` | `AP.xs` | inactive, 1/1 | hands off to `ReadAP`, then `xsDisableSelf` |
+| `PublishAP` | `AP.xs` | inactive, 1/1 | runs for the session |
 | `ReadAP` | `AP.xs` | inactive, 2/4 | runs for the session |
 | `ReadItems`, `FreeItems`, `MarkServerLocations`, `ReadMessages`, `ReadMercenaries` | `AP.xs` | inactive, 1/1 | `xsDisableSelf` on every path |
 | `BuildsanityChecks` | `Buildsanity.xs` | inactive, group Buildsanity, highFrequency | runs for the session |
@@ -361,10 +362,17 @@ Two values in `AP_Constants.xs` are assumptions, not documented facts: the `cUni
 documents the Unit Property constants with a templating artifact and gives no value ranges. Read
 them back with `xsGetUnitProperty` if either behaves oddly.
 
-What remains in the `.aoe2scenario` binaries: `-- AP --`, the looping `AP Ping` whose effect is
-`script_call(message="AP_Write();")`, `AP Victory`, and the ~140 per-location triggers. Everything
-else the old tooling authored — eleven triggers per scenario, plus the placed pavilion unit — was
-removed once, by a migration that is no longer in the repo.
+What remains in the `.aoe2scenario` binaries: `-- AP --`, `AP Victory`, and the ~140 per-location
+triggers. `Victory();` is now the only AP function any binary calls. Everything else the old tooling
+authored — eleven triggers per scenario, the looping `AP Ping` that used to drive `AP_Write()`, and
+the placed pavilion unit — was removed by migrations that are no longer in the repo.
+
+`AP_Write()` is driven by the `PublishAP` rule instead, at 1/1. It is deliberately not
+`highFrequency`: `AP_Write` recreates the whole packet file on every call and nothing on either side
+is atomic, so rewriting it sixty times a second invites a torn read. **Whether XS rules keep running
+while the game is paused is not established** — the protocol's Ping field is `xsGetGameTime()` and
+its contract is that it moves only while running and unpaused, so if rules do run through a pause
+the client can no longer tell a paused game from a live one. Worth checking in game.
 
 ## Linting
 
@@ -435,9 +443,12 @@ function body, a `switch` with no `default`, a mistyped rule name in `xsEnableRu
 - **`ReadItems` fills a fixed 12-slot ring by position.** An item is only taken if slot `i` is free.
 - **`AP_Write` always writes the active flag as 1.** The client decides a scenario has gone inactive.
 - **The disconnect warning repeats** on every pass once the ping stops moving, by design.
-  `ReportMismatch` in the same file deliberately fires once instead.
-- **`DeclareVictory()` in `APavilion.xs` has no XS caller.** Expected to be invoked from scenario
-  trigger data, which is binary and not greppable; unverified.
+  `ReportMismatch` no longer suppresses itself either, though in practice it still prints once:
+  its last act is `xsDisableRule("ReadAP")`, so nothing calls it again unless that rule is
+  re-enabled.
+- **`HasVictory()` in `AP.xs` has no XS caller.** Nothing in the `xs/` folder calls it, and the
+  `AP Has Victory` trigger that used to has been removed from the binaries. It is dead unless
+  something outside XS still reaches it.
 - **"Defeatsanity"** in old branches means the per-player-colour defeat checks removed in `78f1409`.
 
 ## Untested in game
