@@ -72,11 +72,14 @@ int PavilionColorAt(int index = -1) {
     return (PAVILION_COLOR_YELLOW);
 }
 
-void HardenPavilion() {
+void SetupPavilion() {
     xsSetUnitName(pavilionId, "APavilion");
     xsEffectAmount(cSetUnitAttribute, pavilionId, cInvulnerabilityLevel,
                    PAVILION_INVULNERABILITY, PAVILION_OWNER);
     xsSetUnitProperty(pavilionId, cUnitDeletable, PAVILION_DELETABLE);
+}
+
+void SetupVictory() {
     xsEffectAmount(cModifyTech, PAVILION_VICTORY_TECH, cAttrSetLocation,
                    1.0 * PAVILION_BUILDING, PAVILION_OWNER);
     xsEffectAmount(cModifyTech, PAVILION_VICTORY_TECH, cAttrSetButton,
@@ -134,7 +137,8 @@ void InitPavilion() {
         return;
     }
 
-    HardenPavilion();
+    SetupPavilion();
+    SetupVictory();
 }
 
 rule PavilionColorCycle
