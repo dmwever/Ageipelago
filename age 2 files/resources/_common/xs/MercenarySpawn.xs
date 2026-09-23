@@ -3,7 +3,6 @@ int seatLastSpawn = -1;    // game time in seconds of the last placement
 int spawnAreaScan = -1;    // reused by every ClearSpawnArea scan; see InitMercenarySpawn
 int musterTask = -1;       // one slot, reused for every xsTaskUnits call
 int pendingMuster = -1;    // soldier placed this pass, tasked on the next one
-bool spawnPointWarned = false;
 
 void InitMercenarySpawn() {
     seatSpawned = xsArrayCreateInt(MERCENARY_SEAT_COUNT, 0, "ap-seat-spawned");
@@ -97,11 +96,8 @@ rule MercenarySpawnLoop
     for (seat = 0; < MERCENARY_SEAT_COUNT) {
         if (SeatState(seat) == SEAT_OFFERED && IsSeatResearching(seat)) {
             if (HasPavilionPlacement() == false) {
-                if (spawnPointWarned == false) {
-                    xsChatData("<RED>MercenarySpawn: seat " + seat + " is researching, but this"
-                               + " scenario never called SetPavilionLayout(). Nothing can spawn.");
-                    spawnPointWarned = true;
-                }
+                xsChatData("<RED>MercenarySpawn: seat " + seat + " is researching, but this"
+                           + " scenario never called SetPavilionLayout(). Nothing can spawn.");
                 return;
             }
             MarkSeatRunning(seat);
