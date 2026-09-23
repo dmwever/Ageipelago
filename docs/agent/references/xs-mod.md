@@ -360,16 +360,22 @@ Both halves of that invocation matter, and dropping either fails in a different 
 | `./xs-check.exe -I . AP_Attila_1.xs` (no `--`) | prints usage. `-I`/`--include-dirs` is variadic, so it swallows the filename and no positional filepath is left |
 
 The linter is **not vendored** — `xs-check.exe` is gitignored (`.gitignore:208-216`) and untracked, so
-a fresh clone or a new worktree has none. Copies currently live in the `xs/` folder and in `xsscript/`.
+a fresh clone or a new worktree has none. The only copy in this repo is in the `xs/` folder. A second,
+unrelated copy ships inside the venv at
+`.venv/Lib/site-packages/AoE2ScenarioParser/dependencies/xs-check/`; it is pip-managed, the parser
+pins the version range it accepts, and nothing in this project invokes it. Leave it alone.
 
 **Lint the twelve scenario entry points, not the library files.** Only an entry point pulls in the
-whole include chain. A clean entry point currently reports **2 errors and 240 warnings** (identical
-across all twelve); linting `ItemHandler.xs` on its own reports 139 `NameError`s, because the
+whole include chain. A clean entry point reports **0 errors and 3 warnings** (identical across all
+twelve, all `DiscardedFn`); linting `ItemHandler.xs` on its own reports 139 `NameError`s, because the
 constants it uses are included by `AP.xs` one level above it.
 
-Both of those 2 errors are **linter prelude gaps, not code bugs** — `xs-check` 0.2.15 does not know
-`xsRemoveUnit` (`MercenarySpawn.xs:59`) or `xsCreateUnit` (`MercenarySpawn.xs:75`), both of which the
-engine does provide. Do not "fix" them. The 240 warnings are all `DiscardedFn`.
+The version matters. **Update 185872 needs `xs-check` v0.2.30 or later** — v0.2.29's prelude predates
+the patch and knows none of `xsSetUnitName`, `xsSetUnitProperty`, `xsGetUnitProperty`, `xsTaskUnits`,
+`xsSetViewPosition`, `xsFlashUnit`, `xsSetTechName`, `xsSetTechDescription`, `cInvulnerabilityLevel`,
+`cUnitColorId`, `cUnitDeletable` or `cActionTypeMove`, so every call to one reads as a `NameError`.
+If you are stuck on an older build, `-e, --extra-prelude-path` takes an additional prelude file: a
+few stub declarations with defaulted parameters is enough to quiet it.
 
 What the linter cannot catch here: a misspelled struct field-name string, a missing `extern`, an empty
 function body, a `switch` with no `default`, a mistyped rule name in `xsEnableRule`. See

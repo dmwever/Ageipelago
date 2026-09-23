@@ -16,7 +16,7 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-09-21b**
+Skill revision: **2026-09-22a**
 
 A randomizer in two halves that ship separately and must stay in step.
 
@@ -83,7 +83,8 @@ skill and its knowledge base. Do not answer them from here.
 9. **Lint entry points, not libraries.** `./xs-check.exe -I . -- AP_Attila_1.xs`. A library file linted
    alone reports errors for constants it never includes. Both halves of the invocation matter, and
    they fail differently — see the Linting section of `references/xs-mod.md`. Note the linter is
-   gitignored and untracked: a fresh clone or worktree has no `xs-check.exe` at all.
+   gitignored and untracked: a fresh clone or worktree has no `xs-check.exe` at all. **Needs v0.2.30
+   or later** — earlier preludes predate Update 185872 and report its functions as `NameError`.
 10. **Verify before trusting any doc, including these.** `communication_protocol.md` and these
     references have all drifted from the code at least once. The code is the authority.
 
