@@ -1,6 +1,8 @@
 int seatSpawned = -1;      // how many of them have been placed
 int seatLastSpawn = -1;    // game time in seconds of the last placement
 int spawnAreaScan = -1;    // reused by every ClearSpawnArea scan; see InitMercenarySpawn
+int musterTask = -1;       // one slot, reused for every xsTaskUnits call
+int pendingMuster = -1;    // soldier placed this pass, tasked on the next one
 int mercenarySpawnX = -1;
 int mercenarySpawnY = -1;
 int mercenaryMusterX = -1;
@@ -29,6 +31,17 @@ vector MercenaryMusterPoint() {
 void InitMercenarySpawn() {
     seatSpawned = xsArrayCreateInt(MERCENARY_SEAT_COUNT, 0, "ap-seat-spawned");
     seatLastSpawn = xsArrayCreateInt(MERCENARY_SEAT_COUNT, -1, "ap-seat-last-spawn");
+    spawnAreaScan = xsArrayCreateInt(1, -1, "ap-spawn-scan");
+    musterTask = xsArrayCreateInt(1, -1, "ap-muster-task");
+}
+
+void MusterPending() {
+    if (pendingMuster == -1) {
+        return;
+    }
+    xsArraySetInt(musterTask, 0, pendingMuster);
+    xsTaskUnits(musterTask, cActionTypeMove, MercenaryMusterPoint());
+    pendingMuster = -1;
 }
 
 void ResetSeatSpawn(int seat = -1) {
@@ -76,7 +89,7 @@ bool SpawnNextSoldier(int seat = -1) {
     if (created == -1) {
         return (false);
     }
-    xsSetTriggerVariable(MERCENARY_TASK_VARIABLE, 1);
+    pendingMuster = created;
     xsArraySetInt(seatSpawned, seat, spawned + 1);
     xsArraySetInt(seatLastSpawn, seat, xsGetGameTime());
     return (true);
@@ -103,6 +116,7 @@ rule MercenarySpawnLoop
     group Mercenaries
     highFrequency
 {
+    MusterPending();
     for (seat = 0; < MERCENARY_SEAT_COUNT) {
         if (SeatState(seat) == SEAT_OFFERED && IsSeatResearching(seat)) {
             if (HasMercenarySpawn() == false) {

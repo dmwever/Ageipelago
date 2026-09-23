@@ -1,9 +1,8 @@
 """Constants that have to agree across files, with nothing else enforcing it.
 
 Every one of these has already gone wrong or is one edit away from it, and none of them fails
-loudly in game: a mismatched coordinate puts soldiers somewhere the muster trigger is not looking,
-a mismatched variable makes the muster trigger fire on somebody else's flag, and a Script Call
-with arguments is accepted and silently does nothing.
+loudly in game: a mismatched coordinate puts soldiers somewhere they were not meant to go, and a
+Script Call with arguments is accepted and silently does nothing.
 
     py -3 Scripts\\check_drift.py
 
@@ -19,27 +18,12 @@ AGEIPELAGO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 XS = os.path.join(AGEIPELAGO, "age 2 files", "resources", "_common", "xs")
 LOCATIONS = os.path.join(AGEIPELAGO, "Data", "VictoryPavilionLocations.json")
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from setup_pavilion import MERCENARY_TASK_VARIABLE  # noqa: E402
-
 problems = []
-
-
-def check_task_variable() -> None:
-    constants = open(os.path.join(XS, "AP_Constants.xs"), encoding="utf-8").read()
-    match = re.search(r"MERCENARY_TASK_VARIABLE\s*=\s*(\d+)", constants)
-    if not match:
-        problems.append("AP_Constants.xs does not define MERCENARY_TASK_VARIABLE")
-        return
-    if int(match.group(1)) != MERCENARY_TASK_VARIABLE:
-        problems.append(
-            f"MERCENARY_TASK_VARIABLE is {MERCENARY_TASK_VARIABLE} in setup_pavilion.py but "
-            f"{match.group(1)} in AP_Constants.xs. The muster trigger would watch one flag while "
-            "XS raises another.")
 
 
 def check_spawn_coordinates() -> None:
     """Each scenario's SetMercenarySpawn() wrapper against the JSON the pavilion is placed from."""
+
     locations = json.load(open(LOCATIONS, encoding="utf-8"))
     for scenario, location in locations.items():
         path = os.path.join(XS, scenario + ".xs")
@@ -59,7 +43,7 @@ def check_spawn_coordinates() -> None:
         if found != expected:
             problems.append(
                 f"{scenario}: wrapper says {found} but VictoryPavilionLocations.json says "
-                f"{expected}. Soldiers would appear away from the muster trigger's catch area.")
+                f"{expected}. Soldiers would spawn and muster somewhere unintended.")
 
 
 def check_script_calls_take_no_arguments() -> None:
@@ -82,7 +66,6 @@ def check_script_calls_take_no_arguments() -> None:
                     "call that instead.")
 
 
-check_task_variable()
 check_spawn_coordinates()
 check_script_calls_take_no_arguments()
 
@@ -91,4 +74,4 @@ if problems:
         print("  " + problem)
     raise SystemExit(f"\n{len(problems)} disagreement(s).")
 
-print("task variable, spawn coordinates and script calls all agree.")
+print("spawn coordinates and script calls all agree.")
