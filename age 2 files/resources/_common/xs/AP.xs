@@ -231,6 +231,7 @@ void InitAP() {
     InitMercenaryLedger();
     InitMercenarySeats();
     InitMercenarySpawn();
+    InitPavilion();
     xsEnableRule("MercenarySpawnLoop");
     
     xsEnableRule("ConnectAP");
