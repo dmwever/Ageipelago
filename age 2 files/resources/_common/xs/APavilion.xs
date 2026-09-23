@@ -1,3 +1,13 @@
+int pavilionId = -1;
+int pavilionX = -1;
+int pavilionY = -1;
+int pavilionFacing = -1;
+int pavilionColor = 0;
+bool pavilionVictoryShown = false;
+
+void SetPavilionPlacement(int x = -1, int y = -1, int facing = -1) {
+    pavilionX = x;
+    pavilionY = y;
     pavilionFacing = facing;
 }
 
@@ -34,6 +44,9 @@ vector PavilionOffsetPoint(int tiles = 0) {
 vector PavilionPoint() {
     return (PavilionOffsetPoint(0));
 }
+
+vector PavilionSpawnPoint() {
+    return (PavilionOffsetPoint(PAVILION_SPAWN_OFFSET));
 }
 
 vector PavilionMusterPoint() {
@@ -71,6 +84,9 @@ void HardenPavilion() {
     xsEffectAmount(cModifyTech, PAVILION_VICTORY_TECH, cAttrSetIcon,
                    1.0 * PAVILION_VICTORY_ICON, PAVILION_OWNER);
     xsEffectAmount(cModifyTech, PAVILION_VICTORY_TECH, cAttrSetState,
+                   STATE_DISABLE, PAVILION_OWNER);
+    xsSetTechName(PAVILION_VICTORY_TECH, PAVILION_OWNER, "Declare Victory");
+    xsSetTechDescription(PAVILION_VICTORY_TECH, PAVILION_OWNER,
                          "End the scenario now, or keep playing for more checks.");
 }
 
@@ -93,6 +109,8 @@ void AnnounceVictory() {
 
     if (pavilionId != -1) {
         xsSetViewPosition(PAVILION_OWNER, PavilionPoint());
+        xsFlashUnit(pavilionId, PAVILION_OWNER);
+    }
     xsDisplayInstructions("Click Victory in the APavilion to win, or keep playing for checks.",
                           10, PAVILION_OWNER);
 
@@ -137,6 +155,8 @@ rule PavilionColorCycle
 }
 
 rule PavilionDeclareWatch
+    inactive
+    group Pavilion
     minInterval 1
     maxInterval 1
 {
