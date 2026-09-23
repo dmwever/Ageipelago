@@ -23,3 +23,15 @@ mutable void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = 
     return;
 }
 
+mutable void SetPavilionLayout() {
+    xsChatData("<RED>This scenario does not define SetPavilionLayout.");
+}
+
+mutable vector PavilionSpawnPoint() {
+    return (cInvalidVector);
+}
+
+mutable vector PavilionMusterPoint() {
+    return (cInvalidVector);
+}
+
