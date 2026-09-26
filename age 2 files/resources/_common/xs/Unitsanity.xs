@@ -5,6 +5,8 @@ int unitTableCount = 0;   /* not unitCount: MercenarySeats.xs has a parameter by
 
 bool unitsanityReady = false;
 
+float unitsValue = 0.0;
+
 vector getUnit(int i = -1) {
     return (xsArrayGetVector(unitArray, i));
 }
@@ -102,6 +104,18 @@ void setUnitHidden(vector unit = cInvalidVector, bool hidden = true) {
     structSetBool(unit, "locked", hidden);
 }
 
+int countOwned(vector unit = cInvalidVector) {
+    int total = xsGetObjectCount(1, structGetInt(unit, "gameId"));
+    int variants = idList(unit, "variantIds");
+    for (i = 0; < UNIT_VARIANT_CAPACITY) {
+        if (xsArrayGetInt(variants, i) < 0) {
+            break;
+        }
+        total = total + xsGetObjectCount(1, xsArrayGetInt(variants, i));
+    }
+    return (total);
+}
+
 void InitUnitsanityStructs() {
     defineStruct("Unit");
     defineStructAttribute("Unit", "gameId", TYPE_INT);
@@ -137,8 +151,47 @@ void InitUnitsanity() {
     }
 
     for (j = 0; < unitTableCount) {
-        setUnitHidden(getUnit(j), true);
+        vector unit = getUnit(j);
+        setUnitHidden(unit, true);
+        int locationId = structGetInt(unit, "locationId");
+        if (locationId >= 0) {
+            AddLocation(locationId);
+        }
     }
 
     unitsanityReady = true;
+    unitsValue = xsPlayerAttribute(1, cAttributeValueCurrentUnits);
+    checkOwnedUnits();
+    xsEnableRule("UnitsanityChecks");
+}
+
+rule UnitsanityChecks
+    inactive
+    group Unitsanity
+    highFrequency
+{
+    if (unitsanityReady == false) {
+        return;
+    }
+
+    float value = xsPlayerAttribute(1, cAttributeValueCurrentUnits);
+    if (value == unitsValue) {
+        return;
+    }
+    unitsValue = value;
+    for (j = 0; < unitTableCount) {
+        vector unit = getUnit(j);
+        if (structGetInt(unit, "owned") > 0) {
+            continue;
+        }
+        int locationId = structGetInt(unit, "locationId");
+        if (locationId < 0) {
+            continue;
+        }
+        int owned = countOwned(unit);
+        if (owned > 0) {
+            structSetInt(unit, "owned", owned);
+            AP_Check_Location(locationId);
+        }
+    }
 }
