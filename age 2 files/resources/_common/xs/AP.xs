@@ -233,6 +233,7 @@ void InitAP() {
     InitBuildsanity();
     InitAges();
     InitTechsanity();
+    InitUnitsanity();
     InitScenarioLocations();
     InitMercenaryLedger();
     InitMercenarySeats();

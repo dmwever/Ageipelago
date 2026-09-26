@@ -4,6 +4,7 @@ include "./ResourceItems.xs";
 include "./Buildsanity.xs";
 include "./Ages.xs";
 include "./Techsanity.xs";
+include "./Unitsanity.xs";
 
 /*        0        Victory
  *        1 -   24 Resources

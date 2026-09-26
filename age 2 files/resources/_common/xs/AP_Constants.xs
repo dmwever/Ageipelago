@@ -32,6 +32,10 @@ extern const int NOOP_EFFECT = 0;
 
 extern const int TECH_CAPACITY = 400;
 extern const int TECH_ITEM_OFFSET = 3600;
+
+extern const int UNIT_CAPACITY = 400;
+extern const int UNIT_ITEM_CAPACITY = 3;
+extern const int UNIT_VARIANT_CAPACITY = 16;
 extern const int TECH_SHADOW = 1181;
 
 /* Techsanity */
