@@ -271,6 +271,7 @@ rule ConnectAP
         GiveStartupItems();
         GiveStartupBuildings();
         GiveStartupTechs();
+        GiveStartupUnits();
         startupGranted = 1;
     }
 

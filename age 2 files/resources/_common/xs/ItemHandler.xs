@@ -50,6 +50,10 @@ void GiveItem(int itemId = -1) {
         UnlockBuilding(itemId - AP_BUILDING_ITEM_OFFSET);
         return;
     }
+    if (itemId >= AP_UNIT_ITEM_OFFSET && itemId < AP_UNIT_ITEM_OFFSET + UNIT_ITEM_SPAN) {
+        UnlockUnitItem(itemId);
+        return;
+    }
     if (itemId >= AP_PROGRESSION_ITEM_MIN && itemId < AP_PROGRESSION_ITEM_MAX) {
         GiveProgressionItem(itemId);
         return;
@@ -84,6 +88,18 @@ void GiveStartupTechs() {
     int itemCount = xsGetFileSize() / 4; // byte to int
     for (i = 0; < itemCount) {
         UnlockTech(xsReadInt() - TECH_ITEM_OFFSET, true);
+    }
+    bool closed = xsCloseFile();
+}
+
+void GiveStartupUnits() {
+    bool opened = xsOpenFile("units");
+    if (opened == false) {
+        return;
+    }
+    int itemCount = xsGetFileSize() / 4; // byte to int
+    for (i = 0; < itemCount) {
+        UnlockUnitItem(xsReadInt());
     }
     bool closed = xsCloseFile();
 }

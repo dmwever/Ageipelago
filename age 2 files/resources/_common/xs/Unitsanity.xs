@@ -7,6 +7,8 @@ bool unitsanityReady = false;
 
 float unitsValue = 0.0;
 
+int receivedItems = -1;
+
 vector getUnit(int i = -1) {
     return (xsArrayGetVector(unitArray, i));
 }
@@ -88,19 +90,47 @@ void addUnitVariant(int gameId = -1, int variantId = -1) {
     appendId(idList(getUnit(index), "variantIds"), UNIT_VARIANT_CAPACITY, variantId);
 }
 
-void setUnitHidden(vector unit = cInvalidVector, bool hidden = true) {
-    float flag = 0.0;
-    if (hidden) {
-        flag = 1.0;
+bool ageReached(int age = 0) {
+    if (age == FEUDAL_AGE) {
+        return (xsGetTechState(FEUDAL_AGE_TECH, 1) == cTechStateDone);
     }
-    xsEffectAmount(cSetAttribute, structGetInt(unit, "gameId"), cDisabledFlag, flag, 1);
+    if (age == CASTLE_AGE) {
+        return (xsGetTechState(CASTLE_AGE_TECH, 1) == cTechStateDone);
+    }
+    if (age == IMPERIAL_AGE) {
+        return (xsGetTechState(IMPERIAL_AGE_TECH, 1) == cTechStateDone);
+    }
+    return (true);
+}
+
+void setObjectDisable(int objectId = -1, float disableFlag = 1.0, bool enable = false) {
+    xsEffectAmount(cSetAttribute, objectId, cDisabledFlag, disableFlag, 1);
+    if (enable) {
+        xsEffectAmount(cEnableObject, objectId, cAttributeEnable, 1.0, 1);
+    }
+}
+
+void setUnitDisable(vector unit = cInvalidVector, float disableFlag = 1.0) {
+    bool enable = false;
+    if (disableFlag == 0.0 && ageReached(structGetInt(unit, "age"))) {
+        enable = true;
+    }
+    setObjectDisable(structGetInt(unit, "gameId"), disableFlag, enable);
     int variants = idList(unit, "variantIds");
     for (i = 0; < UNIT_VARIANT_CAPACITY) {
         if (xsArrayGetInt(variants, i) < 0) {
             break;
         }
-        xsEffectAmount(cSetAttribute, xsArrayGetInt(variants, i), cDisabledFlag, flag, 1);
+        setObjectDisable(xsArrayGetInt(variants, i), disableFlag, enable);
     }
+}
+
+void setUnitHidden(vector unit = cInvalidVector, bool hidden = true) {
+    float disableFlag = 0.0; //Enable
+    if (hidden) {
+        disableFlag = 1.0;
+    }
+    setUnitDisable(unit, disableFlag);
     structSetBool(unit, "locked", hidden);
 }
 
@@ -114,6 +144,70 @@ int countOwned(vector unit = cInvalidVector) {
         total = total + xsGetObjectCount(1, xsArrayGetInt(variants, i));
     }
     return (total);
+}
+
+void checkOwnedUnits() {
+    for (j = 0; < unitTableCount) {
+        vector unit = getUnit(j);
+        if (structGetInt(unit, "owned") > 0) {
+            continue;
+        }
+        int locationId = structGetInt(unit, "locationId");
+        if (locationId < 0) {
+            continue;
+        }
+        int owned = countOwned(unit);
+        if (owned > 0) {
+            structSetInt(unit, "owned", owned);
+            AP_Check_Location(locationId);
+        }
+    }
+}
+
+bool hasItem(int itemId = -1) {
+    int offset = itemId - AP_UNIT_ITEM_OFFSET;
+    if (offset < 0 || offset >= UNIT_ITEM_SPAN) {
+        return (false);
+    }
+    return (xsArrayGetBool(receivedItems, offset));
+}
+
+bool hasAllItems(vector unit = cInvalidVector) {
+    int items = idList(unit, "itemIds");
+    for (i = 0; < UNIT_ITEM_CAPACITY) {
+        int itemId = xsArrayGetInt(items, i);
+        if (itemId < 0) {
+            return (true);
+        }
+        if (hasItem(itemId) == false) {
+            return (false);
+        }
+    }
+    return (true);
+}
+
+void refreshUnitLocks() {
+    for (j = 0; < unitTableCount) {
+        vector unit = getUnit(j);
+        if (structGetBool(unit, "locked") == false) {
+            continue;
+        }
+        if (hasAllItems(unit)) {
+            structSetBool(unit, "hasItems", true);
+            setUnitHidden(unit, false);
+        }
+    }
+}
+
+void UnlockUnitItem(int itemId = -1) {
+    int offset = itemId - AP_UNIT_ITEM_OFFSET;
+    if (offset < 0 || offset >= UNIT_ITEM_SPAN) {
+        return;
+    }
+    xsArraySetBool(receivedItems, offset, true);
+    if (unitsanityReady) {
+        refreshUnitLocks();
+    }
 }
 
 void InitUnitsanityStructs() {
@@ -131,6 +225,7 @@ void InitUnitsanityStructs() {
     defineStructAttribute("Unit", "variantIds", TYPE_INT_ARRAY);
 
     unitArray = xsArrayCreateVector(UNIT_CAPACITY, cInvalidVector, "us-units");
+    receivedItems = xsArrayCreateBool(UNIT_ITEM_SPAN, false, "us-received");
 }
 
 void InitUnitsanity() {
@@ -179,19 +274,5 @@ rule UnitsanityChecks
         return;
     }
     unitsValue = value;
-    for (j = 0; < unitTableCount) {
-        vector unit = getUnit(j);
-        if (structGetInt(unit, "owned") > 0) {
-            continue;
-        }
-        int locationId = structGetInt(unit, "locationId");
-        if (locationId < 0) {
-            continue;
-        }
-        int owned = countOwned(unit);
-        if (owned > 0) {
-            structSetInt(unit, "owned", owned);
-            AP_Check_Location(locationId);
-        }
-    }
+    checkOwnedUnits();
 }
