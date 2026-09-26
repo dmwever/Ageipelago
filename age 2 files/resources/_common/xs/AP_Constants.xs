@@ -51,6 +51,31 @@ extern const int BEHAVIOR_INSTANT = 1;
 extern const int LOCK_ITEMS = 0;
 extern const int LOCK_EFFECTS = 1;
 
+/* Unitsanity */
+
+extern const int UNITSANITY_NONE = 0;
+extern const int UNITSANITY_UNIT_LINE = 1;
+extern const int UNITSANITY_ALL = 2;
+
+/* Unitsanity Items */
+
+extern const int US_ITEMS_UNIT_LINE = 0;
+extern const int US_ITEMS_UPGRADES = 1;
+extern const int US_ITEMS_BUILDINGS = 2;
+
+/* Shuffle Villager */
+
+extern const int VILLAGER_UNSHUFFLED = 0;
+extern const int VILLAGER_SHUFFLED = 1;
+extern const int VILLAGER_PROFESSIONS = 2;
+
+/* Include Unique Units */
+
+extern const int UNIQUE_UNITS_NONE = 0;
+extern const int UNIQUE_UNITS_UNIQUE = 1;
+extern const int UNIQUE_UNITS_REGIONAL = 2;
+extern const int UNIQUE_UNITS_BOTH = 3;
+
 /* Shuffle Unique Techs */
 
 extern const int UNIQUES_UNSHUFFLED = 0;
