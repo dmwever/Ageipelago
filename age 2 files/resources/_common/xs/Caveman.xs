@@ -1,7 +1,6 @@
 const int CAVEMAN_LEDGER_CAPACITY = 400;
 const int CAVEMAN_IMMUNE_CAPACITY = 64;
 const int CAVEMAN_EXEMPT_CAPACITY = 32;
-const int CAVEMAN_CLASS_CAPACITY = 32;
 const int CAVEMAN_MILITIA = 74;
 
 int cavemanUnitIds = -1;
@@ -13,9 +12,6 @@ int cavemanImmuneCount = 0;
 
 int cavemanExemptTypes = -1;
 int cavemanExemptCount = 0;
-
-int cavemanScanClasses = -1;
-int cavemanClassCount = 0;
 
 int cavemanScan = -1;
 float cavemanValue = 0.0;
@@ -62,7 +58,7 @@ bool isTypeExemptFromCaveman(int typeId = -1) {
     return (false);
 }
 
-int ledgerIndexOf(int unitId = -1) {
+int cavemanListIndexOf(int unitId = -1) {
     for (i = 0; < cavemanCount) {
         if (xsArrayGetInt(cavemanUnitIds, i) == unitId) {
             return (i);
@@ -72,7 +68,7 @@ int ledgerIndexOf(int unitId = -1) {
 }
 
 int originalTypeOf(int unitId = -1) {
-    int index = ledgerIndexOf(unitId);
+    int index = cavemanListIndexOf(unitId);
     if (index < 0) {
         return (-1);
     }
@@ -80,7 +76,7 @@ int originalTypeOf(int unitId = -1) {
 }
 
 void rememberOriginalType(int unitId = -1, int originalTypeId = -1) {
-    int index = ledgerIndexOf(unitId);
+    int index = cavemanListIndexOf(unitId);
     if (index >= 0) {
         xsArraySetInt(originalUnitTypes, index, originalTypeId);
         return;
@@ -95,7 +91,7 @@ void rememberOriginalType(int unitId = -1, int originalTypeId = -1) {
 }
 
 void releaseCaveman(int unitId = -1) {
-    int index = ledgerIndexOf(unitId);
+    int index = cavemanListIndexOf(unitId);
     if (index < 0) {
         return;
     }
@@ -176,8 +172,8 @@ void transformUnit(int unitId = -1, int toTypeId = -1, int originalTypeId = -1) 
     }
 }
 
-void cavemanSweepClass(int classId = -1) {
-    int found = xsGetPlayerUnitIds(1, classId, cavemanScan);
+void cavemanSweepType(int typeId = -1) {
+    int found = xsGetPlayerUnitIds(1, typeId, cavemanScan);
     for (i = 0; < xsArrayGetSize(found)) {
         int unitId = xsArrayGetInt(found, i);
         if (unitId < 0 || isUnitCavemanImmune(unitId)) {
@@ -205,25 +201,15 @@ void ApplyCaveman() {
         return;
     }
     removeDeadCavemen();
-    for (c = 0; < cavemanClassCount) {
-        cavemanSweepClass(xsArrayGetInt(cavemanScanClasses, c));
+    if (findUnit(CAVEMAN_MILITIA) < 0) {
+        cavemanSweepType(CAVEMAN_MILITIA);
     }
-}
-
-void rememberClass(int classId = -1) {
-    if (classId < 0) {
-        return;
-    }
-    for (i = 0; < cavemanClassCount) {
-        if (xsArrayGetInt(cavemanScanClasses, i) == classId) {
-            return;
+    for (j = 0; < unitTableCount) {
+        vector unit = getUnit(j);
+        if (structGetBool(unit, "cavemanExempt") == false) {
+            cavemanSweepType(structGetInt(unit, "typeId"));
         }
     }
-    if (cavemanClassCount >= CAVEMAN_CLASS_CAPACITY) {
-        return;
-    }
-    xsArraySetInt(cavemanScanClasses, cavemanClassCount, classId);
-    cavemanClassCount = cavemanClassCount + 1;
 }
 
 void InitCaveman() {
@@ -234,19 +220,7 @@ void InitCaveman() {
     originalUnitTypes = xsArrayCreateInt(CAVEMAN_LEDGER_CAPACITY, -1, "cm-original-types");
     cavemanImmuneUnits = xsArrayCreateInt(CAVEMAN_IMMUNE_CAPACITY, -1, "cm-immune");
     cavemanExemptTypes = xsArrayCreateInt(CAVEMAN_EXEMPT_CAPACITY, -1, "cm-exempt");
-    cavemanScanClasses = xsArrayCreateInt(CAVEMAN_CLASS_CAPACITY, -1, "cm-classes");
     cavemanScan = xsArrayCreateInt(1, -1, "cm-scan");
-
-    for (j = 0; < unitTableCount) {
-        vector unit = getUnit(j);
-        if (structGetBool(unit, "cavemanExempt") == false) {
-            rememberClass(xsGetObjectClass(structGetInt(unit, "typeId")));
-        }
-    }
-    if (cavemanClassCount == 0) {
-        xsChatData("<RED>Caveman: no unit classes resolved, so nothing will be downgraded.");
-        return;
-    }
 
     CavemanExemption();
     cavemanReady = true;
