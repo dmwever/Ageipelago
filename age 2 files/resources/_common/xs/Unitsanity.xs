@@ -13,9 +13,9 @@ vector getUnit(int i = -1) {
     return (xsArrayGetVector(unitArray, i));
 }
 
-int findUnit(int gameId = -1) {
+int findUnit(int typeId = -1) {
     for (i = 0; < unitTableCount) {
-        if (structGetInt(getUnit(i), "gameId") == gameId) {
+        if (structGetInt(getUnit(i), "typeId") == typeId) {
             return (i);
         }
     }
@@ -47,21 +47,24 @@ void appendId(int list = -1, int capacity = 0, int value = -1) {
     }
 }
 
-void addUnit(int locationId = -1, int gameId = -1, int lineId = -1, int age = 0,
-             int tier = 0, int isLocation = 0) {
-    if (unitTableCount >= UNIT_CAPACITY || gameId < 1) {
+void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
+             int tier = 0, int isLocation = 0, int upgradeItemId = -1,
+             int cavemanExempt = 0) {
+    if (unitTableCount >= UNIT_CAPACITY || typeId < 1) {
         return;
     }
     vector unit = new("Unit");
     if (unit == cInvalidVector) {
-        xsChatData("<RED>Unitsanity: out of Unit struct instances, dropping unit " + gameId);
+        xsChatData("<RED>Unitsanity: out of Unit struct instances, dropping unit " + typeId);
         return;
     }
-    structSetInt(unit, "gameId", gameId);
+    structSetInt(unit, "typeId", typeId);
     structSetInt(unit, "locationId", locationId);
     structSetInt(unit, "lineId", lineId);
     structSetInt(unit, "age", age);
     structSetInt(unit, "tier", tier);
+    structSetInt(unit, "upgradeItemId", upgradeItemId);
+    structSetBool(unit, "cavemanExempt", cavemanExempt == 1);
     structSetBool(unit, "isLocation", isLocation == 1);
     structSetInt(unit, "owned", 0);
     structSetBool(unit, "hasItems", false);
@@ -74,16 +77,16 @@ void addUnit(int locationId = -1, int gameId = -1, int lineId = -1, int age = 0,
     unitTableCount = unitTableCount + 1;
 }
 
-void addUnitItem(int gameId = -1, int itemId = -1) {
-    int index = findUnit(gameId);
+void addUnitItem(int typeId = -1, int itemId = -1) {
+    int index = findUnit(typeId);
     if (index < 0) {
         return;
     }
     appendId(idList(getUnit(index), "itemIds"), UNIT_ITEM_CAPACITY, itemId);
 }
 
-void addUnitVariant(int gameId = -1, int variantId = -1) {
-    int index = findUnit(gameId);
+void addUnitVariant(int typeId = -1, int variantId = -1) {
+    int index = findUnit(typeId);
     if (index < 0) {
         return;
     }
@@ -115,7 +118,7 @@ void setUnitDisable(vector unit = cInvalidVector, float disableFlag = 1.0) {
     if (disableFlag == 0.0 && ageReached(structGetInt(unit, "age"))) {
         enable = true;
     }
-    setObjectDisable(structGetInt(unit, "gameId"), disableFlag, enable);
+    setObjectDisable(structGetInt(unit, "typeId"), disableFlag, enable);
     int variants = idList(unit, "variantIds");
     for (i = 0; < UNIT_VARIANT_CAPACITY) {
         if (xsArrayGetInt(variants, i) < 0) {
@@ -135,7 +138,7 @@ void setUnitHidden(vector unit = cInvalidVector, bool hidden = true) {
 }
 
 int countOwned(vector unit = cInvalidVector) {
-    int total = xsGetObjectCount(1, structGetInt(unit, "gameId"));
+    int total = xsGetObjectCount(1, structGetInt(unit, "typeId"));
     int variants = idList(unit, "variantIds");
     for (i = 0; < UNIT_VARIANT_CAPACITY) {
         if (xsArrayGetInt(variants, i) < 0) {
@@ -212,11 +215,13 @@ void UnlockUnitItem(int itemId = -1) {
 
 void InitUnitsanityStructs() {
     defineStruct("Unit");
-    defineStructAttribute("Unit", "gameId", TYPE_INT);
+    defineStructAttribute("Unit", "typeId", TYPE_INT);
     defineStructAttribute("Unit", "locationId", TYPE_INT);
     defineStructAttribute("Unit", "lineId", TYPE_INT);
     defineStructAttribute("Unit", "age", TYPE_INT);
     defineStructAttribute("Unit", "tier", TYPE_INT);
+    defineStructAttribute("Unit", "upgradeItemId", TYPE_INT);
+    defineStructAttribute("Unit", "cavemanExempt", TYPE_BOOL);
     defineStructAttribute("Unit", "isLocation", TYPE_BOOL);
     defineStructAttribute("Unit", "owned", TYPE_INT);
     defineStructAttribute("Unit", "hasItems", TYPE_BOOL);

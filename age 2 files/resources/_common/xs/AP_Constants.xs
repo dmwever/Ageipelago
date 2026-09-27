@@ -13,8 +13,6 @@ extern const int FEUDAL_AGE_TECH = 101;
 extern const int CASTLE_AGE_TECH = 102;
 extern const int IMPERIAL_AGE_TECH = 103;
 
-/* cAttrSetState values. Float, because ints are not promoted in a call. */
-
 extern const float STATE_DISABLE = 0.0;
 extern const float STATE_ENABLE = 2.0;
 extern const float STATE_DONE = 3.0;

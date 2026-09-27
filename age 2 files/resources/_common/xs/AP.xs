@@ -234,6 +234,7 @@ void InitAP() {
     InitAges();
     InitTechsanity();
     InitUnitsanity();
+    InitCaveman();
     InitScenarioLocations();
     InitMercenaryLedger();
     InitMercenarySeats();

@@ -5,6 +5,7 @@ include "./Buildsanity.xs";
 include "./Ages.xs";
 include "./Techsanity.xs";
 include "./Unitsanity.xs";
+include "./Caveman.xs";
 
 /*        0        Victory
  *        1 -   24 Resources
@@ -52,6 +53,7 @@ void GiveItem(int itemId = -1) {
     }
     if (itemId >= AP_UNIT_ITEM_OFFSET && itemId < AP_UNIT_ITEM_OFFSET + UNIT_ITEM_SPAN) {
         UnlockUnitItem(itemId);
+        ApplyCaveman();
         return;
     }
     if (itemId >= AP_PROGRESSION_ITEM_MIN && itemId < AP_PROGRESSION_ITEM_MAX) {
@@ -60,6 +62,7 @@ void GiveItem(int itemId = -1) {
     }
     if (itemId >= TECH_ITEM_OFFSET && itemId < AP_TECH_ITEM_MAX) {
         UnlockTech(itemId - TECH_ITEM_OFFSET);
+        ApplyCaveman();
         return;
     }
     if (itemId >= AP_MERC_ITEM_MIN && itemId < AP_MERC_ITEM_MAX) {

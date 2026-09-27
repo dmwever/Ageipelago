@@ -6,6 +6,9 @@ mutable void AP_Check_Location(int locationId = -1) {
                + " goes nowhere. AP.xs did not define it.");
 }
 
+mutable void CavemanExemption() {
+}
+
 mutable void InitScenarioLocations() {
     xsChatData("<RED>This scenario does not define InitScenarioLocations, so it registers no"
                + " locations and can never send a check.");

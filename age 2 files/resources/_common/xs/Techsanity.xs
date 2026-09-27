@@ -180,6 +180,18 @@ void onTechResearched(vector tech = cInvalidVector) {
     tryApplyEffect(tech);
 }
 
+bool TechItemReceived(int itemId = -1) {
+    int offset = itemId - TECH_ITEM_OFFSET;
+    if (offset < 0 || offset >= TECH_CAPACITY) {
+        return (false);
+    }
+    vector tech = xsArrayGetVector(techByItem, offset);
+    if (tech == cInvalidVector) {
+        return (false);
+    }
+    return (structGetBool(tech, "hasItem"));
+}
+
 void UnlockTech(int itemOffset = -1, bool atStartup = false) {
     if (itemOffset < 0 || itemOffset >= TECH_CAPACITY) {
         return;
