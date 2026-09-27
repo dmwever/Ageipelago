@@ -50,6 +50,8 @@
 ### Joan of Arc 3: The Cleansing of the Loire
 - To cross the river, the player needs either the Dock item and houses or "Joan of Arc, The Cleansing of the Loire: Transport Ships". If you have a dock, you can build your own transports, buddy!
 
+### Joan of Arc 4: The Rising - To recieve your base, you need to find "Joan of Arc, The Rising: French Camp."
+
 ### Joan of Arc 5:
 - Each refugee has its own item and location. To receive a refugee, it needs to be visible and the player needs to have that refugee's item.
 - You can build some stuff because I am lazy. Have fun.
