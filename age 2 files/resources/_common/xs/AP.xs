@@ -240,6 +240,7 @@ void InitAP() {
     InitMercenaryLedger();
     InitMercenarySeats();
     InitMercenarySpawn();
+    InitTraps();
     InitPavilion();
     xsEnableRule("MercenarySpawnLoop");
     xsEnableRule("WriteAP");
