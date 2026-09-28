@@ -1,4 +1,4 @@
-int apVanillaAge = DARK_AGE;
+extern int apVanillaAge = DARK_AGE;
 
 int ageTechFor(int age = -1) {
     if (age == FEUDAL_AGE) {

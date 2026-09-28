@@ -1,9 +1,9 @@
 include "./UnitData.xs";
 
 int unitArray = -1;
-int unitTableCount = 0;   /* not unitCount: MercenarySeats.xs has a parameter by that name */
+extern int unitTableCount = 0;   /* not unitCount: MercenarySeats.xs has a parameter by that name */
 
-bool unitsanityReady = false;
+extern bool unitsanityReady = false;
 
 float unitsValue = 0.0;
 
