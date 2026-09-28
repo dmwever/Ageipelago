@@ -16,8 +16,8 @@ over `.xsdat` files. The game-side mod is a separate repo — see `xs-mod.md` an
 | `archipelago.json` | manifest: game name, `minimum_ap_version`, `world_version`, authors |
 | `items/Items.py` | the payload dataclasses **and** the `Age2ItemData` table |
 | `items/Events.py` | 10-line stub, imported by nothing. Reserved for scenario-completion and victory events |
-| `locations/` | `Locations.py` (scenario objectives), `Ages.py`, `Buildings.py`, `Techs.py`, `Campaigns.py`, `Scenarios.py`, `Civilizations.py`, `Units.py` |
-| `locations/connections/` | `LocationMapping.py`, the civ matrices, and the two late-binding modules |
+| `locations/` | `Locations.py` (scenario objectives), `Ages.py`, `Buildings.py`, `Techs.py`, `Campaigns.py`, `Scenarios.py`, `Civilizations.py`, `Units.py`, `UnitLines.py` |
+| `locations/connections/` | `LocationMapping.py`, the civ matrices, the two late-binding modules, and the four unit binders (`UnitLineUnits`, `UnitBuildings`, `UnitTechs`, `UnitVariants`) |
 | `logic/` | classes that *produce* rules. Per-scenario starting states in `attila/`, `joan/` |
 | `rules/` | classes that *attach* rules to locations and entrances |
 | `regions/` | two empty files. Reserved: region building will move here from `create_regions` |
@@ -177,7 +177,8 @@ TECH_LOOM   = 3616, "Loom", Tech(22, 22, -1, Age2AgeData.DARK, False, False)
 | 25-29 | ages (26, 27, 28 used) | 3 | `UnlockAge` |
 | 30-199 | Civs | 0 | — |
 | 200-299 | buildings | 35 | `UnlockBuilding` |
-| 300-999 | Units | 0 | — |
+| 300-548 | units | 249 | none yet — locations only |
+| 800-926 | unit lines | 127 | none yet |
 | 1000-2999 | `TCResources` ×2, `ScenarioItem` ×22 | 24 | `GiveProgressionItem` |
 | 3000-3499 | progressive scenarios | 2 | none — client-side only |
 | 3500-3599 | campaign unlocks | 2 | none — client-side only |
@@ -242,6 +243,76 @@ Other enum-attribute monkey-patching: `CivilizationTechs.py` and `CivilizationBu
 eligibility per civ is computed ad hoc in `create_regions`. Note `Age2CivData.included_buildings`
 defaults to `[]` and is **never assigned anywhere**; only `excluded_buildings` is ever populated.
 
+## Units and unit lines
+
+Added for unitsanity. **Units are locations, never items** - 16 of 21 upgraded unit names are
+already tech item names (Arbalester, Champion, Paladin, Cavalier, Pikeman, Halberdier, Hussar...),
+because the upgrade tech is named after the unit it produces, and `Items.py` asserts item-name
+uniqueness at import. Location names are verb-prefixed, so "Train Arbalester" and "Research
+Arbalester" coexist.
+
+- **`Age2UnitData`** (`locations/Units.py`) - 249 members, ids **300-548**, ordered by `game_id`.
+  Literal fields: `id, location_name, unit_name, game_id, age, is_unique, tier`.
+- **`Age2UnitLineData`** (`locations/UnitLines.py`) - 127 members, ids **800-926**. A unit with no
+  upgrades is still a line of one. `head` is a real `Age2UnitData` reference; `units` returns the
+  tiers in order.
+- Four **connections** modules bind the cross-enum attributes, split one per connected type the way
+  `CivilizationBuildings` and `CivilizationTechs` are:
+
+| module | map | binds |
+|---|---|---|
+| `UnitLineUnits.py` | `LINE_TO_UNITS` | `unit.line` |
+| `UnitBuildings.py` | `BUILDING_TO_UNITS` | `unit.buildings` |
+| `UnitTechs.py` | `UNIT_TO_UPGRADE_TECH` | `unit.upgrade_tech` |
+| `UnitVariants.py` | `UNIT_TO_VARIANT_IDS` | `unit.variant_game_ids` |
+
+`UnitLineUnits` asserts at import that every unit has a line, because a missed binding otherwise
+surfaces far from its cause - the same trap as `Age2ScenarioData.rules`.
+
+### Tiers, and why the upgrade graph is not a chain
+
+An upgrade tech carries an edge from **every** lower tier, not just the one below: researching
+Champion converts Militia, Man-at-Arms, Long Swordsman and Two-Handed at once. So **a tech's source
+count is its tier index** - Man-at-Arms 1, Long Swordsman 2, Two-Handed 3, Champion 4. And one tech
+can drive **parallel lines**: "Pikeman" upgrades Spearman to Pikeman *and* Donjon Spearman to Donjon
+Pikeman, so the unit of work is a `(tech, target)` step, not a tech. Modelling it per tech silently
+drops the entire Spearman line.
+
+Lines branch, and branches share a tier: Knight, Cavalier, then {Paladin, Savar}; and
+Militia ... {Legionary, Two-Handed}, Champion. Savar is Persian-only and Legionary Roman-only, so no
+civ sees both and the civ disambiguates.
+
+### One unit, several game ids
+
+A unit trained at a different building keeps a **different genie id**, and a villager takes a new id
+for **every job** - 27 of them. Counting one id undercounts badly; anything that counts owned units
+must sum `game_id` and `variant_game_ids`.
+
+| canonical unit | alternate building | extra id |
+|---|---|---|
+| Spearman / Pikeman / Halberdier | Donjon (Sicilians) | 1786 / 1787 / 1788 |
+| Serjeant / Elite Serjeant | Donjon | 1660 / 1661 |
+| Konnik / Elite Konnik | Krepost (Bulgarians) | 1254 / 1255 |
+| Tarkan / Elite Tarkan | Stable (Huns, via Marauders) | 886 / 887 |
+| Huskarl / Elite Huskarl | Barracks (Goths) | 759 / 761 |
+
+**Stable Tarkan matters for Attila**, which is the Huns campaign and whose mercenary items reference
+`TARKAN`.
+
+### Known limits
+
+- `is_unique` means "trains at Castle, Krepost or Donjon" - a proxy, with Trebuchet and Petard
+  excluded by hand. It does **not** catch civ-uniques trained elsewhere (Longboat, Turtle Ship,
+  Genitour, Battle Elephant, Steppe Lancer), which matters as soon as civ availability is derived.
+- 16 units at tier > 0 have **no** `upgrade_tech`: Camel Rider, which upgrades automatically on
+  reaching the Castle Age, and 15 Return of Rome units this world does not model. Treat a missing
+  `upgrade_tech` as *ungated*, not *unreachable*.
+- 20 units have no `buildings` - the Return of Rome naval units train at antiquity docks absent from
+  `Age2BuildingData`, and `VILLAGER_FEMALE` and `JEAN_BUREAU` are carried only because mercenary
+  items reference them.
+- DE consolidates several game techs behind one tech-tree button: Fast Fire Ship, Galleon and
+  Carrack are all **Heavy Warships**. `UnitTechs` names the tech the player researches.
+
 ## Mercenaries
 
 ```python
@@ -260,7 +331,7 @@ class Mercenary:
 ```
 
 `unit_ids` expands the squad to one id per soldier, which is the wire format; `unit_count` sums it.
-`Age2UnitData` in `locations/Units.py` is an `IntEnum` of in-game unit ids.
+`Age2UnitData` in `locations/Units.py` — see *Units and unit lines* below. Mercenary payloads read `.game_id`, never the member value.
 
 Twelve mercenaries, ids 4000-4011, icons 313-324, string ids 990001-990012, supplied by the local mod
 in the Ageipelago repo. Six carry `in_logic=True`.

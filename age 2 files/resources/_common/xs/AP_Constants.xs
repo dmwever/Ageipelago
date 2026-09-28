@@ -13,8 +13,6 @@ extern const int FEUDAL_AGE_TECH = 101;
 extern const int CASTLE_AGE_TECH = 102;
 extern const int IMPERIAL_AGE_TECH = 103;
 
-/* cAttrSetState values. Float, because ints are not promoted in a call. */
-
 extern const float STATE_DISABLE = 0.0;
 extern const float STATE_ENABLE = 2.0;
 extern const float STATE_DONE = 3.0;
@@ -32,6 +30,13 @@ extern const int NOOP_EFFECT = 0;
 
 extern const int TECH_CAPACITY = 400;
 extern const int TECH_ITEM_OFFSET = 3600;
+
+extern const int AP_UNIT_ITEM_OFFSET = 300;
+extern const int UNIT_ITEM_SPAN = 500;   /* 300-799: lines, upgrades, building units, professions */
+
+extern const int UNIT_CAPACITY = 400;
+extern const int UNIT_ITEM_CAPACITY = 3;
+extern const int UNIT_VARIANT_CAPACITY = 16;
 extern const int TECH_SHADOW = 1181;
 
 /* Techsanity */
@@ -50,6 +55,31 @@ extern const int BEHAVIOR_INSTANT = 1;
 
 extern const int LOCK_ITEMS = 0;
 extern const int LOCK_EFFECTS = 1;
+
+/* Unitsanity */
+
+extern const int UNITSANITY_NONE = 0;
+extern const int UNITSANITY_UNIT_LINE = 1;
+extern const int UNITSANITY_ALL = 2;
+
+/* Unitsanity Items */
+
+extern const int US_ITEMS_UNIT_LINE = 0;
+extern const int US_ITEMS_UPGRADES = 1;
+extern const int US_ITEMS_BUILDINGS = 2;
+
+/* Shuffle Villager */
+
+extern const int VILLAGER_UNSHUFFLED = 0;
+extern const int VILLAGER_SHUFFLED = 1;
+extern const int VILLAGER_PROFESSIONS = 2;
+
+/* Include Unique Units */
+
+extern const int UNIQUE_UNITS_NONE = 0;
+extern const int UNIQUE_UNITS_UNIQUE = 1;
+extern const int UNIQUE_UNITS_REGIONAL = 2;
+extern const int UNIQUE_UNITS_BOTH = 3;
 
 /* Shuffle Unique Techs */
 

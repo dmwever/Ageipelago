@@ -6,6 +6,9 @@ mutable void AP_Check_Location(int locationId = -1) {
                + " goes nowhere. AP.xs did not define it.");
 }
 
+mutable void CavemanExemption() {
+}
+
 mutable void InitScenarioLocations() {
     xsChatData("<RED>This scenario does not define InitScenarioLocations, so it registers no"
                + " locations and can never send a check.");
@@ -25,6 +28,22 @@ mutable void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = 
                      int prerequisiteId = -1) {
     xsChatData("<RED>addTech is still the stub, so tech " + id + " is being discarded."
                + " Techsanity.xs did not define it.");
+}
+
+mutable void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
+             int tier = 0, int upgradeItemId = -1, int cavemanExempt = 0) {
+    xsChatData("<RED>addUnit is still the stub, so unit location " + locationId + " is being discarded."
+               + " Unitsanity.xs did not define it.");
+}
+
+mutable void addUnitItem(int typeId = -1, int itemId = -1) {
+    xsChatData("<RED>addUnitItem is still the stub, so unit item " + itemId + " is being discarded."
+               + " Unitsanity.xs did not define it.");
+}
+
+mutable void addUnitVariant(int typeId = -1, int variantId = -1) {
+    xsChatData("<RED>addUnitVariant is still the stub, so unit variant " + variantId + " is being discarded."
+               + " Unitsanity.xs did not define it.");
 }
 
 mutable void SetPavilionLayout() {

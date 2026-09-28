@@ -10,7 +10,7 @@ use the `aoe2-modding` skill and its catalogs; this file does not restate them.
 ## Repo layout
 
 | Path | Holds |
-|---|---|
+| --- | --- |
 | `age 2 files/resources/_common/xs/` | 33 `.xs` files on disk — the 31 catalogued below plus `Test.xs` and `default0.xs` — and an untracked `xs-check.exe` |
 | `age 2 files/resources/_common/scenario/` | 12 `.aoe2scenario` binaries: `AP_Attila_1..6` and `AP_Joan_1..6` |
 | `age 2 files/resources/_common/campaign/` | 2 untagged `.aoe2campaign` template bundles |
@@ -24,7 +24,7 @@ them. There is no CI and no test suite in this repo.
 ## The files
 
 | File | Lines | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | `structs.xs` | 990 | vendored XsStructs 1.1.1. Do not audit or edit |
 | `Unitsanity.xs` | 571 | **dead** — included by nothing, called by nothing. See Gotchas |
 | `AP.xs` | 419 | the bridge: `AP_Write`/`AP_Read`, identity checks, `InitAP`, 8 rules |
@@ -134,7 +134,7 @@ AoE2 silently ignores arguments passed through `script_call`, which is why every
 way takes none.
 
 | Scenario | id | Locations | Vanilla age |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Attila 1-6 | 101-106 | 10100-10116, 10200-10208, 10300-10315, 10400-10407, 10500-10503, 10600-10611 | Dark, Castle, Castle, Castle, Castle, Imperial |
 | Joan 1-6 | 201-206 | 20100-20111, 20200-20211, 20300-20308, 20400-20405, 20500-20514, 20600-20604 | Castle, Feudal, Feudal, Castle, Imperial, Castle |
 
@@ -150,7 +150,7 @@ what lets a file call something defined in a file included *after* it, as `Merce
 with the pavilion points.
 
 | Stub | Overridden by |
-|---|---|
+| --- | --- |
 | `AP_Check_Location(int locationId)` | `AP.xs`, once, shared |
 | `addTech(...)` 9 params | `Techsanity.xs`, once, shared |
 | `HasPavilionPlacement()` | `APavilion.xs`, once, shared |
@@ -173,7 +173,7 @@ The legend lives in `ItemHandler.xs`'s header comment and must stay in step with
 `GiveItem(itemId)` dispatches by range:
 
 | Band | Handler | Live in XS |
-|---|---|---|
+| --- | --- | --- |
 | 1-24 | `GiveResource` | yes |
 | 25-29 | `UnlockAge` | yes |
 | 200-299 | `UnlockBuilding(itemId - 200)` | yes, indices 0-34 populated |
@@ -311,7 +311,7 @@ the item, a `HasX()` getter, dispatched from one `switch`. `ResourceItems.xs` gr
 ## Rules
 
 | Rule | File | Shape | Ends |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `ConnectAP` | `AP.xs` | inactive, 1/1 | hands off to `ReadAP`, then `xsDisableSelf` |
 | `PublishAP` | `AP.xs` | inactive, 1/1 | runs for the session |
 | `ReadAP` | `AP.xs` | inactive, 2/4 | runs for the session |
@@ -351,7 +351,7 @@ flips the victory tech to enabled, moves the view, flashes the building, prints 
 arms the two rules below.
 
 | Rule | Armed by | What it does |
-|---|---|---|
+| --- | --- | --- |
 | `PavilionColorCycle` | `AnnounceVictory()` | one colour per second through `cUnitColorId`, six-colour loop |
 | `PavilionDeclareWatch` | `AnnounceVictory()` | polls tech 1180; on `cTechStateDone`, `xsDeclareVictory(1, true)` and disables itself |
 
@@ -383,7 +383,7 @@ the client can no longer tell a paused game from a live one. Worth checking in g
 Both halves of that invocation matter, and dropping either fails in a different way:
 
 | Invocation | What happens |
-|---|---|
+| --- | --- |
 | `./xs-check.exe -I . -- AP_Attila_1.xs` | correct |
 | `./xs-check.exe AP_Attila_1.xs` (no `-I`) | 1 `UnresolvedInclude` + 25 `NameError` — it cannot find `./AP.xs`. **Not** a usage banner; it looks like real breakage |
 | `./xs-check.exe -I . AP_Attila_1.xs` (no `--`) | prints usage. `-I`/`--include-dirs` is variadic, so it swallows the filename and no positional filepath is left |
@@ -416,9 +416,12 @@ function body, a `switch` with no `default`, a mistyped rule name in `xsEnableRu
   `include "./BuildsanityItems.xs"` points at a file that exists nowhere in the repo — never build or
   lint it. `default0.xs` (3 lines) is engine-generated boilerplate. Neither appears in the file table
   below; an `ls *.xs` will show them anyway.
-- **`Unitsanity.xs` is dead.** Nothing includes it, nothing calls any of its twelve functions, and it
-  uses `defineStruct`/`new` without including `structs.xs`, so it would not resolve on its own if it
-  were included. Its `Unit`/`Unitsanity` structs mirror Buildsanity's but the driver was never written.
+- **`Unitsanity.xs` has been deleted.** It was a 571-line prototype nothing included: a `Unit`
+  struct mirroring Buildsanity's, ~250 hand-typed unit-id constants and ten bulk-disable functions,
+  with no driver. It also carried a live bug - `gbeto` and `elite_gbeto` were `1213`/`1215`, which
+  are *bridge terrain objects*; the Gbeto is `1013`/`1015` - and named the Eagle line one tier off,
+  after the techs rather than the units. The id table now lives in `Age2UnitData` and reaches the
+  game as a generated `UnitData.xs`, on the `TechData.py` model.
 - **`SlotData.xs` and `TechData.xs` in the repo are stubs.** `/install` overwrites them per seed. With
   the tracked versions, `AP_SLOT_ID` is -1 so `AP_Write` never creates a packet, and `LoadTechTable()`
   is empty so techsanity bails. The identity fields ship as -1 and the option fields as 0, so an

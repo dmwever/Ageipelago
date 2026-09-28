@@ -4,6 +4,9 @@ include "./ResourceItems.xs";
 include "./Buildsanity.xs";
 include "./Ages.xs";
 include "./Techsanity.xs";
+include "./Unitsanity.xs";
+include "./Caveman.xs";
+include "./Professions.xs";
 include "./TrapItems.xs";
 
 /*        0        Victory
@@ -11,7 +14,9 @@ include "./TrapItems.xs";
  *       25 -   29 Ages
  *       30 -  199 Civs
  *      200 -  299 Buildings
- *      300 -  999 Units
+ *      300 -  499 Unit lines
+ *      500 -  599 Unit upgrades
+ *      600 -  699 Building units
  *     1000 - 2999 Scenario progression
  *     3000 - 3499 Progressive scenarios
  *     3500 - 3599 Campaign unlocks
@@ -52,12 +57,19 @@ void GiveItem(int itemId = -1) {
         UnlockBuilding(itemId - AP_BUILDING_ITEM_OFFSET);
         return;
     }
+    if (itemId >= AP_UNIT_ITEM_OFFSET && itemId < AP_UNIT_ITEM_OFFSET + UNIT_ITEM_SPAN) {
+        UnlockUnitItem(itemId);
+        ApplyCaveman();
+        RefreshProfessions();
+        return;
+    }
     if (itemId >= AP_PROGRESSION_ITEM_MIN && itemId < AP_PROGRESSION_ITEM_MAX) {
         GiveProgressionItem(itemId);
         return;
     }
     if (itemId >= TECH_ITEM_OFFSET && itemId < AP_TECH_ITEM_MAX) {
         UnlockTech(itemId - TECH_ITEM_OFFSET);
+        ApplyCaveman();
         return;
     }
     if (itemId >= AP_MERC_ITEM_MIN && itemId < AP_MERC_ITEM_MAX) {
@@ -90,6 +102,18 @@ void GiveStartupTechs() {
     int itemCount = xsGetFileSize() / 4; // byte to int
     for (i = 0; < itemCount) {
         UnlockTech(xsReadInt() - TECH_ITEM_OFFSET, true);
+    }
+    bool closed = xsCloseFile();
+}
+
+void GiveStartupUnits() {
+    bool opened = xsOpenFile("units");
+    if (opened == false) {
+        return;
+    }
+    int itemCount = xsGetFileSize() / 4; // byte to int
+    for (i = 0; < itemCount) {
+        UnlockUnitItem(xsReadInt());
     }
     bool closed = xsCloseFile();
 }

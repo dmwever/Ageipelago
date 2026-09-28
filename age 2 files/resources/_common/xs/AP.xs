@@ -233,6 +233,9 @@ void InitAP() {
     InitBuildsanity();
     InitAges();
     InitTechsanity();
+    InitUnitsanity();
+    InitCaveman();
+    InitProfessions();
     InitScenarioLocations();
     InitMercenaryLedger();
     InitMercenarySeats();
@@ -271,6 +274,7 @@ rule ConnectAP
         GiveStartupItems();
         GiveStartupBuildings();
         GiveStartupTechs();
+        GiveStartupUnits();
         startupGranted = 1;
     }
 

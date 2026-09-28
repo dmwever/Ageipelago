@@ -65,6 +65,7 @@ bool SpawnNextSoldier(int seat = -1) {
     if (created == -1) {
         return (false);
     }
+    MarkUnitCavemanImmune(created);
     pendingMuster = created;
     xsArraySetInt(seatSpawned, seat, spawned + 1);
     xsArraySetInt(seatLastSpawn, seat, xsGetGameTime());
