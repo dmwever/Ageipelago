@@ -32,7 +32,7 @@ extern const int TECH_CAPACITY = 400;
 extern const int TECH_ITEM_OFFSET = 3600;
 
 extern const int AP_UNIT_ITEM_OFFSET = 300;
-extern const int UNIT_ITEM_SPAN = 400;   /* 300-699: lines, upgrades, building units */
+extern const int UNIT_ITEM_SPAN = 500;   /* 300-799: lines, upgrades, building units, professions */
 
 extern const int UNIT_CAPACITY = 400;
 extern const int UNIT_ITEM_CAPACITY = 3;

@@ -6,6 +6,7 @@ include "./Ages.xs";
 include "./Techsanity.xs";
 include "./Unitsanity.xs";
 include "./Caveman.xs";
+include "./Professions.xs";
 
 /*        0        Victory
  *        1 -   24 Resources
@@ -54,6 +55,7 @@ void GiveItem(int itemId = -1) {
     if (itemId >= AP_UNIT_ITEM_OFFSET && itemId < AP_UNIT_ITEM_OFFSET + UNIT_ITEM_SPAN) {
         UnlockUnitItem(itemId);
         ApplyCaveman();
+        RefreshProfessions();
         return;
     }
     if (itemId >= AP_PROGRESSION_ITEM_MIN && itemId < AP_PROGRESSION_ITEM_MAX) {
