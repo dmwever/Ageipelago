@@ -185,3 +185,20 @@ extern const int palisadeGateHorizontalId = 797;
 extern const int palisadeGateHorizontalOpenId = 798;
 extern const int palisadeGateVerticalId = 801;
 extern const int palisadeGateVerticalOpenId = 802;
+/* Traps. The client sends one item id per trap and this ladder separately, so a single id covers
+   every severity and the apworld never has to mint an id per level. 0 means the player turned
+   traps off, in which case no trap id is ever sent and nothing below is reached. */
+
+extern const int TRAP_DIFFICULTY_NONE      = 0;
+extern const int TRAP_DIFFICULTY_EASIEST   = 1;
+extern const int TRAP_DIFFICULTY_STANDARD  = 2;
+extern const int TRAP_DIFFICULTY_MEDIUM    = 3;
+extern const int TRAP_DIFFICULTY_HARD      = 4;
+extern const int TRAP_DIFFICULTY_LEGENDARY = 5;
+
+// Units a trap spawns or turns the player's own into.
+extern const int TRAP_MISSIONARY = 775;
+extern const int TRAP_FLEMISH_MILITIA = 1699;
+
+// One sweep never collects more than this many units. Well above any campaign army.
+extern const int TRAP_SCAN_CAPACITY = 512;
