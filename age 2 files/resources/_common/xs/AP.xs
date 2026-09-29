@@ -19,7 +19,6 @@ int scenarioId = 0;
 int worldMajor = 0;
 int worldMinor = 3;
 int lastMessageId = -1;
-int startupGranted = 0;
 int scenarioItemsRead = 0;
 int reportedMissingItems = 0;
 

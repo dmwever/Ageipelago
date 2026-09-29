@@ -2,6 +2,7 @@ const int CAVEMAN_LEDGER_CAPACITY = 400;
 const int CAVEMAN_IMMUNE_CAPACITY = 64;
 const int CAVEMAN_EXEMPT_CAPACITY = 32;
 const int CAVEMAN_MILITIA = 74;
+const int CAVEMAN_REMOVED = 0;
 
 int cavemanUnitIds = -1;
 int originalUnitTypes = -1;
@@ -165,12 +166,14 @@ int cavemanTarget(int originalTypeId = -1) {
 void transformUnit(int unitId = -1, int toTypeId = -1, int originalTypeId = -1) {
     vector position = xsGetUnitPosition(unitId);
     xsRemoveUnit(unitId);
-    releaseCaveman(unitId);
+    rememberOriginalType(unitId, CAVEMAN_REMOVED);
     int created = xsCreateUnit(toTypeId, 1, position, false, true, false);
     if (created < 0) {
         return;
     }
-    if (toTypeId != originalTypeId) {
+    if (toTypeId == originalTypeId) {
+        releaseCaveman(created);
+    } else {
         rememberOriginalType(created, originalTypeId);
     }
 }
@@ -192,11 +195,14 @@ void ApplyCaveman(int units = -1) {
     removeDeadCavemen();
     for (i = 0; < xsArrayGetSize(units)) {
         int unitId = xsArrayGetInt(units, i);
-        if (unitId < 0 || isUnitCavemanImmune(unitId)) {
+        if (unitId < 0 || xsDoesUnitExist(unitId) == false || isUnitCavemanImmune(unitId)) {
             continue;
         }
         int currentTypeId = xsGetUnitObjectId(unitId);
         int originalTypeId = originalTypeOf(unitId);
+        if (originalTypeId == CAVEMAN_REMOVED) {
+            continue;
+        }
         if (originalTypeId < 0) {
             int index = findUnit(currentTypeId);
             if (index < 0 || structGetBool(getUnit(index), "cavemanExempt")
@@ -224,5 +230,4 @@ void InitCaveman() {
 
     CavemanExemption();
     cavemanReady = true;
-    ApplyCaveman(xsGetPlayerUnitIds(1, -1));
 }

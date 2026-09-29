@@ -265,16 +265,17 @@ rule UnitsanityChecks
     group Unitsanity
     highFrequency
 {
-    if (unitsanityReady == false) {
+    if (unitsanityReady == false || startupGranted == 0) {
         return;
     }
 
     int units = xsGetPlayerUnitIds(1, -1);
-    int owned = xsArrayGetSize(units);
-    if (owned != unitsOwned) {
-        unitsOwned = owned;
+    if (xsArrayGetSize(units) != unitsOwned
+            || (cavemanReady && cavemanTargetsStale)) {
         ApplyCaveman(units);
         EvictProfessions();
+        unitsOwned = xsArrayGetSize(xsGetPlayerUnitIds(1, -1));
+        checkOwnedUnits();
     }
 
     int now = xsGetGameTime();

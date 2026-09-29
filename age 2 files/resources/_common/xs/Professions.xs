@@ -34,7 +34,7 @@ void evictProfession(vector unit = cInvalidVector, int baseVillagerId = -1) {
     int found = xsGetPlayerUnitIds(1, structGetInt(unit, "typeId"));
     for (i = 0; < xsArrayGetSize(found)) {
         int unitId = xsArrayGetInt(found, i);
-        if (unitId < 0) {
+        if (unitId < 0 || xsDoesUnitExist(unitId) == false) {
             continue;
         }
         vector position = xsGetUnitPosition(unitId);
