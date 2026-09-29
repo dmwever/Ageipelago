@@ -7,6 +7,7 @@ include "./Techsanity.xs";
 include "./Unitsanity.xs";
 include "./Caveman.xs";
 include "./Professions.xs";
+include "./TrapItems.xs";
 
 /*        0        Victory
  *        1 -   24 Resources
@@ -21,6 +22,7 @@ include "./Professions.xs";
  *     3500 - 3599 Campaign unlocks
  *     3600 - 3999 Techs
  *     4000 - 4999 Mercenaries
+ *     5000 - 5099 Traps
  */
 const int AP_RESOURCE_ITEM_MIN    = 1;
 const int AP_RESOURCE_ITEM_MAX    = 25;
@@ -38,6 +40,9 @@ const int AP_TECH_ITEM_MAX        = 4000;
 
 const int AP_MERC_ITEM_MIN        = 4000;
 const int AP_MERC_ITEM_MAX        = 5000;
+
+const int AP_TRAP_ITEM_MIN        = 5000;
+const int AP_TRAP_ITEM_MAX        = 5100;
 
 void GiveItem(int itemId = -1) {
     if (itemId >= AP_RESOURCE_ITEM_MIN && itemId < AP_RESOURCE_ITEM_MAX) {
@@ -69,6 +74,10 @@ void GiveItem(int itemId = -1) {
     }
     if (itemId >= AP_MERC_ITEM_MIN && itemId < AP_MERC_ITEM_MAX) {
         GiveMercenary(itemId);
+        return;
+    }
+    if (itemId >= AP_TRAP_ITEM_MIN && itemId < AP_TRAP_ITEM_MAX) {
+        GiveTrap(itemId);
         return;
     }
 }

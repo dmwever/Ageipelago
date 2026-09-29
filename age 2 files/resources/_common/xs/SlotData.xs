@@ -12,3 +12,4 @@ extern const int AP_US_ITEMS = 0;
 extern const int AP_US_VILLAGER = 2;
 extern const int AP_US_UNIQUES = 0;
 extern const int AP_US_CAVEMAN = 1;
+extern const int AP_TRAP_DIFFICULTY = 0;
