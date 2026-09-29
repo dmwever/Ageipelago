@@ -17,6 +17,28 @@ void SetVanillaAge(int age = -1) {
     apVanillaAge = age;
 }
 
+void completeIfPending(int id = -1) {
+    if (xsGetTechState(id, 1) == cTechStateDone) {
+        return;
+    }
+    xsEffectAmount(cModifyTech, id, cAttrSetState, STATE_DONE, 1);
+}
+
+void ClimbToVanillaAge() {
+    if (AP_TS_EXISTING == EXISTING_START_IN_DARK_AGE) {
+        return;
+    }
+    if (apVanillaAge >= FEUDAL_AGE) {
+        completeIfPending(FEUDAL_AGE_TECH);
+    }
+    if (apVanillaAge >= CASTLE_AGE) {
+        completeIfPending(CASTLE_AGE_TECH);
+    }
+    if (apVanillaAge >= IMPERIAL_AGE) {
+        completeIfPending(IMPERIAL_AGE_TECH);
+    }
+}
+
 void lockAge(int age = -1) {
     int id = ageTechFor(age);
     if (id < 0) {
@@ -41,6 +63,7 @@ void UnlockAge(int itemId = -1) {
 
 void InitAges() {
     SetScenarioAge();
+    ClimbToVanillaAge();
     if (AP_SHUFFLE_AGES != 1) {
         return;
     }

@@ -235,31 +235,18 @@ void initTech(vector tech = cInvalidVector) {
     AddLocation(structGetInt(tech, "itemId"));
 }
 
-void completeIfPending(int id = -1) {
-    if (xsGetTechState(id, 1) == cTechStateDone) {
-        return;
-    }
-    xsEffectAmount(cModifyTech, id, cAttrSetState, STATE_DONE, 1);
-}
-
 void reconstructStartingState(int vanillaAge = -1) {
     if (AP_TS_EXISTING == EXISTING_START_IN_DARK_AGE) {
         return;
     }
     techVanillaAge = vanillaAge;
-    if (vanillaAge >= FEUDAL_AGE) {
-        completeIfPending(FEUDAL_AGE_TECH);
-    }
-    if (vanillaAge >= CASTLE_AGE) {
-        completeIfPending(CASTLE_AGE_TECH);
-    }
-    if (vanillaAge >= IMPERIAL_AGE) {
-        completeIfPending(IMPERIAL_AGE_TECH);
-    }
     for (i = 0; < techCount) {
         vector tech = getTech(i);
         if (civCanResearch(tech) && structGetInt(tech, "age") < vanillaAge) {
             bool grant = true;
+            if (AP_US_CAVEMAN == 1 && structGetBool(tech, "isUpgrade")) {
+                grant = false;
+            }
             if (structGetBool(tech, "isLocation")) {
                 if (AP_TS_EXISTING == EXISTING_FIND_ITEMS) {
                     grant = false;

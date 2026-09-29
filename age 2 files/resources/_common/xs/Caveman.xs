@@ -14,7 +14,6 @@ int cavemanExemptTypes = -1;
 int cavemanExemptCount = 0;
 
 int cavemanScan = -1;
-float cavemanValue = 0.0;
 bool cavemanReady = false;
 
 void MarkUnitCavemanImmune(int unitId = -1) {
@@ -174,12 +173,13 @@ void transformUnit(int unitId = -1, int toTypeId = -1, int originalTypeId = -1) 
 
 void cavemanSweepType(int typeId = -1) {
     int found = xsGetPlayerUnitIds(1, typeId, cavemanScan);
+
     for (i = 0; < xsArrayGetSize(found)) {
         int unitId = xsArrayGetInt(found, i);
         if (unitId < 0 || isUnitCavemanImmune(unitId)) {
             continue;
         }
-        int currentTypeId = xsGetUnitType(unitId);
+        int currentTypeId = xsGetUnitObjectId(unitId);
         int originalTypeId = originalTypeOf(unitId);
         if (originalTypeId < 0) {
             int index = findUnit(currentTypeId);
@@ -224,7 +224,6 @@ void InitCaveman() {
 
     CavemanExemption();
     cavemanReady = true;
-    cavemanValue = xsPlayerAttribute(1, cAttributeValueCurrentUnits);
     ApplyCaveman();
     xsEnableRule("CavemanSweep");
 }
@@ -232,15 +231,11 @@ void InitCaveman() {
 rule CavemanSweep
     inactive
     group Unitsanity
-    highFrequency
+    minInterval 1
+    maxInterval 1
 {
     if (cavemanReady == false) {
         return;
     }
-    float value = xsPlayerAttribute(1, cAttributeValueCurrentUnits);
-    if (value == cavemanValue) {
-        return;
-    }
-    cavemanValue = value;
     ApplyCaveman();
 }

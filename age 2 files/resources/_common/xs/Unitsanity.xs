@@ -5,8 +5,6 @@ extern int unitTableCount = 0;   /* not unitCount: MercenarySeats.xs has a param
 
 extern bool unitsanityReady = false;
 
-float unitsValue = 0.0;
-
 int receivedItems = -1;
 
 vector getUnit(int i = -1) {
@@ -257,7 +255,6 @@ void InitUnitsanity() {
     }
 
     unitsanityReady = true;
-    unitsValue = xsPlayerAttribute(1, cAttributeValueCurrentUnits);
     checkOwnedUnits();
     xsEnableRule("UnitsanityChecks");
 }
@@ -265,16 +262,12 @@ void InitUnitsanity() {
 rule UnitsanityChecks
     inactive
     group Unitsanity
-    highFrequency
+    minInterval 1
+    maxInterval 1
 {
     if (unitsanityReady == false) {
         return;
     }
 
-    float value = xsPlayerAttribute(1, cAttributeValueCurrentUnits);
-    if (value == unitsValue) {
-        return;
-    }
-    unitsValue = value;
     checkOwnedUnits();
 }

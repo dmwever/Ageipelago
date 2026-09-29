@@ -82,7 +82,8 @@ void InitProfessions() {
 rule ProfessionSweep
     inactive
     group Unitsanity
-    highFrequency
+    minInterval 1
+    maxInterval 1
 {
     RefreshProfessions();
 }
