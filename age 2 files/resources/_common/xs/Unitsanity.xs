@@ -3,7 +3,8 @@ include "./UnitData.xs";
 int unitArray = -1;
 extern int unitTableCount = 0;   /* not unitCount: MercenarySeats.xs has a parameter by that name */
 
-extern bool unitsanityReady = false;
+extern int unitsOwned = -1;
+int lastOwnedCheck = OWNED_CHECK_INTERVAL;
 
 int receivedItems = -1;
 
@@ -194,6 +195,7 @@ void refreshUnitLocks() {
         if (hasAllItems(unit)) {
             structSetBool(unit, "hasItems", true);
             setUnitHidden(unit, false);
+            cavemanTargetsStale = true;
         }
     }
 }
@@ -255,19 +257,30 @@ void InitUnitsanity() {
     }
 
     unitsanityReady = true;
-    checkOwnedUnits();
     xsEnableRule("UnitsanityChecks");
 }
 
 rule UnitsanityChecks
     inactive
     group Unitsanity
-    minInterval 1
-    maxInterval 1
+    highFrequency
 {
     if (unitsanityReady == false) {
         return;
     }
 
+    int units = xsGetPlayerUnitIds(1, -1);
+    int owned = xsArrayGetSize(units);
+    if (owned != unitsOwned) {
+        unitsOwned = owned;
+        ApplyCaveman(units);
+        EvictProfessions();
+    }
+
+    int now = xsGetGameTime();
+    if (now - lastOwnedCheck < OWNED_CHECK_INTERVAL) {
+        return;
+    }
+    lastOwnedCheck = now;
     checkOwnedUnits();
 }

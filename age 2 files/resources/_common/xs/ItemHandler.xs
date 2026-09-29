@@ -59,8 +59,8 @@ void GiveItem(int itemId = -1) {
     }
     if (itemId >= AP_UNIT_ITEM_OFFSET && itemId < AP_UNIT_ITEM_OFFSET + UNIT_ITEM_SPAN) {
         UnlockUnitItem(itemId);
-        ApplyCaveman();
         RefreshProfessions();
+        ApplyCaveman(xsGetPlayerUnitIds(1, -1));
         return;
     }
     if (itemId >= AP_PROGRESSION_ITEM_MIN && itemId < AP_PROGRESSION_ITEM_MAX) {
@@ -69,7 +69,7 @@ void GiveItem(int itemId = -1) {
     }
     if (itemId >= TECH_ITEM_OFFSET && itemId < AP_TECH_ITEM_MAX) {
         UnlockTech(itemId - TECH_ITEM_OFFSET);
-        ApplyCaveman();
+        ApplyCaveman(xsGetPlayerUnitIds(1, -1));
         return;
     }
     if (itemId >= AP_MERC_ITEM_MIN && itemId < AP_MERC_ITEM_MAX) {

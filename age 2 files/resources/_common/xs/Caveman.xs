@@ -13,8 +13,7 @@ int cavemanImmuneCount = 0;
 int cavemanExemptTypes = -1;
 int cavemanExemptCount = 0;
 
-int cavemanScan = -1;
-bool cavemanReady = false;
+int cavemanTargets = -1;
 
 void MarkUnitCavemanImmune(int unitId = -1) {
     if (unitId < 0 || cavemanImmuneUnits < 0) {
@@ -132,6 +131,10 @@ int cavemanTarget(int originalTypeId = -1) {
     if (index < 0) {
         return (originalTypeId);
     }
+    int cached = xsArrayGetInt(cavemanTargets, index);
+    if (cached >= 0) {
+        return (cached);
+    }
     vector originalUnit = getUnit(index);
     int lineId = structGetInt(originalUnit, "lineId");
     int originalTier = structGetInt(originalUnit, "tier");
@@ -153,8 +156,9 @@ int cavemanTarget(int originalTypeId = -1) {
         bestTypeId = structGetInt(unit, "typeId");
     }
     if (bestTypeId < 0) {
-        return (CAVEMAN_MILITIA);
+        bestTypeId = CAVEMAN_MILITIA;
     }
+    xsArraySetInt(cavemanTargets, index, bestTypeId);
     return (bestTypeId);
 }
 
@@ -171,11 +175,23 @@ void transformUnit(int unitId = -1, int toTypeId = -1, int originalTypeId = -1) 
     }
 }
 
-void cavemanSweepType(int typeId = -1) {
-    int found = xsGetPlayerUnitIds(1, typeId, cavemanScan);
+void forgetCavemanTargets() {
+    for (i = 0; < unitTableCount) {
+        xsArraySetInt(cavemanTargets, i, -1);
+    }
+    cavemanTargetsStale = false;
+}
 
-    for (i = 0; < xsArrayGetSize(found)) {
-        int unitId = xsArrayGetInt(found, i);
+void ApplyCaveman(int units = -1) {
+    if (cavemanReady == false) {
+        return;
+    }
+    if (cavemanTargetsStale) {
+        forgetCavemanTargets();
+    }
+    removeDeadCavemen();
+    for (i = 0; < xsArrayGetSize(units)) {
+        int unitId = xsArrayGetInt(units, i);
         if (unitId < 0 || isUnitCavemanImmune(unitId)) {
             continue;
         }
@@ -196,22 +212,6 @@ void cavemanSweepType(int typeId = -1) {
     }
 }
 
-void ApplyCaveman() {
-    if (cavemanReady == false) {
-        return;
-    }
-    removeDeadCavemen();
-    if (findUnit(CAVEMAN_MILITIA) < 0) {
-        cavemanSweepType(CAVEMAN_MILITIA);
-    }
-    for (j = 0; < unitTableCount) {
-        vector unit = getUnit(j);
-        if (structGetBool(unit, "cavemanExempt") == false) {
-            cavemanSweepType(structGetInt(unit, "typeId"));
-        }
-    }
-}
-
 void InitCaveman() {
     if (AP_US_CAVEMAN == 0 || unitsanityReady == false) {
         return;
@@ -220,22 +220,9 @@ void InitCaveman() {
     originalUnitTypes = xsArrayCreateInt(CAVEMAN_LEDGER_CAPACITY, -1, "cm-original-types");
     cavemanImmuneUnits = xsArrayCreateInt(CAVEMAN_IMMUNE_CAPACITY, -1, "cm-immune");
     cavemanExemptTypes = xsArrayCreateInt(CAVEMAN_EXEMPT_CAPACITY, -1, "cm-exempt");
-    cavemanScan = xsArrayCreateInt(1, -1, "cm-scan");
+    cavemanTargets = xsArrayCreateInt(UNIT_CAPACITY, -1, "cm-targets");
 
     CavemanExemption();
     cavemanReady = true;
-    ApplyCaveman();
-    xsEnableRule("CavemanSweep");
-}
-
-rule CavemanSweep
-    inactive
-    group Unitsanity
-    minInterval 1
-    maxInterval 1
-{
-    if (cavemanReady == false) {
-        return;
-    }
-    ApplyCaveman();
+    ApplyCaveman(xsGetPlayerUnitIds(1, -1));
 }

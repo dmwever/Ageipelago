@@ -1,5 +1,6 @@
 include "./AP_Constants.xs";
 include "./SlotData.xs";
+include "./AP_Globals.xs";
 include "./ItemHandler.xs";
 include "./MercenaryLedger.xs";
 include "./MercenarySeats.xs";
