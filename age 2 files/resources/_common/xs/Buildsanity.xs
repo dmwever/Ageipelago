@@ -1,24 +1,11 @@
 include "AP_Headers.xs";
 
+const int COUNT_DIRECT = 0;
+const int COUNT_TOWN_CENTER = 1;
+const int COUNT_GATES = 2;
+const int COUNT_PALISADE_GATES = 3;
+
 vector buildsanity = cInvalidVector;
-
-vector getBuildingByName(int arrayId = -1, string name = "") {
-    if (arrayId == -1) {
-        xsChatData("ContainsName: No Array Set");
-        return (cInvalidVector);
-    }
-
-    int arraySize = xsArrayGetSize(arrayId);
-
-    for (i = 0; < arraySize) {
-        vector building = xsArrayGetVector(arrayId, i);
-        string buildingName = structGetString(building, "name");
-        if (buildingName == name) {
-            return (building);
-        }
-    }
-    return (cInvalidVector);
-}
 
 int getBuildingsByCost(int arrayId = -1, float cost = -1.0) {
     if (arrayId == -1) {
@@ -43,10 +30,24 @@ int getBuildingsByCost(int arrayId = -1, float cost = -1.0) {
     return (filteredArray);
 }
 
+int countModeFor(int buildingId = -1) {
+    if (buildingId == TOWN_CENTER_FOUNDATION) {
+        return (COUNT_TOWN_CENTER);
+    }
+    if (buildingId == GATE) {
+        return (COUNT_GATES);
+    }
+    if (buildingId == PALISADE_GATE) {
+        return (COUNT_PALISADE_GATES);
+    }
+    return (COUNT_DIRECT);
+}
+
 vector createLocationLock(string buildingName = "", int buildingId = -1, float cost = 0.0, int locationId = -1) {
     vector building = new("Building");
     structSetString(building, "name", buildingName);
     structSetInt(building, "id", buildingId);
+    structSetInt(building, "countMode", countModeFor(buildingId));
     structSetInt(building, "playerCount", xsGetObjectCount(1, structGetInt(building, "id")));
     structSetFloat(building, "resourceCost", cost);
     structSetInt(building, "locationId", locationId);
@@ -63,6 +64,7 @@ void InitBuildsanityStructs() {
     defineStructAttribute("Building", "playerCount", TYPE_INT);
     defineStructAttribute("Building", "resourceCost", TYPE_FLOAT);
     defineStructAttribute("Building", "locationId", TYPE_INT);
+    defineStructAttribute("Building", "countMode", TYPE_INT);
 
     defineStruct("Buildsanity");
     defineStructAttribute("Buildsanity", "buildings", TYPE_STRUCT_ARRAY);
@@ -225,40 +227,31 @@ int getPalisadeGatesCount() {
         xsGetObjectCount(1, palisadeGateVerticalOpenId);
     return (palisadeGateCount);
 } 
-bool Built(int buildings = -1, string name = "") {
-    if (name == "" || buildings == -1) {
+int builtCount(vector building = cInvalidVector) {
+    int mode = structGetInt(building, "countMode");
+    if (mode == COUNT_TOWN_CENTER) {
+        return (xsGetObjectCount(1, townCenterId));
+    }
+    if (mode == COUNT_GATES) {
+        return (getGatesCount());
+    }
+    if (mode == COUNT_PALISADE_GATES) {
+        return (getPalisadeGatesCount());
+    }
+    return (xsGetObjectCount(1, structGetInt(building, "id")));
+}
+
+bool Built(vector building = cInvalidVector) {
+    if (building == cInvalidVector) {
         return (false);
     }
-    vector building = getBuildingByName(buildings, name);
-    int built = xsGetObjectCount(1, structGetInt(building, "id"));
-    if (name == "Town Center") {
-        built = xsGetObjectCount(1, townCenterId);
-    }
-    if (name == "Stone Gate") {
-        built = getGatesCount();
-    }
-    if (name == "Palisade Gate") {
-        built = getPalisadeGatesCount();
-    }
-    if (built > structGetInt(building, "playerCount")) {
-        return (true);
-    }
-    return (false);
+    return (builtCount(building) > structGetInt(building, "playerCount"));
 }
 
 void updateCosts(int buildings = -1) {
     for (i = 0; < xsArrayGetSize(buildings)) {
         vector building = xsArrayGetVector(buildings, i);
-        int built = xsGetObjectCount(1, structGetInt(building, "id"));
-        if (structGetString(building, "name") == "Town Center") {
-            built = xsGetObjectCount(1, townCenterId);
-        }
-        if (structGetString(building, "name") == "Stone Gate") {
-            built = getGatesCount();
-        }
-        if (structGetString(building, "name") == "Palisade Gate") {
-            built = getPalisadeGatesCount();
-        }
+        int built = builtCount(building);
         if (built > structGetInt(building, "playerCount")) {
             structSetInt(building, "playerCount", built);
         }
@@ -292,7 +285,6 @@ rule BuildsanityChecks
     }
     
     if (structGetFloat(buildsanity, "currentBuildingTotalCost") == buildingTotalCost) {
-        updateCosts(structGetInt(buildsanity, "buildings"));
         return;
     }
 
@@ -302,7 +294,7 @@ rule BuildsanityChecks
     int buildingsAtCost = getBuildingsByCost(buildings, newBuildingCost);
     for (i = 0; < xsArrayGetSize(buildingsAtCost)) {
         vector building = xsArrayGetVector(buildingsAtCost, i);
-        if (Built(buildings, structGetString(building, "name"))) {
+        if (Built(building)) {
             AP_Check_Location(structGetInt(building, "locationId"));
         }
     }

@@ -332,15 +332,17 @@ rule TechsanityUpdate
     }
 
     float researched = xsPlayerAttribute(1, cAttributeResearchCount);
-    if (researched > techResearchCount) {
-        techResearchCount = researched;
-        for (i = 0; < techCount) {
-            vector tech = getTech(i);
-            if (structGetBool(tech, "isLocation") &&
-                structGetBool(tech, "researched") == false &&
-                xsGetTechState(structGetInt(tech, "id"), 1) == cTechStateDone) {
-                    onTechResearched(tech);
-            }
+    if (researched <= techResearchCount) {
+        return;
+    }
+    techResearchCount = researched;
+
+    for (i = 0; < techCount) {
+        vector tech = getTech(i);
+        if (structGetBool(tech, "isLocation") &&
+            structGetBool(tech, "researched") == false &&
+            xsGetTechState(structGetInt(tech, "id"), 1) == cTechStateDone) {
+                onTechResearched(tech);
         }
     }
 
