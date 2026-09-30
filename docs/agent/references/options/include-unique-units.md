@@ -31,7 +31,9 @@ added lines are the Tarkan, Throwing Axeman, Mounted Crossbowman and Dromon.
 
 ## Game effect
 
-None yet.
+None, directly. This option decides which units get rows in the generated `UnitData.xs`, and the
+game locks and checks whatever it is given - it never reads `AP_US_UNIQUES` to make a decision of
+its own. The constant is on the wire for completeness.
 
 ## Interactions
 
@@ -41,4 +43,6 @@ and Throwing Axeman lines, and the Mounted Crossbowman line the Franks gained.
 
 ## Tests
 
-None yet.
+`test_unit_pool.py` sweeps the four values and checks what each admits. `test_unit_data.py` refuses
+a unit location no civilisation in the seed can field, which is how an over-admitting setting would
+surface - loudly at `/install` rather than as a silent unreachable location.

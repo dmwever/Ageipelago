@@ -25,11 +25,11 @@ does `getattr(self.options, option_name)` with the internal name. All six curren
 | [lock-techs](lock-techs.md) | `lock_techs` | Choice | items | yes | `AP_TS_LOCK` |
 | [shuffle-unique-techs](shuffle-unique-techs.md) | `shuffle_unique_techs` | Choice | unshuffled | yes | `AP_TS_UNIQUES` |
 | [existing-techs](existing-techs.md) | `existing_techs` | Choice | vanilla | yes | `AP_TS_EXISTING` |
-| [unitsanity](unitsanity.md) | `unitsanity` | Choice | none | not yet | not yet |
-| [unitsanity-items](unitsanity-items.md) | `unitsanity_items` | Choice | unit_line | not yet | not yet |
-| [shuffle-villager](shuffle-villager.md) | `shuffle_villager` | Choice | no | not yet | not yet |
-| [include-unique-units](include-unique-units.md) | `include_unique_units` | Choice | none | not yet | not yet |
-| [caveman](caveman.md) | `caveman` | Toggle | off | not yet | not yet |
+| [unitsanity](unitsanity.md) | `unitsanity` | Choice | none | yes | `AP_US_MODE` |
+| [unitsanity-items](unitsanity-items.md) | `unitsanity_items` | Choice | unit_line | yes | `AP_US_ITEMS` |
+| [shuffle-villager](shuffle-villager.md) | `shuffle_villager` | Choice | no | yes | `AP_US_VILLAGER` |
+| [include-unique-units](include-unique-units.md) | `include_unique_units` | Choice | none | yes | `AP_US_UNIQUES` |
+| [caveman](caveman.md) | `caveman` | Toggle | off | yes | `AP_US_CAVEMAN` |
 | [start-inventory-pool](start-inventory-pool.md) | `startInventoryPool` | core AP | — | — | — |
 
 Only six options reach the game. The rest are generation-only: they shape the item pool, the location
@@ -72,9 +72,13 @@ install that `/install` has never touched reads as "off" rather than as a valid 
 
 - `unitsanity` gates `unitsanity_items`, `include_unique_units` and `caveman`.
   `shuffle_villager` is independent of it.
-- The five unit options are **generation-only for now**: none is in `SlotData.OPTIONS`, so the
-  slot_data shape is unchanged and `world_version` stays `0.3.0`. Unitsanity is a 0.3.0
-  feature, not a new version. They join the wire in Phase 13, with the XS constants.
+- All five unit options are in `SlotData.OPTIONS`, and `world_version` still stays `0.3.0`:
+  unitsanity is a 0.3.0 feature rather than a new version, and 0.3.0 has not shipped, so adding
+  fields breaks no compatibility.
+- `SlotData.options()` is the one place that bends a value: when `unitsanity` is `none` and
+  `shuffle_villager` is not `no`, it promotes `AP_US_MODE` to `unit_line`. The game asks a single
+  question - is unitsanity on - and villagers are just another thing it shuffles. Deriving it
+  there keeps `OPTIONS` a plain declarative map.
 
 - `enabled_campaigns` decides what exists; `starting_campaigns` decides what begins unlocked. The
   second must name at least one of the first.

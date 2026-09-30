@@ -45,13 +45,35 @@ granting scenario. Attila needs no special case for arriving by trigger in Attil
 map in Attila 6; they are simply two entrances. No hero is ever an item.
 
 With the two campaigns the world carries, `include_unique_units: none` gives **24 lines / 47
-units**, and `both` gives **28 / 54**. `shuffle_villager` adds its own on top - 1 or 26.
+units**, and `both` gives **28 / 54**. `shuffle_villager` adds its own on top - 2 or 24.
 
 ## Game effect
 
-None yet. The game side is Phases 11-13. `AP_Constants.xs` has no unitsanity mnemonics and
-`SlotData.OPTIONS` is untouched, so the slot_data shape is unchanged and `world_version` stays
-`0.3.0` - unitsanity is a 0.3.0 feature rather than a new version.
+`Unitsanity.xs` loads a per-seed `UnitData.xs` and hides every unit it names, the same
+`cSetAttribute` / `cDisabledFlag` idiom `Buildsanity.xs` uses - which both hides a unit from its
+building and prevents training it, hotkey included. The struct tracks `locked` itself, because
+`xsIsObjectAvailable` reports a hidden-and-locked unit as **available** and must never be the test.
+
+Unhiding clears the flag and, **only when the unit's age is already researched**, re-asserts
+`cEnableObject`. Both halves were measured: clearing the flag alone leaves a unit greyed when it was
+locked across an age boundary, and asserting the enable before its age hands the unit over an age
+early. Because the engine's age-up pass skips anything whose `cDisabledFlag` is set, no
+age-advancement rule is needed.
+
+The row a unit carries names the **location its ownership completes** - its own under `all`, its
+**line's** under `unit_line` - so every tier of a line shares one check and the check is idempotent.
+Detection sums the row's variant ids, because a villager takes a different id per job and a Sicilian
+Spearman at the Donjon is a different id from the one at the Barracks.
+
+Five fields are on the wire - `AP_US_MODE`, `AP_US_ITEMS`, `AP_US_VILLAGER`, `AP_US_UNIQUES`,
+`AP_US_CAVEMAN` - with mnemonics in `AP_Constants.xs`. `world_version` stays `0.3.0`: unitsanity is
+a 0.3.0 feature rather than a new version, and 0.3.0 has not shipped, so adding fields breaks no
+compatibility.
+
+**One rule drives all three unit modes.** `rule UnitsanityChecks` enumerates the player's units once
+with `xsGetPlayerUnitIds(1, -1)`, runs caveman and profession eviction, and only sends checks on a
+tick where the owned count is unchanged and nothing was transformed. That ordering is what stops
+`Own Tarkan` firing before caveman has turned the Tarkan into a Militia.
 
 ## Interactions
 
@@ -59,4 +81,7 @@ Gates `unitsanity_items`, `include_unique_units` and `caveman`. `shuffle_village
 
 ## Tests
 
-None yet.
+`test_unit_pool.py` (pool and region topology), `test_unit_rules.py` (the four entrance kinds and
+the per-location rules), `test_unit_data.py` (the generated table), `test_unit_handler.py`
+(`units.xsdat`), and `test_unit_item_agreement.py`, which sweeps 27 option combinations and holds
+`UnitData.items_for` against `UnitPool.items` - the coupling that nothing else guards.
