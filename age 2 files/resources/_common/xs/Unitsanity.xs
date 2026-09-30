@@ -281,16 +281,20 @@ void InitUnitsanity() {
     xsEnableRule("UnitsanityChecks");
 }
 
+int testArray = -1;
+
 rule UnitsanityChecks
     inactive
+    minInterval 1
+    maxInterval 1
     group Unitsanity
-    highFrequency
 {
     if (unitsanityReady == false || startupGranted == 0) {
         return;
     }
 
-    int units = xsGetPlayerUnitIds(1, -1);
+    int units = xsGetPlayerUnitIds(1, -1, testArray);
+
     int owned = xsArrayGetSize(units);
     if (owned != unitsOwned) {
         unitsOwned = owned;
