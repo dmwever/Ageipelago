@@ -194,6 +194,7 @@ bool TechItemReceived(int itemId = -1) {
 
 void UnlockTech(int itemOffset = -1, bool atStartup = false) {
     cavemanTargetsStale = true;
+    unitsDirty = true;
     if (itemOffset < 0 || itemOffset >= TECH_CAPACITY) {
         return;
     }

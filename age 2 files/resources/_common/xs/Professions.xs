@@ -40,6 +40,7 @@ void evictProfession(vector unit = cInvalidVector, int baseVillagerId = -1) {
         vector position = xsGetUnitPosition(unitId);
         xsRemoveUnit(unitId);
         int created = xsCreateUnit(baseVillagerId, 1, position, false, true, false);
+        unitsTransformed = true;
     }
 }
 

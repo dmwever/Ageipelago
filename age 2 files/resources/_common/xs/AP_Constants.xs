@@ -37,7 +37,6 @@ extern const int UNIT_ITEM_SPAN = 500;   /* 300-799: lines, upgrades, building u
 extern const int UNIT_CAPACITY = 400;
 extern const int UNIT_ITEM_CAPACITY = 3;
 extern const int UNIT_VARIANT_CAPACITY = 16;
-extern const int OWNED_CHECK_INTERVAL = 1000;
 extern const int TECH_SHADOW = 1181;
 
 /* Techsanity */

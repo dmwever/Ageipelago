@@ -4,9 +4,12 @@ int unitArray = -1;
 extern int unitTableCount = 0;   /* not unitCount: MercenarySeats.xs has a parameter by that name */
 
 extern int unitsOwned = -1;
-int lastOwnedCheck = OWNED_CHECK_INTERVAL;
 
 int receivedItems = -1;
+
+int variantLookupIds = -1;
+int variantLookupTypes = -1;
+int variantLookupCount = 0;
 
 vector getUnit(int i = -1) {
     return (xsArrayGetVector(unitArray, i));
@@ -88,6 +91,21 @@ void addUnitVariant(int typeId = -1, int variantId = -1) {
         return;
     }
     appendId(idList(getUnit(index), "variantIds"), UNIT_VARIANT_CAPACITY, variantId);
+    if (variantLookupCount >= UNIT_CAPACITY) {
+        return;
+    }
+    xsArraySetInt(variantLookupIds, variantLookupCount, variantId);
+    xsArraySetInt(variantLookupTypes, variantLookupCount, typeId);
+    variantLookupCount = variantLookupCount + 1;
+}
+
+int canonicalTypeOf(int typeId = -1) {
+    for (i = 0; < variantLookupCount) {
+        if (xsArrayGetInt(variantLookupIds, i) == typeId) {
+            return (xsArrayGetInt(variantLookupTypes, i));
+        }
+    }
+    return (typeId);
 }
 
 bool ageReached(int age = 0) {
@@ -196,6 +214,7 @@ void refreshUnitLocks() {
             structSetBool(unit, "hasItems", true);
             setUnitHidden(unit, false);
             cavemanTargetsStale = true;
+            unitsDirty = true;
         }
     }
 }
@@ -227,6 +246,8 @@ void InitUnitsanityStructs() {
     defineStructAttribute("Unit", "variantIds", TYPE_INT_ARRAY);
 
     unitArray = xsArrayCreateVector(UNIT_CAPACITY, cInvalidVector, "us-units");
+    variantLookupIds = xsArrayCreateInt(UNIT_CAPACITY, -1, "us-variant-ids");
+    variantLookupTypes = xsArrayCreateInt(UNIT_CAPACITY, -1, "us-variant-types");
     receivedItems = xsArrayCreateBool(UNIT_ITEM_SPAN, false, "us-received");
 }
 
@@ -270,18 +291,23 @@ rule UnitsanityChecks
     }
 
     int units = xsGetPlayerUnitIds(1, -1);
-    if (xsArrayGetSize(units) != unitsOwned
-            || (cavemanReady && cavemanTargetsStale)) {
-        ApplyCaveman(units);
-        EvictProfessions();
-        unitsOwned = xsArrayGetSize(xsGetPlayerUnitIds(1, -1));
-        checkOwnedUnits();
-    }
-
-    int now = xsGetGameTime();
-    if (now - lastOwnedCheck < OWNED_CHECK_INTERVAL) {
+    int owned = xsArrayGetSize(units);
+    if (owned != unitsOwned) {
+        unitsOwned = owned;
+        unitsDirty = true;
         return;
     }
-    lastOwnedCheck = now;
+    if (unitsDirty == false) {
+        return;
+    }
+
+    unitsTransformed = false;
+    ApplyCaveman(units);
+    EvictProfessions();
+    if (unitsTransformed) {
+        return;
+    }
+
+    unitsDirty = false;
     checkOwnedUnits();
 }

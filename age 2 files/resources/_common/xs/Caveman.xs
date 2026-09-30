@@ -171,6 +171,7 @@ void transformUnit(int unitId = -1, int toTypeId = -1, int originalTypeId = -1) 
     if (created < 0) {
         return;
     }
+    unitsTransformed = true;
     if (toTypeId == originalTypeId) {
         releaseCaveman(created);
     } else {
@@ -198,7 +199,7 @@ void ApplyCaveman(int units = -1) {
         if (unitId < 0 || xsDoesUnitExist(unitId) == false || isUnitCavemanImmune(unitId)) {
             continue;
         }
-        int currentTypeId = xsGetUnitObjectId(unitId);
+        int currentTypeId = canonicalTypeOf(xsGetUnitObjectId(unitId));
         int originalTypeId = originalTypeOf(unitId);
         if (originalTypeId == CAVEMAN_REMOVED) {
             continue;
