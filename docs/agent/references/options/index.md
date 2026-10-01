@@ -32,7 +32,7 @@ does `getattr(self.options, option_name)` with the internal name. All six curren
 | [caveman](caveman.md) | `caveman` | Toggle | off | yes | `AP_US_CAVEMAN` |
 | [start-inventory-pool](start-inventory-pool.md) | `startInventoryPool` | core AP | — | — | — |
 
-Only six options reach the game. The rest are generation-only: they shape the item pool, the location
+Twelve options reach the game. The rest are generation-only: they shape the item pool, the location
 set and the rules, and the game never learns about them.
 
 ## At defaults

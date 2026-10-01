@@ -6,6 +6,12 @@ mutable void AP_Check_Location(int locationId = -1) {
                + " goes nowhere. AP.xs did not define it.");
 }
 
+mutable void ApplyCaveman(int units = -1) {
+}
+
+mutable void EvictProfessions() {
+}
+
 mutable void CavemanExemption() {
 }
 

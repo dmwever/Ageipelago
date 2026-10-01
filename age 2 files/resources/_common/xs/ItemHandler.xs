@@ -17,6 +17,7 @@ include "./TrapItems.xs";
  *      300 -  499 Unit lines
  *      500 -  599 Unit upgrades
  *      600 -  699 Building units
+ *      700 -  799 Villager professions
  *     1000 - 2999 Scenario progression
  *     3000 - 3499 Progressive scenarios
  *     3500 - 3599 Campaign unlocks
@@ -59,7 +60,6 @@ void GiveItem(int itemId = -1) {
     }
     if (itemId >= AP_UNIT_ITEM_OFFSET && itemId < AP_UNIT_ITEM_OFFSET + UNIT_ITEM_SPAN) {
         UnlockUnitItem(itemId);
-        ApplyCaveman();
         RefreshProfessions();
         return;
     }
@@ -69,7 +69,6 @@ void GiveItem(int itemId = -1) {
     }
     if (itemId >= TECH_ITEM_OFFSET && itemId < AP_TECH_ITEM_MAX) {
         UnlockTech(itemId - TECH_ITEM_OFFSET);
-        ApplyCaveman();
         return;
     }
     if (itemId >= AP_MERC_ITEM_MIN && itemId < AP_MERC_ITEM_MAX) {
@@ -116,6 +115,7 @@ void GiveStartupUnits() {
         UnlockUnitItem(xsReadInt());
     }
     bool closed = xsCloseFile();
+    RefreshProfessions();
 }
 
 void GiveStartupItems() {
