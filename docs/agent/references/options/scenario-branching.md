@@ -11,7 +11,7 @@
 
 ## Generation effect
 
-`Age2World.branching_option(location)` drops `OBJECTIVE_BRANCHING_ALL` locations unless the value is
+`pool.scenarios.includes_location(location)` drops `OBJECTIVE_BRANCHING_ALL` locations unless the value is
 `option_all`, and `OBJECTIVE_BRANCHING_ANY` locations unless it is `option_any`. Filtered locations are
 never created, so nothing downstream has to know about them.
 

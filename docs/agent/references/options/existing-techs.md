@@ -20,9 +20,9 @@ The most cross-cutting option in the world. Requires techsanity.
 - `TechPool.locked_at_start()` withholds always under `find_items` and `start_in_dark_age`, withholds
   only unit techs under `only_find_units`, and never under `vanilla`.
 - `TechPool.reachable()` treats a locked-at-start tech as always reachable; otherwise it must be at or
-  above `earliest_age`, since a scenario would auto-research it before any check exists.
+  above `pool.ages.earliest`, since a scenario would auto-research it before any check exists.
 - `create_regions` makes every age eligible for shuffling under `start_in_dark_age`, not just those
-  above `earliest_age`.
+  above `pool.ages.earliest`.
 - `TechLogic.can_research()` requires `can_reach_age` for a locked-at-start tech above its building's
   opening age.
 - `InstallHandler` treats anything but `vanilla` as a rebase, which decides whether `/install` rewrites

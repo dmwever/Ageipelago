@@ -12,8 +12,9 @@ campaigns exist in the seed at all; `starting_campaigns` decides which of those 
 
 ## Generation effect
 
-`generate_early` sets `world.included_campaigns`, raising `OptionError` if empty. Everything downstream
-derives from it: regions and scenario chains, `included_civs`, `earliest_age`, the `TechPool`, and
+`inspect_options` raises `OptionError` if empty, then `Age2Pool` sets `pool.campaigns.enabled`.
+Everything downstream derives from it: `pool.scenarios`, `pool.civs`, `pool.ages.earliest`, the
+tech and unit pools, regions and scenario chains, and
 which scenario, mercenary, campaign and progressive-scenario items are pooled at all.
 
 ## Game effect
