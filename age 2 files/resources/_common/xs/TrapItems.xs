@@ -11,6 +11,8 @@ int idleTrapUntil = -1;
 int raidTrapUntil = -1;
 int raidTrapAtMuster = 0;
 
+bool ooh = true;
+
 void InitTraps() {
     trapScan = xsArrayCreateInt(1, -1, "ap-trap-scan");
     trapPool = xsArrayCreateInt(TRAP_SCAN_CAPACITY, -1, "ap-trap-pool");
@@ -156,6 +158,7 @@ int TrapResourceAt(int index = -1) {
 // --- the traps --------------------------------------------------------------------------------
 
 void TRAP_WOLOLO() {
+    xsPlaySound("PLAY_TAUNT_30");
     int enemy = GetRandomEnemy();
     if (enemy == -1) {
         return;
@@ -169,6 +172,7 @@ void TRAP_WOLOLO() {
 }
 
 void TRAP_SPANISH_INQUISITION() {
+    xsPlaySound("PLAY_ATTACK_MONK_CONVERTING");
     int each = TrapScale(1, 1, 2, 3, 5);
     int sent = 0;
     for (p = 1; <= 8) {
@@ -188,6 +192,7 @@ void TRAP_SPANISH_INQUISITION() {
 }
 
 void TRAP_NO_SIEGE() {
+    xsPlaySound("PLAY_TAUNT_19");
     EmptyTrapPool();
     SelectPlayerUnitsByClass(1, cSiegeWeaponClass);
     int taken = TakeCountFromPool(GetCountFromPercent(trapPoolCount, TrapScale(10, 20, 35, 60, 100)));
@@ -199,22 +204,26 @@ void TRAP_NO_SIEGE() {
 
 void TRAP_OOH_AHH() {
     soundTrapUntil = ExtendTrapTime(soundTrapUntil, TrapScale(10, 20, 30, 45, 60));
+    ooh = true;
     xsEnableRule("TrapSoundLoop");
     xsChatData("<RED>Ooh! Ahh!");
 }
 
 void TRAP_THEOLOGIANS() {
+    xsPlaySound("PLAY_TAUNT_18");
     chatTrapUntil = ExtendTrapTime(chatTrapUntil, TrapScale(10, 20, 30, 45, 60));
     xsEnableRule("TrapChatLoop");
 }
 
 void TRAP_IDLE_VILLAGERS() {
+    xsPlaySound("PLAY_VMDL_MOVE");
     idleTrapUntil = ExtendTrapTime(idleTrapUntil, TrapScale(10, 15, 20, 30, 45));
     xsEnableRule("TrapIdleLoop");
     xsChatData("<RED>Now that's a good idea!");
 }
 
 void TRAP_FLEMISH_REVOLUTION() {
+    xsPlaySound("PLAY_REVOLUTION_DECLARED");
     EmptyTrapPool();
     SelectPlayerUnitsByClass(1, cVillagerClass);
     int taken = TakeCountFromPool(GetCountFromPercent(trapPoolCount, TrapScale(5, 10, 20, 35, 60)));
@@ -228,12 +237,14 @@ void TRAP_FLEMISH_REVOLUTION() {
 }
 
 void TRAP_RAIDING_PARTY() {
+    xsPlaySound("PLAY_TAUNT_23");
     raidTrapUntil = ExtendTrapTime(raidTrapUntil, TrapScale(10, 20, 30, 45, 60));
     xsEnableRule("TrapRaidLoop");
     xsChatData("<RED>Raiding Party!");
 }
 
 void TRAP_TRIBUTE() {
+    xsPlaySound("PLAY_TAUNT_38");
     int percent = TrapScale(5, 10, 20, 35, 60);
     int enemy = GetRandomEnemy();
     for (r = 0; < TRAP_RESOURCE_COUNT) {
@@ -283,10 +294,6 @@ void GiveTrap(int itemId = -1) {
 
 // --- the timed traps --------------------------------------------------------------------------
 
-string TrapSoundName() {
-    return ("AP_TRAP_SOUND_UNSET");
-}
-
 int TRAP_CHAT_LINE_COUNT = 6;
 
 string TrapChatLineAt(int index = -1) {
@@ -311,17 +318,20 @@ string TrapChatLineAt(int index = -1) {
 rule TrapSoundLoop
     inactive
     group Traps
-    minInterval 1
-    maxInterval 1
+    minInterval 2
+    maxInterval 2
 {
     if (xsGetGameTime() >= soundTrapUntil) {
         xsDisableSelf();
         return;
     }
-    if (xsPlaySound(TrapSoundName(), 1) == false && soundTrapWarned == 0) {
-        soundTrapWarned = 1;
-        xsChatData("<RED>Traps: xsPlaySound rejected the configured name. The Ooh Ahh trap needs a"
-                   + " real sound name in AP_Constants.xs; it stays silent until it has one.");
+    if (ooh) {
+        xsPlaySound("PLAY_TAUNT_09");
+        ooh = false;
+    }
+    else {
+        xsPlaySound("PLAY_TAUNT_07");
+        ooh = true;
     }
 }
 
