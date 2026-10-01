@@ -11,12 +11,14 @@
 
 ## Generation effect
 
-`create_regions` computes `world.shuffled_ages`: the ages in `SHUFFLED_AGES` (Feudal, Castle, Imperial
-— Dark has no item) above `earliest_age`, or all three when `existing_techs` is `start_in_dark_age`.
+`AgePool` computes `pool.ages.shuffled`: the ages in `SHUFFLED_AGES` (Feudal, Castle, Imperial
+— Dark has no item) above `pool.ages.earliest`, or all three when `existing_techs` is
+`start_in_dark_age`. `pool.ages.locations` is that list or empty, gated on this option — the two are
+different questions and both are read.
 **That list is computed whether or not the option is on**; the option decides whether age *locations*
 are created in "Can Build".
 
-`create_items` pools an age item when the option is on and the age is in `shuffled_ages`, else
+`create_items` pools an age item when it is in `pool.ages.locations`, else
 precollects it. `AgeLogic.has_age` returns `True_()` unless both conditions hold. `AgeRules.set_rules`
 is a no-op when the option is off.
 

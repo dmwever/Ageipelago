@@ -16,14 +16,14 @@ over `.xsdat` files. The game-side mod is a separate repo — see `xs-mod.md` an
 | `archipelago.json` | manifest: game name, `minimum_ap_version`, `world_version`, authors |
 | `items/Items.py` | the payload dataclasses **and** the `Age2ItemData` table |
 | `items/Events.py` | 10-line stub, imported by nothing. Reserved for scenario-completion and victory events |
-| `locations/` | `Locations.py` (scenario objectives), `Ages.py`, `Buildings.py`, `Techs.py`, `Campaigns.py`, `Scenarios.py`, `Civilizations.py`, `Units.py`, `UnitLines.py` |
+| `locations/` | `Locations.py` (scenario objectives), `Ages.py`, `Buildings.py`, `Techs.py`, `Campaigns.py`, `Scenarios.py`, `Civilizations.py`, `Units.py`, `UnitLines.py`, `UnitLocations.py` |
 | `locations/connections/` | `LocationMapping.py`, the civ matrices, the two late-binding modules, and the four unit binders (`UnitLineUnits`, `UnitBuildings`, `UnitTechs`, `UnitVariants`) |
 | `logic/` | classes that *produce* rules. Per-scenario starting states in `attila/`, `joan/` |
 | `rules/` | classes that *attach* rules to locations and entrances |
-| `regions/` | two empty files. Reserved: region building will move here from `create_regions` |
+| `regions/` | `UnitRegions.py`. The rest of region building is still inline in `create_regions` |
 | `client/` | `ApClient.py`, `GameClient.py`, `ApGui.py`, and `handlers/` |
 | `campaign/` | `.aoe2campaign` binary read/write plus the `.xsdat` struct helpers |
-| `generation/` | `Identity`, `WorldVersion`, `SlotData`, `TechPool`, `LocalStart` |
+| `generation/` | `Age2Pool` plus `pools/` (one per content group), and `Identity`, `WorldVersion`, `SlotData`, `LocalStart` |
 | `test/` | 25 `test_*.py` modules, two base classes in `bases.py` |
 | `AoE2ScenarioParser/`, `ordered_set/` | vendored. Do not edit piecemeal |
 
@@ -47,10 +47,10 @@ from `archipelago.json`, and raises if a world sets it manually.
 
 Lifecycle, in call order:
 
-1. `__init__` — resets the six list attributes. Note `earliest_age` is a class-body default and is
-   *not* reset here.
-2. `generate_early` — resolves `included_campaigns` / `starting_campaigns`, then
-   `check_installable_name`.
+1. `__init__` — nothing but `super()`. The seed's shape lives on the pool, not on the world.
+2. `generate_early` — `inspect_options` (every `OptionError` and forced correction, including the
+   random start a blank `starting_campaigns` asks for), `check_installable_name`, then
+   `self.pool = Age2Pool(self)`. Everything after this reads the pool.
 3. `create_regions`
 4. `create_items`
 5. `set_rules` — then the framework immediately calls `register_rule_builder_dependencies`, inherited
@@ -64,22 +64,28 @@ client appears in the Archipelago launcher.
 
 ### `create_regions`
 
-1. `included_civs` — dedup-ordered over every included scenario's civ.
-2. Origin (Menu) region.
-3. One region per scenario, chained: Menu → scenario 1 → scenario 2 … per campaign. Locations come
-   from `REGION_TO_LOCATIONS`, filtered by `branching_option`. Each scenario with a victory location
-   also gets a hidden event location granting `"<scenario>: Unlock Next Scenario"`.
-4. A `"Can Build"` hub off Menu, with no entrance rule.
-5. One building location in the hub per shuffled building.
-6. `earliest_age` = min vanilla age over included scenarios. `shuffled_ages` = Feudal/Castle/Imperial
-   above `earliest_age`, or all three when `existing_techs` is `start_in_dark_age`. The list is
-   computed regardless of the `shuffle_ages` option; only the *locations* are gated on it.
-7. `tech_pool = TechPool(...)`, built once.
-8. One region per tech-capable building, entered from `"Can Build"` by a ruleless entrance. For each
-   tech the pool allows: if unseen, create its location here; if a previous building already holds it,
-   add a second ruleless entrance `"<region> to <other building> Techs"` instead of duplicating the
-   location — once per distinct target region.
-9. The `"Victory"` event on the origin region.
+It decides nothing about content. Every "which" question is the pool's; this builds regions and
+places locations for what the pool says exists.
+
+1. Origin (Menu) region.
+2. One region per scenario, chained: Menu → scenario 1 → scenario 2 … per campaign, over
+   `pool.scenarios.of(campaign)`. Locations come from `REGION_TO_LOCATIONS`, filtered by
+   `pool.scenarios.includes_location`. Each scenario with a victory location also gets a hidden
+   event location granting `"<scenario>: Unlock Next Scenario"`.
+3. A `"Can Build"` hub off Menu, with no entrance rule.
+4. One building location in the hub per `pool.buildings.locations`.
+5. One age location per `pool.ages.locations` — empty when `shuffle_ages` is off. `pool.ages.shuffled`
+   is the list regardless of the toggle; `locations` is the gated one, and they are different
+   questions.
+6. One region per building where `pool.buildings.hosts_locations`, entered from `"Can Build"` by a
+   ruleless entrance. For each tech in `pool.techs.by_building(building)`: if
+   `pool.techs.host_building(tech)` is this building, create its location here; otherwise add a
+   ruleless entrance `"<region> to <other building> Techs"` to the host's region — once per
+   distinct target.
+7. `UnitRegions.create()` — realisation is decided here, not in the pool: a line is realised when a
+   building that got a region trains it, or a scenario in the seed hands it over. What gets placed
+   is recorded as it is placed, and the unit items follow that record.
+8. The `"Victory"` event on the origin region.
 
 ### `create_items`
 
@@ -88,11 +94,11 @@ Dispatch on the payload type of each `Age2ItemData`:
 | Payload | Treatment |
 |---|---|
 | `Victory` | skipped — granted only as an event |
-| `ScenarioItem`, `Mercenary` | pooled if that scenario's region exists |
+| `ScenarioItem`, `Mercenary` | pooled if the scenario is in `pool.scenarios.included` |
 | `Campaign` | precollected if in `starting_campaigns`, else pooled |
 | `ProgressiveScenario` | `num_additional_scenarios` copies pooled |
 | `TCResources` | always pooled |
-| `Age2AgeData` | pooled if `shuffle_ages` and in `shuffled_ages`, else precollected |
+| `Age2AgeData` | pooled if in `pool.ages.locations`, else precollected |
 | `Building` | `continue` in the dispatch — handled afterwards (see below) |
 | `Tech` | `continue` in the dispatch — handled afterwards (see below) |
 | `Resources`, `StartingResources` | skipped here; used for the filler top-up |
@@ -100,14 +106,24 @@ Dispatch on the payload type of each `Age2ItemData`:
 
 **`Building` and `Tech` are not handled in the dispatch loop.** Both branches are a bare `continue`;
 the work happens in two loops that run *after* it, and those iterate their own tables rather than
-`Age2ItemData`: one over `Age2BuildingData`, pooling a building if it is in `self.shuffled_buildings`
-and precollecting it otherwise, and one over `self.shuffled_techs`, pooling each. The net effect is
-"pooled if shuffled, else precollected" for buildings and "pooled for every shuffled tech" — but if
-you go editing the `Building` branch in the dispatch, you are editing dead code.
+`Age2ItemData`: one over `Age2BuildingData`, pooling a building if it is in
+`pool.buildings.locations` and precollecting it otherwise, and one over `pool.techs.shuffled`,
+pooling each. Unit items come from `unit_regions.items()`, which is the record of what region
+building actually placed. If you go editing the `Building` branch in the dispatch, you are editing
+dead code.
 
-Filler: `smart_add_starting_resources(needed)` bin-packs toward
-`{WOOD:1000, FOOD:1000, GOLD:750, STONE:500}`, halving the targets whenever the worst case would
-overshoot the free locations, then plain `Resources` filler fills whatever is left.
+`create_item` goes through **`Age2World.classification_for`**, not `Items.classification_for`
+directly. A mercenary is the one item whose worth depends on the seed: progression where a scenario
+objective names it (the declared `in_logic` flag) or where unitsanity turns one of the soldiers it
+hands over into a location (`pool.units.becomes_a_location`). Six at default options, eleven once
+the unit locations open.
+
+Filler: `pool.resources.plan(needed)` owns the whole tail — bin-pack toward
+`{WOOD:725, FOOD:850, GOLD:750, STONE:400}` halving whenever the worst case would overshoot the free
+locations, spend part of the leftover padding on traps, give up that many resource items, and only
+then tally `pool.resources.totals`. The tally is **after** the trim deliberately: counting before it
+would credit resources that were never pooled, and `HasResourceAmount` prunes rules against that
+count. Plain `Resources` filler fills whatever is left.
 
 ### `set_rules`
 
@@ -415,9 +431,25 @@ Nearly every file-write path is wrapped in `except Exception as ex: print(ex)`. 
   techsanity options, but `0` for `AP_TS_MODE` and `AP_SHUFFLE_AGES`, so a seedless install reads as
   off rather than as a valid mode. `seed_halves` splits the 32-bit tag because an XS int literal
   cannot hold it.
-- **`TechPool.py`** — decides whether a tech is a location: techsanity on, some included civ can
-  research it, it matches the mode filter, uniques are shuffled if it is unique, and it is reachable
-  given the earliest age. `by_building` places a shared tech only under the first building that names it.
+- **`Age2Pool.py` and `pools/`** — the seed's shape, built from the world in `generate_early` and
+  read by region building, item creation and rule building alike. One pool per group of content:
+  `campaigns`, `scenarios`, `civs`, `ages`, `buildings`, `techs`, `units`, `resources`.
+  **A pool owns "is this in the seed". It never owns "what shape is the rule"** — `goal`,
+  `lock_techs`, `tech_behavior` and `local_start` decide how a rule is written rather than what
+  exists, and `test_pools.py` fails if a pool ever reads one. The pool takes the world, so it draws
+  on the same seeded `random` and cannot drift from the multiworld.
+  - `TechPool` decides whether a tech is a location: techsanity on, some included civ can research
+    it, it matches the mode filter, uniques are shuffled if it is unique, and it is reachable given
+    the earliest age. `host_building` places a shared tech under the first building that names it,
+    and `shuffled` is the locations in that order.
+  - `UnitPool` holds unit content — `line_locations`, the include predicates, the grants. It does
+    **not** decide realisation: whether a line has somewhere to come from depends on which regions
+    exist, so `UnitRegions` decides that and records what it placed.
+  - `ResourcePool.plan(n)` owns build → roll traps → trim → tally in one method, because the tally
+    has to come after the trim.
+  - Two `OptionFilter` rule constants live in `AgePool.py` beside the data: `DARK_START` and
+    `VANILLA_AGE_START`. They stay `OptionFilter`s deliberately — they are resolved inside the rule
+    tree, and collapsing them at build time would change `item_dependencies` and so change the fill.
 - **`LocalStart.py`** — best-effort. Picks a start scenario deterministically, greedily solves a
   minimal item set against the target rule, and places it with `fill_restrictive`. Every failure path
   logs a warning and continues with a smaller or empty set; it never fails generation.
@@ -460,5 +492,10 @@ Other tests worth knowing: `test_item_delivery.py` drives a `FakeGame` through t
   `locations.Scenarios` — or a later cleanup of the intermediate module breaks the importer.
 - `rule_builder`'s resolved-rule cache is a process-global `ClassVar` keyed partly by player. It is
   never cleared, so it persists across generations within one process, including a test run.
-- `Age2World.earliest_age` is the one generation attribute with a class-body default rather than being
-  reset in `__init__`.
+- `Age2World` holds no seed-shape attributes at all any more — they are on `world.pool`. The one
+  exception is `unit_regions`, which is the record of what region building placed.
+- An **item-link group world** is a real `Age2World` that never runs `generate_early`, yet core calls
+  `create_item` on it. `create_group` is overridden to give it a pool, or any pool read there is an
+  `AttributeError` that only reproduces for players using `item_links`.
+- `player_name` is assigned *after* `create_group` returns, so nothing built inside that override may
+  touch it. That is one reason option validation lives in `inspect_options` rather than in a pool.

@@ -21,7 +21,7 @@ The class overrides `__eq__` so it compares equal to a plain `OptionSet`, `Optio
 In `create_regions`, for each `Age2BuildingData`: skip if no included civ can build it; skip a unique
 building unless `Unique` is selected *and* an included civ actually has it; otherwise create the
 location if any of the building's own tags (excluding `unique`) intersects the selection. Selected
-buildings accumulate in `world.shuffled_buildings`, which drives `BuildingRules` and whether the item
+buildings are `pool.buildings.shuffled`, which drives `BuildingRules` and whether the item
 is pooled or precollected.
 
 ## Game effect
