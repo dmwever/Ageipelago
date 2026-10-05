@@ -3,11 +3,13 @@ int seatLastSpawn = -1;    // game time in seconds of the last placement
 int spawnAreaScan = -1;    // reused by every ClearSpawnArea scan; see InitMercenarySpawn
 int musterTask = -1;       // one slot, reused for every xsTaskUnits call
 int pendingMuster = -1;    // soldier placed this pass, tasked on the next one
+int spawnFailWarned = -1;  // one report per seat; the loop retries every tick
 
 void InitMercenarySpawn() {
     seatSpawned = xsArrayCreateInt(MERCENARY_SEAT_COUNT, 0, "ap-seat-spawned");
     seatLastSpawn = xsArrayCreateInt(MERCENARY_SEAT_COUNT, -1, "ap-seat-last-spawn");
     spawnAreaScan = xsArrayCreateInt(1, -1, "ap-spawn-scan");
+    spawnFailWarned = xsArrayCreateInt(MERCENARY_SEAT_COUNT, 0, "ap-spawn-warned");
     musterTask = xsArrayCreateInt(1, -1, "ap-muster-task");
 }
 
@@ -61,8 +63,15 @@ bool SpawnNextSoldier(int seat = -1) {
                    + xsArrayGetSize(SeatUnits(seat)) + ". Nothing placed.");
         return (false);
     }
-    int created = xsCreateUnit(unitId, 1, PavilionSpawnPoint(), false, true, false);
+    vector where = PavilionSpawnPoint();
+    int created = xsCreateUnit(unitId, 1, where, false, true, false);
     if (created == -1) {
+        if (xsArrayGetInt(spawnFailWarned, seat) == 0) {
+            xsArraySetInt(spawnFailWarned, seat, 1);
+            xsChatData("<RED>MercenarySpawn: seat " + seat + " could not place unit " + unitId
+                       + " at spawn (" + xsVectorGetX(where) + ", " + xsVectorGetY(where)
+                       + ", " + xsVectorGetZ(where) + ").");
+        }
         return (false);
     }
     MarkUnitCavemanImmune(created);
