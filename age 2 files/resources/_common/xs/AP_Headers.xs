@@ -42,6 +42,11 @@ mutable void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int 
                + " Unitsanity.xs did not define it.");
 }
 
+mutable void addUnitUntrainable(int typeId = -1, int civId = -1) {
+    xsChatData("<RED>addUnitUntrainable is still the stub, so unit " + typeId + " is being left"
+               + " trainable. Unitsanity.xs did not define it.");
+}
+
 mutable void addUnitItem(int typeId = -1, int itemId = -1) {
     xsChatData("<RED>addUnitItem is still the stub, so unit item " + itemId + " is being discarded."
                + " Unitsanity.xs did not define it.");

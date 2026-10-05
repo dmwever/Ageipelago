@@ -66,6 +66,7 @@ void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
     structSetInt(unit, "tier", tier);
     structSetInt(unit, "upgradeItemId", upgradeItemId);
     structSetBool(unit, "cavemanExempt", cavemanExempt == 1);
+    structSetBool(unit, "trainable", true);
     structSetInt(unit, "owned", 0);
     structSetBool(unit, "hasItems", false);
     structSetBool(unit, "locked", false);
@@ -75,6 +76,17 @@ void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
               xsArrayCreateInt(UNIT_VARIANT_CAPACITY, -1, "us-variants-" + unitTableCount));
     xsArraySetVector(unitArray, unitTableCount, unit);
     unitTableCount = unitTableCount + 1;
+}
+
+void addUnitUntrainable(int typeId = -1, int civId = -1) {
+    if (civId != xsGetPlayerCivilization(1)) {
+        return;
+    }
+    int index = findUnit(typeId);
+    if (index < 0) {
+        return;
+    }
+    structSetBool(getUnit(index), "trainable", false);
 }
 
 void addUnitItem(int typeId = -1, int itemId = -1) {
@@ -130,7 +142,8 @@ void setObjectDisable(int objectId = -1, float disableFlag = 1.0, bool enable = 
 
 void setUnitDisable(vector unit = cInvalidVector, float disableFlag = 1.0) {
     bool enable = false;
-    if (disableFlag == 0.0 && ageReached(structGetInt(unit, "age"))) {
+    if (disableFlag == 0.0 && ageReached(structGetInt(unit, "age"))
+        && structGetBool(unit, "trainable")) {
         enable = true;
     }
     setObjectDisable(structGetInt(unit, "typeId"), disableFlag, enable);
@@ -139,7 +152,7 @@ void setUnitDisable(vector unit = cInvalidVector, float disableFlag = 1.0) {
         if (xsArrayGetInt(variants, i) < 0) {
             break;
         }
-        setObjectDisable(xsArrayGetInt(variants, i), disableFlag, enable);
+        setObjectDisable(xsArrayGetInt(variants, i), disableFlag, false);
     }
 }
 
@@ -239,6 +252,7 @@ void InitUnitsanityStructs() {
     defineStructAttribute("Unit", "tier", TYPE_INT);
     defineStructAttribute("Unit", "upgradeItemId", TYPE_INT);
     defineStructAttribute("Unit", "cavemanExempt", TYPE_BOOL);
+    defineStructAttribute("Unit", "trainable", TYPE_BOOL);
     defineStructAttribute("Unit", "owned", TYPE_INT);
     defineStructAttribute("Unit", "hasItems", TYPE_BOOL);
     defineStructAttribute("Unit", "locked", TYPE_BOOL);
