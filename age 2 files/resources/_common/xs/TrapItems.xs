@@ -1,5 +1,6 @@
 int trapScan = -1;      // reused by every xsGetPlayerUnitIds sweep
 int trapPool = -1;      // candidates collected out of a sweep, then partially shuffled
+int enemyPool = -1;     // player numbers, never unit ids
 int trapPoolCount = 0;
 int trapTask = -1;      // one slot, reused for every xsTaskUnits call
 
@@ -16,6 +17,7 @@ bool ooh = true;
 void InitTraps() {
     trapScan = xsArrayCreateInt(1, -1, "ap-trap-scan");
     trapPool = xsArrayCreateInt(TRAP_SCAN_CAPACITY, -1, "ap-trap-pool");
+    enemyPool = xsArrayCreateInt(9, -1, "ap-enemy-pool");
     trapTask = xsArrayCreateInt(1, -1, "ap-trap-task");
 }
 
@@ -62,11 +64,16 @@ void EmptyTrapPool() {
     trapPoolCount = 0;
 }
 
+bool IsHero(int unitId = -1) {
+    int heroStatus = 1 * xsGetUnitAttribute(unitId, cHeroStatus, -1);
+    return (heroStatus / 2 * 2 != heroStatus);
+}
+
 void AddToTrapPool(int unitId = -1) {
     if (unitId == -1 || trapPoolCount >= TRAP_SCAN_CAPACITY) {
         return;
     }
-    if (xsGetUnitClass(unitId) == cHeroClass) {
+    if (IsHero(unitId)) {
         return;
     }
     xsArraySetInt(trapPool, trapPoolCount, unitId);
@@ -127,17 +134,17 @@ bool IsEnemy(int playerId = -1) {
 }
 
 int GetRandomEnemy() {
-    EmptyTrapPool();
+    int count = 0;
     for (p = 1; <= 8) {
         if (IsEnemy(p)) {
-            xsArraySetInt(trapPool, trapPoolCount, p);
-            trapPoolCount = trapPoolCount + 1;
+            xsArraySetInt(enemyPool, count, p);
+            count = count + 1;
         }
     }
-    if (trapPoolCount == 0) {
+    if (count == 0) {
         return (-1);
     }
-    return (xsArrayGetInt(trapPool, xsGetRandomNumberMax(trapPoolCount)));
+    return (xsArrayGetInt(enemyPool, xsGetRandomNumberMax(count)));
 }
 
 int TRAP_RESOURCE_COUNT = 4;

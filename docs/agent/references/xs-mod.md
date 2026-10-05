@@ -410,6 +410,33 @@ What the linter cannot catch here: a misspelled struct field-name string, a miss
 function body, a `switch` with no `default`, a mistyped rule name in `xsEnableRule`. See
 `XS_MEASURED_BEHAVIOR.md` in the `aoe2-modding` KB.
 
+## Getting data out of the game
+
+**Age of Empires II has no copy/paste.** Nothing on screen can be selected or copied — not the chat
+log, not a dialog, not a tooltip. So `xsChatData` output cannot come back out of the game except by
+someone reading it off the screen and retyping it. Never design a spike, probe or diagnostic whose
+findings have to return through chat: a twenty-line dump is unusable, and a transcribed one is worse
+than nothing because a single mistyped digit is indistinguishable from a real measurement.
+
+**The way to receive data is the file API.** `xsCreateFile(false)`, then any number of
+`xsWriteInt` / `xsWriteFloat` / `xsWriteString` / `xsWriteVector`, then `xsCloseFile()`.
+
+- `xsCreateFile` names the file after the scenario being played and writes it to the profile folder:
+  `<user folder>/profile/<ScenarioName>.xsdat`. Running `XsTesting.aoe2scenario` produces
+  `profile/XsTesting.xsdat`. The live path on this machine is
+  `C:/Users/dmwev/Games/Age of Empires 2 DE/<steamid>/profile/`.
+- Pass `true` to append instead of truncating.
+- **Data is not durable until `xsCloseFile()`.** A spike that writes and never closes leaves nothing.
+- Ints and floats are 4 bytes, little-endian — the same encoding `XsdatFile.py` uses on the Python
+  side, so `struct.unpack("<i")` / `("<f")` reads back what XS wrote.
+- `*.xsdat` is gitignored, so spike output never pollutes the tree.
+
+This is what makes a spike agent-readable: the file lands on disk and can be read directly, with no
+transcription step and no trust placed in someone's retyping. Keep `xsChatData` for a one-line
+progress marker — *"spike wrote the file"* — and put every measured value in the file.
+
+The same rule governs the mod proper: the whole client protocol is `.xsdat` files in `profile/`
+precisely because chat is a dead end for machine-readable output. See `protocol.md`.
 ## Gotchas
 
 - **`Test.xs` and `default0.xs` are not part of the mod.** `Test.xs` (6 lines) is a scratch file whose
