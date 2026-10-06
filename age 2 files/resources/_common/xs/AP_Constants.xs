@@ -141,6 +141,9 @@ extern const int PAVILION_COLOR_YELLOW = 3;
 extern const float PAVILION_INVULNERABILITY = 1.0;
 extern const float PAVILION_DELETABLE = 0.0;
 
+extern const int CIV_FRANKS = 2;
+extern const int CIV_HUNS = 17;
+
 /* Building Ids */
 
 // Always

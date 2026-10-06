@@ -1,6 +1,19 @@
 include "structs.xs";
 include "./ScenarioLocations.xs";
 
+bool ageReached(int age = 0) {
+    if (age == FEUDAL_AGE) {
+        return (xsGetTechState(FEUDAL_AGE_TECH, 1) == cTechStateDone);
+    }
+    if (age == CASTLE_AGE) {
+        return (xsGetTechState(CASTLE_AGE_TECH, 1) == cTechStateDone);
+    }
+    if (age == IMPERIAL_AGE) {
+        return (xsGetTechState(IMPERIAL_AGE_TECH, 1) == cTechStateDone);
+    }
+    return (true);
+}
+
 mutable void AP_Check_Location(int locationId = -1) {
     xsChatData("<RED>AP_Check_Location is still the stub, so location " + locationId
                + " goes nowhere. AP.xs did not define it.");
