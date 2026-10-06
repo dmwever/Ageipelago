@@ -41,7 +41,7 @@ or `EXISTING_ONLY_FIND_UNITS` (upgrades).
 
 ## Interactions
 
-Touches `shuffle_ages` (rebasing), `lock_techs` (the startup discount), `/install`'s scenario
+Touches `shuffle_ages` (rebasing), the startup discount in `UnlockTech`, `/install`'s scenario
 rewriting, and each scenario's hardcoded `SetVanillaAge(...)` call.
 
 ## Tests

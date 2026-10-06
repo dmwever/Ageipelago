@@ -22,7 +22,6 @@ does `getattr(self.options, option_name)` with the internal name. All six curren
 | [shuffle-ages](shuffle-ages.md) | `shuffle_ages` | Toggle | off | yes | `AP_SHUFFLE_AGES` |
 | [techsanity](techsanity.md) | `techsanity` | Choice | none | yes | `AP_TS_MODE` |
 | [tech-behavior](tech-behavior.md) | `tech_behavior` | Choice | must_research | yes | `AP_TS_BEHAVIOR` |
-| [lock-techs](lock-techs.md) | `lock_techs` | Choice | items | yes | `AP_TS_LOCK` |
 | [shuffle-unique-techs](shuffle-unique-techs.md) | `shuffle_unique_techs` | Choice | unshuffled | yes | `AP_TS_UNIQUES` |
 | [existing-techs](existing-techs.md) | `existing_techs` | Choice | vanilla | yes | `AP_TS_EXISTING` |
 | [unitsanity](unitsanity.md) | `unitsanity` | Choice | none | yes | `AP_US_MODE` |
@@ -48,7 +47,6 @@ Age Of Empires II: Definitive Edition:
   shuffle_ages: false
   techsanity: none
   tech_behavior: must_research
-  lock_techs: items
   shuffle_unique_techs: unshuffled
   existing_techs: vanilla
   unitsanity: none
@@ -64,7 +62,7 @@ one camelCase key, because it comes from core AP rather than this world.
 ## Defaults on the wire
 
 `SlotData.DEFAULTS` is what a seedless install reads. `AP_SLOT_ID`, `AP_SEED_HIGH` and `AP_SEED_LOW`
-default to `UNSET` (-1), and so do `AP_TS_BEHAVIOR`, `AP_TS_LOCK`, `AP_TS_UNIQUES` and
+default to `UNSET` (-1), and so do `AP_TS_BEHAVIOR`, `AP_TS_UNIQUES` and
 `AP_TS_EXISTING`. But `AP_TS_MODE` and `AP_SHUFFLE_AGES` default to a real `0` — deliberately, so an
 install that `/install` has never touched reads as "off" rather than as a valid mode.
 
@@ -82,7 +80,7 @@ install that `/install` has never touched reads as "off" rather than as a valid 
 
 - `enabled_campaigns` decides what exists; `starting_campaigns` decides what begins unlocked. The
   second must name at least one of the first.
-- `techsanity` gates `tech_behavior`, `lock_techs`, `shuffle_unique_techs` and `existing_techs`
+- `techsanity` gates `tech_behavior`, `shuffle_unique_techs` and `existing_techs`
   entirely. Their slot_data values are written regardless of whether techsanity is on.
 - `existing_techs = start_in_dark_age` rebases every scenario, which makes every age eligible for
   `shuffle_ages` and changes what `/install` writes.

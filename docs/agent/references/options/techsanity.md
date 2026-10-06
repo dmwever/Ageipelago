@@ -36,7 +36,7 @@ apworld's `TechPool` decides which techs exist as locations, so the game only ne
 
 ## Interactions
 
-Gates `tech_behavior`, `lock_techs`, `shuffle_unique_techs` and `existing_techs`. Their slot_data
+Gates `tech_behavior`, `shuffle_unique_techs` and `existing_techs`. Their slot_data
 values are written regardless.
 
 ## Tests

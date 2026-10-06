@@ -3,7 +3,6 @@ extern const int AP_SEED_HIGH = 50043;
 extern const int AP_SEED_LOW = 44761;
 extern const int AP_TS_MODE = 0;
 extern const int AP_TS_BEHAVIOR = 0;
-extern const int AP_TS_LOCK = 0;
 extern const int AP_TS_UNIQUES = 0;
 extern const int AP_TS_EXISTING = 0;
 extern const int AP_SHUFFLE_AGES = 0;

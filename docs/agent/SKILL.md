@@ -9,7 +9,7 @@ description: >
   AddLocations, the Attila or Joan scenario scripts, /install, /set_user_folder,
   /mercenaries, /scenarios, seed tags, Age2World, Age2ItemData, Age2ScenarioData,
   TechPool, LocalStart, rule_builder, or any of the yaml options (techsanity,
-  shuffle_ages, existing_techs, lock_techs, shuffle_buildings, local_start).
+  shuffle_ages, existing_techs, shuffle_buildings, local_start).
   Also use it for questions about how the game and the client communicate, or when
   adding an item, location, scenario, option or packet field to this randomizer.
 ---
