@@ -297,6 +297,9 @@ void InitUnitsanity() {
 
 int testArray = -1;
 
+int PROFESSION_SWEEP_SECONDS = 2;
+int lastProfessionSweep = -1;
+
 rule UnitsanityChecks
     inactive
     minInterval 1
@@ -316,6 +319,10 @@ rule UnitsanityChecks
         return;
     }
     if (unitsDirty == false) {
+        if (xsGetGameTime() - lastProfessionSweep >= PROFESSION_SWEEP_SECONDS) {
+            lastProfessionSweep = xsGetGameTime();
+            CheckProfessionLocations();
+        }
         return;
     }
 

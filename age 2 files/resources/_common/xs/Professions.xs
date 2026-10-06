@@ -66,6 +66,27 @@ void RefreshProfessions() {
     }
 }
 
+void CheckProfessionLocations() {
+    if (professionsReady == false) {
+        return;
+    }
+    for (j = 0; < unitTableCount) {
+        vector unit = getUnit(j);
+        if (isProfession(unit) == false || structGetInt(unit, "owned") > 0) {
+            continue;
+        }
+        int locationId = structGetInt(unit, "locationId");
+        if (locationId < 0) {
+            continue;
+        }
+        int owned = countOwned(unit);
+        if (owned > 0) {
+            structSetInt(unit, "owned", owned);
+            AP_Check_Location(locationId);
+        }
+    }
+}
+
 void EvictProfessions() {
     if (professionsReady == false) {
         return;

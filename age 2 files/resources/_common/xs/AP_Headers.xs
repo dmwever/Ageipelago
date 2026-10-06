@@ -9,6 +9,11 @@ mutable void AP_Check_Location(int locationId = -1) {
 mutable void ApplyCaveman(int units = -1) {
 }
 
+mutable void CheckProfessionLocations() {
+    xsChatData("<RED>CheckProfessionLocations is still the stub, so a villager changing task"
+               + " sends no check. Professions.xs did not define it.");
+}
+
 mutable void EvictProfessions() {
 }
 
