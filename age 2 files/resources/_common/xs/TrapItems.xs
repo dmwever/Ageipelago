@@ -94,6 +94,29 @@ void SelectPlayerMilitary(int playerId = 1) {
     }
 }
 
+void AddAnchorCandidate(int unitId = -1) {
+    if (unitId == -1 || trapPoolCount >= TRAP_SCAN_CAPACITY) {
+        return;
+    }
+    xsArraySetInt(trapPool, trapPoolCount, unitId);
+    trapPoolCount = trapPoolCount + 1;
+}
+
+void SelectAnchorClass(int classId = -1) {
+    int found = xsGetPlayerUnitIds(1, classId, trapScan);
+    for (i = 0; < xsArrayGetSize(found)) {
+        AddAnchorCandidate(xsArrayGetInt(found, i));
+    }
+}
+
+void SelectAnchorCandidates() {
+    EmptyTrapPool();
+    for (c = 0; < TRAP_MILITARY_CLASS_COUNT) {
+        SelectAnchorClass(TrapMilitaryClassAt(c));
+    }
+    SelectAnchorClass(cVillagerClass);
+}
+
 /* Partial Fisher-Yates: swap a random survivor into slot i, so the first `take` entries are a
    uniform sample with no repeats and no retry loop that could spin. */
 int TakeCountFromPool(int take = 0) {
@@ -178,21 +201,28 @@ void TRAP_WOLOLO() {
     xsChatData("<RED>Wololo!");
 }
 
+float INQUISITION_RADIUS = 5.0;
+float TAU = 6.2831853;
+
 void TRAP_SPANISH_INQUISITION() {
     xsPlaySound("PLAY_ATTACK_MONK_CONVERTING");
-    int each = TrapScale(1, 1, 2, 3, 5);
-    int sent = 0;
-    for (p = 1; <= 8) {
-        if (IsEnemy(p)) {
-            int buildings = xsGetPlayerUnitIds(p, cBuildingClass, trapScan);
-            if (xsArrayGetSize(buildings) > 0) {
-                vector where = xsGetUnitPosition(xsArrayGetInt(buildings, 0));
-                for (n = 0; < each) {
-                    if (xsCreateUnit(TRAP_MISSIONARY, p, where, false, true, false) != -1) {
-                        sent = sent + 1;
-                    }
-                }
-            }
+    int total = TrapScale(2, 3, 5, 8, 12);
+    int enemy = GetRandomEnemy();
+    if (enemy == -1) {
+        return;
+    }
+    SelectAnchorCandidates();
+    if (trapPoolCount == 0) {
+        return;
+    }
+    vector at = xsGetUnitPosition(xsArrayGetInt(trapPool, xsGetRandomNumberMax(trapPoolCount)));
+    for (n = 0; < total) {
+        float angle = TAU * n / total;
+        vector where = xsVectorSet(xsVectorGetX(at) + INQUISITION_RADIUS * cos(angle),
+                                   xsVectorGetY(at) + INQUISITION_RADIUS * sin(angle),
+                                   0.0);
+        if (xsCreateUnit(TRAP_MISSIONARY, enemy, where, false, true, false) == -1) {
+            xsCreateUnit(TRAP_MISSIONARY, enemy, at, false, true, false);
         }
     }
     xsChatData("<RED>Nobody expects the Spanish Inquisition!");
