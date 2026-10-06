@@ -41,7 +41,6 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
     structSetBool(tech, "hasItem", false);
     structSetBool(tech, "researched", false);
     structSetBool(tech, "effectDone", false);
-    structSetBool(tech, "enabled", false);
     structSetInt(tech, "prerequisiteId", prerequisiteId);
 
     xsArraySetVector(techArray, techCount, tech);
@@ -117,7 +116,7 @@ void tryApplyEffect(vector tech = cInvalidVector, bool atStartup = false) {
     }
     bool mustResearch = (AP_TS_BEHAVIOR == BEHAVIOR_MUST_RESEARCH)
                      || structGetBool(tech, "isUpgrade");
-    if (atStartup && grantedByVanilla(tech)) {
+    if (atStartup && grantedByVanilla(tech) && structGetBool(tech, "isUpgrade") == false) {
         mustResearch = false;
     }
     if (mustResearch && structGetBool(tech, "researched") == false) {
@@ -132,43 +131,6 @@ void tryApplyEffect(vector tech = cInvalidVector, bool atStartup = false) {
 
 void stripTech(vector tech = cInvalidVector) {
     xsEffectAmount(cModifyTech, structGetInt(tech, "id"), cAttrSetEffect, 1.0 * NOOP_EFFECT, 1);
-}
-
-bool researchedAlready(int id = -1) {
-    if (id < 0) {
-        return (true);
-    }
-    return (xsGetTechState(id, 1) == cTechStateDone);
-}
-
-bool requirementsMet(vector tech = cInvalidVector) {
-    return (researchedAlready(ageTechFor(structGetInt(tech, "age")))
-         && researchedAlready(structGetInt(tech, "prerequisiteId")));
-}
-
-void revealTech(vector tech = cInvalidVector) {
-    if (structGetBool(tech, "enabled")) {
-        return;
-    }
-    if (structGetBool(tech, "researched")) {
-        return;
-    }
-    if (structGetBool(tech, "hasItem") == false) {
-        return;
-    }
-    if (civCanResearch(tech) == false) {
-        return;
-    }
-    if (requirementsMet(tech) == false) {
-        return;
-    }
-    xsEffectAmount(cModifyTech, structGetInt(tech, "id"), cAttrSetState, STATE_ENABLE, 1);
-    structSetBool(tech, "enabled", true);
-}
-
-void disableTech(vector tech = cInvalidVector) {
-    xsEffectAmount(cModifyTech, structGetInt(tech, "id"), cAttrSetState, STATE_DISABLE, 1);
-    structSetBool(tech, "enabled", false);
 }
 
 void onTechResearched(vector tech = cInvalidVector) {
@@ -206,12 +168,9 @@ void UnlockTech(int itemOffset = -1, bool atStartup = false) {
         return;
     }
     structSetBool(tech, "hasItem", true);
-    if (atStartup && AP_TS_LOCK == LOCK_ITEMS && grantedByVanilla(tech)
+    if (atStartup && grantedByVanilla(tech)
      && structGetBool(tech, "researched") == false) {
         discountTech(tech);
-    }
-    if (AP_TS_LOCK == LOCK_ITEMS) {
-        revealTech(tech);
     }
     tryApplyEffect(tech, atStartup);
 }
@@ -231,9 +190,6 @@ void initTech(vector tech = cInvalidVector) {
         return;
     }
     stripTech(tech);
-    if (AP_TS_LOCK == LOCK_ITEMS) {
-        disableTech(tech);
-    }
     AddLocation(structGetInt(tech, "itemId"));
 }
 
@@ -280,7 +236,6 @@ void InitTechsanityStructs() {
     defineStructAttribute("Tech", "hasItem", TYPE_BOOL);
     defineStructAttribute("Tech", "researched", TYPE_BOOL);
     defineStructAttribute("Tech", "effectDone", TYPE_BOOL);
-    defineStructAttribute("Tech", "enabled", TYPE_BOOL);
     defineStructAttribute("Tech", "prerequisiteId", TYPE_INT);
 
     techArray = xsArrayCreateVector(TECH_CAPACITY, cInvalidVector, "ts-techs");
@@ -343,17 +298,6 @@ rule TechsanityUpdate
             structGetBool(tech, "researched") == false &&
             xsGetTechState(structGetInt(tech, "id"), 1) == cTechStateDone) {
                 onTechResearched(tech);
-        }
-    }
-
-    if (AP_TS_LOCK == LOCK_ITEMS) {
-        for (i = 0; < techCount) {
-            vector ownedTech = getTech(i);
-            if (structGetBool(ownedTech, "hasItem")
-             && structGetBool(ownedTech, "enabled") == false
-             && structGetBool(ownedTech, "researched") == false) {
-                revealTech(ownedTech);
-            }
         }
     }
 }

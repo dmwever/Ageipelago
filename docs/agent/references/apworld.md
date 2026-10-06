@@ -435,7 +435,7 @@ Nearly every file-write path is wrapped in `except Exception as ex: print(ex)`. 
   read by region building, item creation and rule building alike. One pool per group of content:
   `campaigns`, `scenarios`, `civs`, `ages`, `buildings`, `techs`, `units`, `resources`.
   **A pool owns "is this in the seed". It never owns "what shape is the rule"** — `goal`,
-  `lock_techs`, `tech_behavior` and `local_start` decide how a rule is written rather than what
+  `tech_behavior` and `local_start` decide how a rule is written rather than what
   exists, and `test_pools.py` fails if a pool ever reads one. The pool takes the world, so it draws
   on the same seeded `random` and cannot drift from the multiworld.
   - `TechPool` decides whether a tech is a location: techsanity on, some included civ can research

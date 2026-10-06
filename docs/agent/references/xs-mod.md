@@ -251,7 +251,7 @@ it. Background and hazards: the `xs_blank_tech_effect_injector` recipe in the `a
 `TechsanityUpdate` polls `cAttributeResearchCount` every tick and only sweeps the table when it rises.
 It never self-disables, because research has no terminal state.
 
-Of the option enums, only `TECHSANITY_NONE`, `BEHAVIOR_MUST_RESEARCH`, `LOCK_ITEMS`,
+Of the option enums, only `TECHSANITY_NONE`, `BEHAVIOR_MUST_RESEARCH`,
 `UNIQUES_UNSHUFFLED`, `UNIQUES_SHUFFLED_EVERYWHERE`, `EXISTING_START_IN_DARK_AGE`,
 `EXISTING_FIND_ITEMS` and `EXISTING_ONLY_FIND_UNITS` are ever compared. The rest are the implicit
 else, deliberately: the apworld's `TechPool` decides which techs exist, so the game only needs on or

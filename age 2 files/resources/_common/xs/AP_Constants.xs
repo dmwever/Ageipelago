@@ -51,10 +51,6 @@ extern const int TECHSANITY_ALL = 3;
 extern const int BEHAVIOR_MUST_RESEARCH = 0;
 extern const int BEHAVIOR_INSTANT = 1;
 
-/* Lock Techs */
-
-extern const int LOCK_ITEMS = 0;
-extern const int LOCK_EFFECTS = 1;
 
 /* Unitsanity */
 
