@@ -5,6 +5,7 @@ include "./Buildsanity.xs";
 include "./Ages.xs";
 include "./Techsanity.xs";
 include "./Unitsanity.xs";
+include "./Filler.xs";
 include "./Caveman.xs";
 include "./Professions.xs";
 include "./TrapItems.xs";

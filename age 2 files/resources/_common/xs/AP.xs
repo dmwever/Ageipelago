@@ -234,6 +234,7 @@ void InitAP() {
     InitAges();
     InitTechsanity();
     InitUnitsanity();
+    InitFiller();
     InitCaveman();
     InitProfessions();
     InitScenarioLocations();
