@@ -7,9 +7,10 @@ extern int unitsOwned = -1;
 
 int receivedItems = -1;
 
-int variantLookupIds = -1;
-int variantLookupTypes = -1;
-int variantLookupCount = 0;
+/* Keyed by genie id, not scanned: typeRowIndex[id] is the row holding that id, canonicalType[id]
+   is the row id a variant belongs to. Both -1 when unknown. */
+int typeRowIndex = -1;
+int canonicalType = -1;
 
 
 vector getUnit(int i = -1) {
@@ -17,12 +18,10 @@ vector getUnit(int i = -1) {
 }
 
 int findUnit(int typeId = -1) {
-    for (i = 0; < unitTableCount) {
-        if (structGetInt(getUnit(i), "typeId") == typeId) {
-            return (i);
-        }
+    if (typeId < 0 || typeId >= TYPE_INDEX_CAPACITY) {
+        return (-1);
     }
-    return (-1);
+    return (xsArrayGetInt(typeRowIndex, typeId));
 }
 
 int idList(vector unit = cInvalidVector, string attrName = "") {
@@ -76,6 +75,9 @@ void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
     setIdList(unit, "variantIds",
               xsArrayCreateInt(UNIT_VARIANT_CAPACITY, -1, "us-variants-" + unitTableCount));
     xsArraySetVector(unitArray, unitTableCount, unit);
+    if (typeId < TYPE_INDEX_CAPACITY) {
+        xsArraySetInt(typeRowIndex, typeId, unitTableCount);
+    }
     unitTableCount = unitTableCount + 1;
 }
 
@@ -104,21 +106,20 @@ void addUnitVariant(int typeId = -1, int variantId = -1) {
         return;
     }
     appendId(idList(getUnit(index), "variantIds"), UNIT_VARIANT_CAPACITY, variantId);
-    if (variantLookupCount >= UNIT_CAPACITY) {
-        return;
+    if (variantId >= 0 && variantId < TYPE_INDEX_CAPACITY) {
+        xsArraySetInt(canonicalType, variantId, typeId);
     }
-    xsArraySetInt(variantLookupIds, variantLookupCount, variantId);
-    xsArraySetInt(variantLookupTypes, variantLookupCount, typeId);
-    variantLookupCount = variantLookupCount + 1;
 }
 
 int canonicalTypeOf(int typeId = -1) {
-    for (i = 0; < variantLookupCount) {
-        if (xsArrayGetInt(variantLookupIds, i) == typeId) {
-            return (xsArrayGetInt(variantLookupTypes, i));
-        }
+    if (typeId < 0 || typeId >= TYPE_INDEX_CAPACITY) {
+        return (typeId);
     }
-    return (typeId);
+    int canonical = xsArrayGetInt(canonicalType, typeId);
+    if (canonical < 0) {
+        return (typeId);
+    }
+    return (canonical);
 }
 
 void setObjectDisable(int objectId = -1, float disableFlag = 1.0, bool enable = false) {
@@ -268,8 +269,8 @@ void InitUnitsanityStructs() {
     defineStructAttribute("Unit", "variantIds", TYPE_INT_ARRAY);
 
     unitArray = xsArrayCreateVector(UNIT_CAPACITY, cInvalidVector, "us-units");
-    variantLookupIds = xsArrayCreateInt(UNIT_CAPACITY, -1, "us-variant-ids");
-    variantLookupTypes = xsArrayCreateInt(UNIT_CAPACITY, -1, "us-variant-types");
+    typeRowIndex = xsArrayCreateInt(TYPE_INDEX_CAPACITY, -1, "us-type-rows");
+    canonicalType = xsArrayCreateInt(TYPE_INDEX_CAPACITY, -1, "us-canonical");
     receivedItems = xsArrayCreateBool(UNIT_ITEM_SPAN, false, "us-received");
 }
 
