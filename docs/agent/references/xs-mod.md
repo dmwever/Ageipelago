@@ -421,10 +421,11 @@ than nothing because a single mistyped digit is indistinguishable from a real me
 **The way to receive data is the file API.** `xsCreateFile(false)`, then any number of
 `xsWriteInt` / `xsWriteFloat` / `xsWriteString` / `xsWriteVector`, then `xsCloseFile()`.
 
-- `xsCreateFile` names the file after the scenario being played and writes it to the profile folder:
-  `<user folder>/profile/<ScenarioName>.xsdat`. Running `XsTesting.aoe2scenario` produces
-  `profile/XsTesting.xsdat`. The live path on this machine is
-  `C:/Users/dmwev/Games/Age of Empires 2 DE/<steamid>/profile/`.
+- `xsCreateFile` writes into the profile folder - on this machine
+  `C:/Users/dmwev/Games/Age of Empires 2 DE/<steamid>/profile/` - but **do not assume the
+  file name**. It is not named after the script, and not reliably after the scenario either:
+  `XsTesting.aoe2scenario`, whose script is `Test.xs`, wrote `default1.xsdat`. Find the output
+  by mtime instead. See the same measured note in `XS_MEASURED_BEHAVIOR.md` section 10.
 - Pass `true` to append instead of truncating.
 - **Data is not durable until `xsCloseFile()`.** A spike that writes and never closes leaves nothing.
 - Ints and floats are 4 bytes, little-endian — the same encoding `XsdatFile.py` uses on the Python

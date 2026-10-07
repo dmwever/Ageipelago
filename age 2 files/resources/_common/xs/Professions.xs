@@ -66,23 +66,21 @@ void RefreshProfessions() {
     }
 }
 
-void CheckProfessionLocations() {
+void CheckProfessionLocations(int units = -1) {
     if (professionsReady == false) {
         return;
     }
-    for (j = 0; < unitTableCount) {
-        vector unit = getUnit(j);
-        if (isProfession(unit) == false || structGetInt(unit, "owned") > 0) {
+    for (i = 0; < xsArrayGetSize(units)) {
+        int unitId = xsArrayGetInt(units, i);
+        if (unitId < 0) {
             continue;
         }
-        int locationId = structGetInt(unit, "locationId");
-        if (locationId < 0) {
+        int index = findUnit(xsGetUnitObjectId(unitId));
+        if (index < 0) {
             continue;
         }
-        int owned = countOwned(unit);
-        if (owned > 0) {
-            structSetInt(unit, "owned", owned);
-            AP_Check_Location(locationId);
+        if (isProfession(getUnit(index))) {
+            MarkRowOwned(index);
         }
     }
 }
