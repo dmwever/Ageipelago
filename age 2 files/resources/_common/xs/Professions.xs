@@ -3,12 +3,6 @@ const float PROFESSION_FEMALE_GROUP = 2.0;
 const float PROFESSION_NO_GROUP = 0.0;
 const int PROFESSION_VILLAGER_FEMALE = 293;
 
-bool isProfession(vector unit = cInvalidVector) {
-    return (structGetBool(unit, "cavemanExempt")
-            && structGetInt(unit, "lineId") >= 0
-            && structGetInt(unit, "tier") > 0);
-}
-
 int baseVillager(int lineId = -1) {
     for (j = 0; < unitTableCount) {
         vector unit = getUnit(j);

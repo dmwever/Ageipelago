@@ -126,6 +126,10 @@ void AP_Read()
 
     int check_seedHigh = xsReadInt();
     int check_seedLow = xsReadInt();
+    if (check_seedHigh == -1 && check_seedLow == -1) {
+        xsCloseFile();
+        return;
+    }
     if (check_seedHigh != AP_SEED_HIGH || check_seedLow != AP_SEED_LOW) {
         ReportMismatch("AP Seed",
             "" + check_seedHigh + "-" + check_seedLow,
@@ -199,9 +203,6 @@ bool HasVictory() {
     return (completed == 1);
 }
 
-/* What the looping "AP Ping" trigger used to do. Not highFrequency: AP_Write recreates the whole
-   packet file on every call, and nothing on either side is atomic, so a reader polling a file its
-   writer rewrites 60 times a second is asking to catch a torn read. */
 rule WriteAP
     inactive
     minInterval 1

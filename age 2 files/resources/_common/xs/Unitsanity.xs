@@ -169,12 +169,22 @@ void MarkRowOwned(int index = -1) {
     AP_Check_Location(locationId);
 }
 
-void MarkOwnedByType(int typeId = -1) {
-    MarkRowOwned(findUnit(typeId));
+bool MarkOwnedByType(int typeId = -1) {
+    bool found = false;
+    int index = findUnit(typeId);
+    if (index >= 0) {
+        MarkRowOwned(index);
+        found = true;
+    }
     int canonical = canonicalTypeOf(typeId);
     if (canonical != typeId) {
-        MarkRowOwned(findUnit(canonical));
+        int canonicalIndex = findUnit(canonical);
+        if (canonicalIndex >= 0) {
+            MarkRowOwned(canonicalIndex);
+            found = true;
+        }
     }
+    return (found);
 }
 
 void checkOwnedUnits(int units = -1) {
@@ -183,11 +193,8 @@ void checkOwnedUnits(int units = -1) {
         if (unitId < 0) {
             continue;
         }
-        int objectId = xsGetUnitObjectId(unitId);
-        int copyId = xsGetUnitCopyId(unitId);
-        MarkOwnedByType(objectId);
-        if (copyId != objectId) {
-            MarkOwnedByType(copyId);
+        if (MarkOwnedByType(xsGetUnitCopyId(unitId)) == false) {
+            MarkOwnedByType(xsGetUnitObjectId(unitId));
         }
     }
 }
@@ -222,7 +229,11 @@ void refreshUnitLocks() {
         }
         if (hasAllItems(unit)) {
             structSetBool(unit, "hasItems", true);
-            setUnitHidden(unit, false);
+            if (isProfession(unit)) {
+                structSetBool(unit, "locked", false);
+            } else {
+                setUnitHidden(unit, false);
+            }
             cavemanTargetsStale = true;
             unitsDirty = true;
         }

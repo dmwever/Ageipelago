@@ -14,6 +14,12 @@ bool ageReached(int age = 0) {
     return (true);
 }
 
+bool isProfession(vector unit = cInvalidVector) {
+    return (structGetBool(unit, "cavemanExempt")
+            && structGetInt(unit, "lineId") >= 0
+            && structGetInt(unit, "tier") > 0);
+}
+
 mutable void AP_Check_Location(int locationId = -1) {
     xsChatData("<RED>AP_Check_Location is still the stub, so location " + locationId
                + " goes nowhere. AP.xs did not define it.");
