@@ -39,9 +39,6 @@ extern const int UNIT_ITEM_CAPACITY = 3;
 extern const int UNIT_VARIANT_CAPACITY = 16;
 extern const int TECH_SHADOW = 1181;
 
-/* Milestones. Kinds are granular where the engine counter is: each collect kind maps to one of
-   the cAttribute*Total resources, so the game never has to carry a resource alongside the kind. */
-
 extern const int FILLER_CAPACITY = 128;
 
 extern const int FILLER_EXPLORE = 0;
@@ -56,6 +53,11 @@ extern const int FILLER_COLLECT_FOOD = 8;
 extern const int FILLER_COLLECT_WOOD = 9;
 extern const int FILLER_COLLECT_GOLD = 10;
 extern const int FILLER_COLLECT_STONE = 11;
+
+extern const int ATTR_KILLS = 20;
+extern const int ATTR_EXPLORATION = 22;
+extern const int ATTR_CONVERSIONS = 41;
+extern const int ATTR_RAZINGS = 43;
 
 /* Techsanity */
 
