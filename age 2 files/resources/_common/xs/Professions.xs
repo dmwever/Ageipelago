@@ -69,12 +69,9 @@ void CheckProfessionLocations(int units = -1) {
         if (unitId < 0) {
             continue;
         }
-        int index = findUnit(xsGetUnitObjectId(unitId));
-        if (index < 0) {
-            continue;
-        }
-        if (isProfession(getUnit(index))) {
-            MarkRowOwned(index);
+        int typeId = xsGetUnitObjectId(unitId);
+        if (isProfessionType(typeId)) {
+            MarkRowOwned(findUnit(typeId));
         }
     }
 }

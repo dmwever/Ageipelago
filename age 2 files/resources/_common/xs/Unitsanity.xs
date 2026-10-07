@@ -7,10 +7,9 @@ extern int unitsOwned = -1;
 
 int receivedItems = -1;
 
-/* Keyed by genie id, not scanned: typeRowIndex[id] is the row holding that id, canonicalType[id]
-   is the row id a variant belongs to. Both -1 when unknown. */
 int typeRowIndex = -1;
 int canonicalType = -1;
+int professionTypes = -1;
 
 
 vector getUnit(int i = -1) {
@@ -77,6 +76,9 @@ void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
     xsArraySetVector(unitArray, unitTableCount, unit);
     if (typeId < TYPE_INDEX_CAPACITY) {
         xsArraySetInt(typeRowIndex, typeId, unitTableCount);
+        if (cavemanExempt == 1 && lineId >= 0 && tier > 0) {
+            xsArraySetInt(professionTypes, typeId, 1);
+        }
     }
     unitTableCount = unitTableCount + 1;
 }
@@ -109,6 +111,13 @@ void addUnitVariant(int typeId = -1, int variantId = -1) {
     if (variantId >= 0 && variantId < TYPE_INDEX_CAPACITY) {
         xsArraySetInt(canonicalType, variantId, typeId);
     }
+}
+
+bool isProfessionType(int typeId = -1) {
+    if (typeId < 0 || typeId >= TYPE_INDEX_CAPACITY) {
+        return (false);
+    }
+    return (xsArrayGetInt(professionTypes, typeId) == 1);
 }
 
 int canonicalTypeOf(int typeId = -1) {
@@ -271,6 +280,7 @@ void InitUnitsanityStructs() {
     unitArray = xsArrayCreateVector(UNIT_CAPACITY, cInvalidVector, "us-units");
     typeRowIndex = xsArrayCreateInt(TYPE_INDEX_CAPACITY, -1, "us-type-rows");
     canonicalType = xsArrayCreateInt(TYPE_INDEX_CAPACITY, -1, "us-canonical");
+    professionTypes = xsArrayCreateInt(TYPE_INDEX_CAPACITY, 0, "us-professions");
     receivedItems = xsArrayCreateBool(UNIT_ITEM_SPAN, false, "us-received");
 }
 
@@ -308,6 +318,7 @@ int testArray = -1;
 
 int PROFESSION_SWEEP_SECONDS = 2;
 int lastProfessionSweep = -1;
+float unitsResearchCount = -1.0;
 
 rule UnitsanityChecks
     inactive
@@ -327,6 +338,14 @@ rule UnitsanityChecks
         unitsDirty = true;
         return;
     }
+
+    float researched = xsPlayerAttribute(1, cAttributeResearchCount);
+    if (researched > unitsResearchCount) {
+        unitsResearchCount = researched;
+        unitsDirty = true;
+        return;
+    }
+
     if (unitsDirty == false) {
         if (xsGetGameTime() - lastProfessionSweep >= PROFESSION_SWEEP_SECONDS) {
             lastProfessionSweep = xsGetGameTime();
