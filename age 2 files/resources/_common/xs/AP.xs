@@ -124,6 +124,16 @@ void AP_Read()
         return;
     }
 
+    int check_seedHigh = xsReadInt();
+    int check_seedLow = xsReadInt();
+    if (check_seedHigh != AP_SEED_HIGH || check_seedLow != AP_SEED_LOW) {
+        ReportMismatch("AP Seed",
+            "" + check_seedHigh + "-" + check_seedLow,
+            "" + AP_SEED_HIGH + "-" + AP_SEED_LOW);
+        xsCloseFile();
+        return;
+    }
+
     int items = xsReadInt();
     if (items == 1) {
         xsEnableRule("ReadItems");

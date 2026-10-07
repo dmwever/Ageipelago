@@ -162,16 +162,18 @@ Confirms that the client is still connected, and tells the game which other file
 |3|WorldMajor|int|Major `world_version` of the client|
 |4|WorldMinor|int|Minor `world_version` of the client|
 |5|SlotId|int|The slot the client is connected as|
-|6|SendItems|bool|If 1, the game reads `items.xsdat`|
-|7|FreeItems|bool|If 1, the game reads `free_items.xsdat`|
-|8|FreeLocations|bool|If 1, the game reads `locations.xsdat`|
-|9|SendMercenaries|bool|If 1, the game reads `mercenary_queue.xsdat`. Set while the client's queue serial differs from `ConsumedQueueSerial`, so it clears on acknowledgement rather than on client state. Was `SendUnits`, which was never implemented and hardcoded to 0|
-|10|SendMessages|bool|If 1, the game reads `messages.xsdat`|
-|11|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
-|12|AckMercenaryId|int|Echoes `CompletedMercenaryId` back. The game drops that mercenary from its pending list and may then name the next one|
+|6|SeedHigh|int|High 16 bits of the client's seed tag, or `-1` before it has one|
+|7|SeedLow|int|Low 16 bits of the same|
+|8|SendItems|bool|If 1, the game reads `items.xsdat`|
+|9|FreeItems|bool|If 1, the game reads `free_items.xsdat`|
+|10|FreeLocations|bool|If 1, the game reads `locations.xsdat`|
+|11|SendMercenaries|bool|If 1, the game reads `mercenary_queue.xsdat`. Set while the client's queue serial differs from `ConsumedQueueSerial`, so it clears on acknowledgement rather than on client state. Was `SendUnits`, which was never implemented and hardcoded to 0|
+|12|SendMessages|bool|If 1, the game reads `messages.xsdat`|
+|13|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
+|14|AckMercenaryId|int|Echoes `CompletedMercenaryId` back. The game drops that mercenary from its pending list and may then name the next one|
 
-`AP_Read` validates in order — scenario, ping, version, slot — and returns early on the first
-failure, so no dispatch flag is acted on until the identity checks have passed.
+`AP_Read` validates in order — scenario, ping, version, slot, seed — and returns early on the
+first failure, so no dispatch flag is acted on until the identity checks have passed.
 
 ### Mercenaries
 
@@ -329,7 +331,7 @@ extern const int AP_SEED_LOW = 43654;
 |Name|Purpose|
 |---|---|
 |`AP_SLOT_ID`|The AP slot number. `-1` means this install was never set up. `AP_Write` writes it into the packet and `AP_Read` compares it|
-|`AP_SEED_HIGH` / `AP_SEED_LOW`|The 32-bit seed tag as two 16-bit halves. **Diagnostics only** — the packet has no room for a seed, so these exist so the game can name the seed it belongs to|
+|`AP_SEED_HIGH` / `AP_SEED_LOW`|The 32-bit seed tag as two 16-bit halves. The client sends the same two halves in the ping packet and `AP_Read` compares them, which is what catches an install from one seed being played against another — the slot id cannot, since every solo seed is slot 1|
 
 The halves are split because an XS `int` cannot be initialised to a literal above `999_999_999`, and
 is 32-bit signed besides; the full tag fits in neither. Reassemble as `(HIGH << 16) | LOW`.

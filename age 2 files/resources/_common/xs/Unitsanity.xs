@@ -120,19 +120,6 @@ int canonicalTypeOf(int typeId = -1) {
     return (typeId);
 }
 
-bool ageReached(int age = 0) {
-    if (age == FEUDAL_AGE) {
-        return (xsGetTechState(FEUDAL_AGE_TECH, 1) == cTechStateDone);
-    }
-    if (age == CASTLE_AGE) {
-        return (xsGetTechState(CASTLE_AGE_TECH, 1) == cTechStateDone);
-    }
-    if (age == IMPERIAL_AGE) {
-        return (xsGetTechState(IMPERIAL_AGE_TECH, 1) == cTechStateDone);
-    }
-    return (true);
-}
-
 void setObjectDisable(int objectId = -1, float disableFlag = 1.0, bool enable = false) {
     xsEffectAmount(cSetAttribute, objectId, cDisabledFlag, disableFlag, 1);
     if (enable) {
