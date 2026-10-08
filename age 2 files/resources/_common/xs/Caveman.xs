@@ -1,5 +1,5 @@
 const int CAVEMAN_LEDGER_CAPACITY = 400;
-const int CAVEMAN_IMMUNE_CAPACITY = 64;
+const int CAVEMAN_IMMUNE_CAPACITY = 256;
 const int CAVEMAN_EXEMPT_CAPACITY = 32;
 const int CAVEMAN_MILITIA = 74;
 const int CAVEMAN_REMOVED = 0;
@@ -16,11 +16,29 @@ int cavemanExemptCount = 0;
 
 int cavemanTargets = -1;
 
+void reapImmuneUnits() {
+    int i = 0;
+    while (i < cavemanImmuneCount) {
+        if (xsDoesUnitExist(xsArrayGetInt(cavemanImmuneUnits, i))) {
+            i = i + 1;
+        } else {
+            xsArraySetInt(cavemanImmuneUnits, i,
+                          xsArrayGetInt(cavemanImmuneUnits, cavemanImmuneCount - 1));
+            cavemanImmuneCount = cavemanImmuneCount - 1;
+        }
+    }
+}
+
 void MarkUnitCavemanImmune(int unitId = -1) {
     if (unitId < 0 || cavemanImmuneUnits < 0) {
         return;
     }
     if (cavemanImmuneCount >= CAVEMAN_IMMUNE_CAPACITY) {
+        reapImmuneUnits();
+    }
+    if (cavemanImmuneCount >= CAVEMAN_IMMUNE_CAPACITY) {
+        xsChatData("<RED>Caveman: immune list is full, so unit " + unitId
+                   + " is not protected.");
         return;
     }
     xsArraySetInt(cavemanImmuneUnits, cavemanImmuneCount, unitId);
@@ -229,6 +247,7 @@ void InitCaveman() {
     cavemanExemptTypes = xsArrayCreateInt(CAVEMAN_EXEMPT_CAPACITY, -1, "cm-exempt");
     cavemanTargets = xsArrayCreateInt(UNIT_CAPACITY, -1, "cm-targets");
 
+    ExemptUnitTypeFromCaveman(TRAP_FLEMISH_MILITIA);
     CavemanExemption();
     cavemanReady = true;
 }

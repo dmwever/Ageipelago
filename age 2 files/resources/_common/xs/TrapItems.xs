@@ -10,7 +10,7 @@ int chatTrapUntil = -1;
 int chatTrapLine = 0;
 int idleTrapUntil = -1;
 int raidTrapUntil = -1;
-int raidTrapAtMuster = 0;
+int raidTrapCorner = -1;   // never the same corner twice running
 
 bool ooh = true;
 
@@ -234,7 +234,7 @@ void TRAP_NO_SIEGE() {
     SelectPlayerUnitsByClass(1, cSiegeWeaponClass);
     int taken = TakeCountFromPool(GetCountFromPercent(trapPoolCount, TrapScale(10, 20, 35, 60, 100)));
     for (i = 0; < taken) {
-        xsRemoveUnit(xsArrayGetInt(trapPool, i));
+        xsSetUnitHitpoints(xsArrayGetInt(trapPool, i), 0.0);
     }
     xsChatData("<RED>Long Time, No Siege");
 }
@@ -407,6 +407,25 @@ rule TrapIdleLoop
     }
 }
 
+vector RaidCorner(int index = -1) {
+    float edge = 3.0;
+    float far_x = xsGetMapWidth() - edge;
+    float far_y = xsGetMapHeight() - edge;
+    if (index == 0) { return (xsVectorSet(edge, edge, 0.0)); }
+    if (index == 1) { return (xsVectorSet(far_x, edge, 0.0)); }
+    if (index == 2) { return (xsVectorSet(edge, far_y, 0.0)); }
+    return (xsVectorSet(far_x, far_y, 0.0));
+}
+
+int NextRaidCorner() {
+    int corner = xsGetRandomNumberMax(4);
+    if (corner == raidTrapCorner) {
+        corner = (corner + 1 + xsGetRandomNumberMax(3)) % 4;
+    }
+    raidTrapCorner = corner;
+    return (corner);
+}
+
 rule TrapRaidLoop
     inactive
     group Traps
@@ -417,17 +436,7 @@ rule TrapRaidLoop
         xsDisableSelf();
         return;
     }
-    if (HasPavilionPlacement() == false) {
-        xsDisableSelf();
-        return;
-    }
-    vector where = PavilionSpawnPoint();
-    if (raidTrapAtMuster == 0) {
-        where = PavilionMusterPoint();
-        raidTrapAtMuster = 1;
-    } else {
-        raidTrapAtMuster = 0;
-    }
+    vector where = RaidCorner(NextRaidCorner());
     SelectPlayerMilitary(1);
     for (i = 0; < trapPoolCount) {
         xsArraySetInt(trapTask, 0, xsArrayGetInt(trapPool, i));
