@@ -35,7 +35,7 @@ extern const int AP_UNIT_ITEM_OFFSET = 300;
 extern const int UNIT_ITEM_SPAN = 500;   /* 300-799: lines, upgrades, building units, professions */
 
 extern const int UNIT_CAPACITY = 400;
-extern const int UNIT_ITEM_CAPACITY = 3;
+extern const int UNIT_ITEM_CAPACITY = 5;
 extern const int UNIT_VARIANT_CAPACITY = 16;
 extern const int TYPE_INDEX_CAPACITY = 4000;
 extern const int TECH_SHADOW = 1181;
