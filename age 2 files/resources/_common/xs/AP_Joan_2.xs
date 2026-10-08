@@ -14,6 +14,7 @@ void GiveScenarioItems() {
 
 void SetScenarioAge() {
   SetVanillaAge(FEUDAL_AGE);
+  SetMaxAge(CASTLE_AGE);
 }
 
 void main() {

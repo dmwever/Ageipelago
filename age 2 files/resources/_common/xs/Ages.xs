@@ -1,5 +1,7 @@
 extern int apVanillaAge = DARK_AGE;
 
+extern int apMaxAge = IMPERIAL_AGE;
+
 int ageTechFor(int age = -1) {
     if (age == FEUDAL_AGE) {
         return (FEUDAL_AGE_TECH);
@@ -15,6 +17,10 @@ int ageTechFor(int age = -1) {
 
 void SetVanillaAge(int age = -1) {
     apVanillaAge = age;
+}
+
+void SetMaxAge(int age = -1) {
+    apMaxAge = age;
 }
 
 void completeIfPending(int id = -1) {
@@ -55,6 +61,9 @@ void UnlockAge(int itemId = -1) {
     if (id < 0) {
         return;
     }
+    if (itemId > apMaxAge) {
+        return;
+    }
     if (xsGetTechState(id, 1) == cTechStateDone) {
         return;
     }
@@ -64,6 +73,11 @@ void UnlockAge(int itemId = -1) {
 void InitAges() {
     SetScenarioAge();
     ClimbToVanillaAge();
+    for (capped = FEUDAL_AGE; <= IMPERIAL_AGE) {
+        if (capped > apMaxAge) {
+            lockAge(capped);
+        }
+    }
     if (AP_SHUFFLE_AGES != 1) {
         return;
     }
