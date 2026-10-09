@@ -409,8 +409,8 @@ rule TrapIdleLoop
 
 vector RaidCorner(int index = -1) {
     float edge = 3.0;
-    float far_x = xsGetMapWidth() - edge;
-    float far_y = xsGetMapHeight() - edge;
+    float far_x = 1.0 * xsGetMapWidth() - edge;
+    float far_y = 1.0 * xsGetMapHeight() - edge;
     if (index == 0) { return (xsVectorSet(edge, edge, 0.0)); }
     if (index == 1) { return (xsVectorSet(far_x, edge, 0.0)); }
     if (index == 2) { return (xsVectorSet(edge, far_y, 0.0)); }
