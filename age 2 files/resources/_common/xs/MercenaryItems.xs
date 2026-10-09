@@ -1,41 +1,41 @@
 // Mercenaries by Scenario
 
 //Attila 1
-bool romanCampVils = false;
-void ROMAN_CAMP_VILS() {
-    romanCampVils = true;
+bool attila1RomanVillagers = false;
+void Attila1RomanVillagers() {
+    attila1RomanVillagers = true;
 }
 
-bool HAS_ROMAN_CAMP_VILS() {
-    return (romanCampVils);
+bool HasAttila1RomanVillagers() {
+    return (attila1RomanVillagers);
 }
 
-bool scythianMangudai = false;
-void SCYTHIAN_MANGUDAI() {
-    scythianMangudai = true;
+bool attila1ScythianMangudai = false;
+void Attila1ScythianMangudai() {
+    attila1ScythianMangudai = true;
 }
 
-bool HAS_SCYTHIAN_MANGUDAI() {
-    return (scythianMangudai);
+bool HasAttila1ScythianMangudai() {
+    return (attila1ScythianMangudai);
 }
 
 //Attila 2
-bool cyanPrisoners = false;
-void DYRRHACHIUM_PRISONERS() {
-    cyanPrisoners = true;
+bool attila2DyrrhachiumPrisoners = false;
+void Attila2DyrrhachiumPrisoners() {
+    attila2DyrrhachiumPrisoners = true;
 }
 
-bool HAS_DYRRHACHIUM_PRISONERS() {
-    return (cyanPrisoners);
+bool HasAttila2DyrrhachiumPrisoners() {
+    return (attila2DyrrhachiumPrisoners);
 }
 
-bool scythianTroop = false;
-void SCYTHIAN_TROOP() {
-    scythianTroop = true;
+bool attila2ScythianTroop = false;
+void Attila2ScythianTroop() {
+    attila2ScythianTroop = true;
 }
 
-bool HAS_SCYTHIAN_TROOP() {
-    return (scythianTroop);
+bool HasAttila2ScythianTroop() {
+    return (attila2ScythianTroop);
 }
 
 // Joan 1
@@ -117,16 +117,16 @@ bool HasJoan6Artillery() {
 void GiveMercenary(int itemId = -1) {
     switch(itemId) {
         case 4000: {
-            SCYTHIAN_MANGUDAI();
+            Attila1ScythianMangudai();
         }
         case 4001: {
-            ROMAN_CAMP_VILS();
+            Attila1RomanVillagers();
         }
         case 4002: {
-            DYRRHACHIUM_PRISONERS();
+            Attila2DyrrhachiumPrisoners();
         }
         case 4003: {
-            SCYTHIAN_TROOP();
+            Attila2ScythianTroop();
         }
         case 4004: {
             Joan1Ram();

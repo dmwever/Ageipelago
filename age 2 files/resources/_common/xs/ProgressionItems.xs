@@ -10,50 +10,50 @@ void TOWN_CENTER_STONE() {
 // Scenario-specific items
 
 //Attila 1
-bool bledasCamp = false;
-void ATTILA_1_BLEDAS_CAMP() {
-    bledasCamp = true;
+bool attila1BledasCamp = false;
+void Attila1BledasCamp() {
+    attila1BledasCamp = true;
 }
 
-bool HAS_BLEDAS_CAMP() {
-    return (bledasCamp);
+bool HasAttila1BledasCamp() {
+    return (attila1BledasCamp);
 }
 
-bool attilasCamp = false;
-void ATTILA_1_ATTILAS_CAMP() {
-    attilasCamp = true;
+bool attila1AttilasCamp = false;
+void Attila1AttilasCamp() {
+    attila1AttilasCamp = true;
 }
 
-bool HAS_ATTILAS_CAMP() {
-    return (attilasCamp);
+bool HasAttila1AttilasCamp() {
+    return (attila1AttilasCamp);
 }
 
 //Attila 2
 bool attila2Villagers = false;
-void ATTILA_2_VILLAGERS_TRIGGER() {
+void Attila2Villagers() {
     attila2Villagers = true;
 }
 
-bool HAS_ATTILA_2_VILLAGERS() {
+bool HasAttila2Villagers() {
     return (attila2Villagers);
 }
 
 //Attila 3
 bool attila3RedGold = false;
-void ATTILA_3_RED_GOLD() {
+void Attila3RedGold() {
     attila3RedGold = true;
 }
 
-bool HAS_ATTILA_3_RED_GOLD() {
+bool HasAttila3RedGold() {
     return (attila3RedGold);
 }
 
 bool attila3GreenGold = false;
-void ATTILA_3_GREEN_GOLD() {
+void Attila3GreenGold() {
     attila3GreenGold = true;
 }
 
-bool HAS_ATTILA_3_GREEN_GOLD() {
+bool HasAttila3GreenGold() {
     return (attila3GreenGold);
 }
 
@@ -225,19 +225,19 @@ void GiveProgressionItem(int itemId = -1) {
             TOWN_CENTER_STONE();
         }
         case 1002: {
-            ATTILA_1_BLEDAS_CAMP();
+            Attila1BledasCamp();
         }
         case 1003: {
-            ATTILA_1_ATTILAS_CAMP();
+            Attila1AttilasCamp();
         }
         case 1004: {
-            ATTILA_2_VILLAGERS_TRIGGER();
+            Attila2Villagers();
         }
         case 1005: {
-            ATTILA_3_RED_GOLD();
+            Attila3RedGold();
         }
         case 1006: {
-            ATTILA_3_GREEN_GOLD();
+            Attila3GreenGold();
         }
         case 1007: {
             Joan1Transports();
