@@ -16,7 +16,7 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-10-08a**
+Skill revision: **2026-10-10a**
 
 A randomizer in two halves that ship separately and must stay in step.
 
@@ -48,6 +48,7 @@ is the normal state on a machine where nobody has installed it.
 |---|---|
 | an `.xs` file, a rule, a struct, include order, linting, the pavilion, scenario scripts | `references/xs-mod.md` |
 | items, locations, enums, logic vs rules, regions, the client, handlers, generation, tests | `references/apworld.md` |
+| a scenario's resource counts, tiers, map object ids, gather amounts, terrain | `references/apworld.md` -> *Scenario resource scans* |
 | a packet field, byte offsets, `.xsdat` layout, seed tags, versioning, the item window | `references/protocol.md` |
 | what a yaml option does, on either side | `references/options/index.md`, then the one option's file |
 | how to write it so it matches the codebase | `references/conventions/index.md` |

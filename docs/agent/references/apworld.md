@@ -454,6 +454,100 @@ Nearly every file-write path is wrapped in `except Exception as ex: print(ex)`. 
   minimal item set against the target rule, and places it with `fill_restrictive`. Every failure path
   logs a warning and continues with a smaller or empty set; it never fails generation.
 
+## Scenario resource scans
+
+`locations/connections/ScenarioResources.py` declares, per scenario and per `Tier`, how much of each
+raw resource the map holds. Every number there is a count of **objects on the map**, so it is
+checkable — and all eighteen scenarios now reconcile exactly, bar `AP_GENGHIS_3`'s fish.
+
+### Per-object amounts — read them, never recall them
+
+From `empires2_x2_p1.dat`, table `unit_attributes` (the resource-storage list; attribute type 17 is
+the fish-food store). Build a queryable copy with `kit dat sql <dat> out.db`.
+
+| Unit | Id | Food |
+|---|---|---|
+| `SHORE_FISH` | 69 | 200 |
+| `FISH_PERCH` | 53 | 200 |
+| `FISH_DORADO` / `SALMON` / `TUNA` / `SNAPPER` | 455-458 | 225 |
+| `FISH5` | 459 | 225 |
+| `GREAT_FISH_MARLIN` | **450** | **350** |
+| `DEER` | 65 | 140 |
+| `WILD_BOAR` | 48 | 340 |
+| `IRON_BOAR` | 810 | **700** |
+| `SHEEP` / `GOAT` | 594 / 1060 | 100 |
+| `FORAGE_BUSH` | 59 | 125 |
+| `GOLD_MINE` | 66 | 800 gold |
+| `STONE_MINE` | 102 | 350 stone |
+
+Two of these have burned us. The marlin is **350, not 225**, and it is id **450** — `genie_registry.json`
+has no name for 459, so a name-keyed filter silently drops it. Both Joan 2 and Genghis 4 contain
+`FISH5`. Filter by id against this table, never by matching names.
+
+### Counting conventions
+
+- **Count objects, not sprites.** Scenarios contain gatherables at *identical* coordinates — Attila 3
+  (one shore fish), Joan 4 (one stone, two bush), Joan 6 (two shore fish), Genghis 5 (one shore
+  fish). All four declared totals count the stacked duplicate, so a scan that dedupes by position is
+  wrong. Genghis 5 was the one scenario that had deduped, and it was a bug.
+- `FIXED_FORCE` scenarios (`AP_JOAN_1`, `AP_JOAN_5`, `AP_GENGHIS_1`) declare all zeroes by design and
+  are excluded from the cross-check, even where the map holds objects.
+
+### shore_fish_count versus deep_fish_count
+
+The split is **positional, not by species**: it asks whether a fisherman on land can reach the fish,
+because the two feed different gates — `tier_gates("shoreline")` admits
+`can_hold_a_shoreline() | has_navy()`, while `tier_gates("afloat")` needs `has_navy()`. A `SHORE_FISH`
+stranded in open water counts as deep; a salmon against a beach counts as shore.
+
+**It is not mechanically derivable — do not try.** Measured against the eleven scenarios whose fish
+totals are sound: a pure species rule reproduces 3, a pure distance-to-land threshold peaks at 5 (at
+~2.15 tiles), and species-with-adjacency-promotion peaks at 5. The deviations run in *both*
+directions and are small — Joan 4 is off by exactly +25, which is one 225-fish promoted to shore and
+one 200-fish demoted in the same map. The values were assigned by eye per map. Treat the **totals**
+as authoritative and the shore/deep allocation as a judgement call to be confirmed with the user.
+
+For reference when judging one, **the working radius is ~1.6 tiles**. Shore fish cluster at 1.0
+(orthogonally adjacent) through ~1.6 (diagonal, plus placement jitter off half-tile centres), so a
+1.0 cut discards about a third of them. Genghis 3 pins the upper end: its `OPEN` shore of 2275
+decomposes as 8x200 + 3x225, and those three 225s are snappers sitting at exactly 1.58 from land.
+
+### Reading terrain
+
+`kit scen terrain <file> --tiles` returns all 20,736 tiles as `{x, y, terrain_id, elevation}`;
+`kit dat terrains <dat>` names them. Navigable water is a much longer list than it looks — at
+minimum `{1, 4, 15, 22, 23, 26, 28, 54, 57, 58, 59, 90, 93-99, 114-116, 130}`. Beaches (2, 37, 51-53,
+79-82, 107-109, 91), ice (35, 127) and swamp (111) are walkable **land**. A short water set silently
+classifies deep fish as shore-adjacent.
+
+Unit coordinates are floats where a tile centre is `.5`; a unit on a whole number straddles four
+tiles. Measure to tile centres (`hypot(fx-(i+0.5), fy-(j+0.5))`), not to truncated indices.
+
+**Cliffs are not in the object data and not in the terrain id** — they are their own object class. A
+resource can be unreachable from your side with nothing in the scan to show it. Genghis 5's two gold
+at (128,97) read as open ground by every geometric test and are in fact cliff-locked to Blue. Tier
+assignments near cliffs must be confirmed against the map by eye.
+
+### Tiering
+
+`BASE` / `OPEN` / `ALLY` / `ENEMY` are judgement, not geometry, but two heuristics have held up:
+
+- Decompose the map into clusters and check them against the declared per-tier values. A tier that
+  matches a cluster exactly is almost certainly right, and it reveals the original scanner's rule —
+  which then settles the ambiguous clusters. This is how Genghis 4, 5 and 6 were closed.
+- Walls and object footprints beat raw distance. "Inside an enemy's wall perimeter" is a better
+  `ENEMY` test than "near their town centre", and a resource outside every wall is usually `OPEN`
+  even when an enemy is close.
+- **Flood-fill the landmasses** where a map has islands. Label connected non-water components, then
+  ask which players own objects on each. Genghis 3 turns on this: its `OPEN` tier is Blue's island
+  (a 1687-tile component owned by Blue alone) plus the mainland north of the Great Wall, and three
+  shore fish that look like Blue's by proximity are in fact on the 19,481-tile main continent that
+  Green occupies. Classifying by landmass reproduced that scenario's `BASE` shore (800) and `OPEN`
+  shore (2275) exactly, which is what identified the two genuinely missing figures.
+
+`must_steal_base` gates the `ENEMY` tier. Genghis 4 needs it for real: its BASE holds 1750 stone
+against a demand of 2000, and every other quarry on the map is on Persian ground.
+
 ## Tests
 
 ```
