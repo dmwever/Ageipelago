@@ -114,6 +114,44 @@ bool HasJoan6Artillery() {
 }
 
 
+// Genghis 1
+bool genghis1PurpleForce = false;
+void Genghis1PurpleForce() {
+    genghis1PurpleForce = true;
+}
+
+bool HasGenghis1PurpleForce() {
+    return (genghis1PurpleForce);
+}
+
+bool genghis1GreyForce = false;
+void Genghis1GreyForce() {
+    genghis1GreyForce = true;
+}
+
+bool HasGenghis1GreyForce() {
+    return (genghis1GreyForce);
+}
+
+bool genghis1GreenForce = false;
+void Genghis1GreenForce() {
+    genghis1GreenForce = true;
+}
+
+bool HasGenghis1GreenForce() {
+    return (genghis1GreenForce);
+}
+
+bool genghis1CyanForce = false;
+void Genghis1CyanForce() {
+    genghis1CyanForce = true;
+}
+
+bool HasGenghis1CyanForce() {
+    return (genghis1CyanForce);
+}
+
+
 void GiveMercenary(int itemId = -1) {
     switch(itemId) {
         case 4000: {
@@ -151,6 +189,18 @@ void GiveMercenary(int itemId = -1) {
         }
         case 4011: {
             Joan6Artillery();
+        }
+        case 4012: {
+            Genghis1PurpleForce();
+        }
+        case 4013: {
+            Genghis1GreyForce();
+        }
+        case 4014: {
+            Genghis1GreenForce();
+        }
+        case 4015: {
+            Genghis1CyanForce();
         }
     }
 }

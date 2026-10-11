@@ -7,9 +7,14 @@ python -m pytest worlds/age2de/test
 AGEIPELAGO_PATH=/path/to/Ageipelago python -m pytest worlds/age2de/test
 ```
 
-**Set `AGEIPELAGO_PATH`** to the Ageipelago checkout. Two cross-repo tests default to a hardcoded path
-from the original author's machine and are wrapped in `skipUnless`, so without it they pass by not
-running.
+**Set `AGEIPELAGO_PATH`** to the Ageipelago checkout. **Five** test files reach across to it and are
+wrapped in `skipUnless`, so without it they pass by not running: `test_branching_install.py`,
+`test_campaign_bundle.py`, `test_ping_packet.py`, `test_unit_data.py`, `test_world_version.py`.
+
+Each defaults to a hardcoded path from the original author's machine
+(`C:/Users/dmwev/Documents/GitHub/Ageipelago`), so **on that machine they run whether or not the
+variable is set** — which is exactly why the gap stays invisible there and the suite goes quiet
+everywhere else.
 
 ## Two base classes
 

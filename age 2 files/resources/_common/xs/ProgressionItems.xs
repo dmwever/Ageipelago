@@ -216,6 +216,17 @@ bool HasJoan6Army() {
     return (joan6Army);
 }
 
+// Genghis 1
+bool genghis1BlueForce = false;
+void Genghis1BlueForce() {
+    genghis1BlueForce = true;
+}
+
+bool HasGenghis1BlueForce() {
+    return (genghis1BlueForce);
+}
+
+
 void GiveProgressionItem(int itemId = -1) {
     switch(itemId) {
         case 1000: {
@@ -289,6 +300,9 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1023: {
             Joan6Army();
+        }
+        case 1024: {
+            Genghis1BlueForce();
         }
     }
 }
