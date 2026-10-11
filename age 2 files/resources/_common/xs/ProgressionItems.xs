@@ -301,7 +301,7 @@ void GiveProgressionItem(int itemId = -1) {
         case 1023: {
             Joan6Army();
         }
-        case 1024: {
+        case 1025: {
             Genghis1BlueForce();
         }
     }
