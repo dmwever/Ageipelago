@@ -227,6 +227,17 @@ bool HasGenghis1BlueForce() {
 }
 
 
+// Genghis 2
+bool genghis2TayichiudBase = false;
+void Genghis2TayichiudBase() {
+    genghis2TayichiudBase = true;
+}
+
+bool HasGenghis2TayichiudBase() {
+    return (genghis2TayichiudBase);
+}
+
+
 void GiveProgressionItem(int itemId = -1) {
     switch(itemId) {
         case 1000: {
@@ -303,6 +314,9 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1025: {
             Genghis1BlueForce();
+        }
+        case 1026: {
+            Genghis2TayichiudBase();
         }
     }
 }

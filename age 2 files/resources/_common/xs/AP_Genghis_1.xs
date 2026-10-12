@@ -122,5 +122,5 @@ void FlockByPurple() {
 }
 
 void SetPavilionLayout() {
-    SetPavilionPlacement(33, 144, PAVILION_FACE_NE);
+    SetPavilionPlacement(38, 149, PAVILION_FACE_NW);
 }

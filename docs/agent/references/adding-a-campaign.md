@@ -308,9 +308,20 @@ AP Destroy One Castle    own_fewer_objects {object_list: 82, quantity: 3, source
 AP Destroy Two Castles   own_fewer_objects {object_list: 82, quantity: 2, source_player: 3}
 ```
 
-Where no object count tracks the deed, scenarios count with a variable: a `change_variable` effect on
-each contributing trigger and a `variable_value` condition on the threshold trigger. Genghis 1's
-vanilla sheep tally uses 21 looping triggers, each `own_objects {object_list: 594, quantity: N}` →
+Where no object count tracks the deed, counting goes through a variable, and the write and the read
+are split by trigger ownership:
+
+- **Vanilla triggers write it.** A `change_variable` effect is added to each vanilla trigger that
+  marks a contributing deed.
+- **AP triggers only read it.** A `variable_value` condition on the `AP <Thing>` trigger, with the
+  `script_call` as its effect. No AP trigger carries a `change_variable`.
+
+Attila 3 is the worked example: 14 vanilla triggers write `AP Gold` (variable 0), 2 vanilla triggers
+read it for the objective display, and `[47] AP Victory` is the single AP trigger reading it —
+`variable_value {variable: 0, comparison: >=, quantity: 10000}` → `script_call Victory();`.
+
+A scenario's own vanilla counters follow the same read-only rule. Genghis 1's sheep tally uses 21
+looping triggers, each `own_objects {object_list: 594, quantity: N}` →
 `change_variable {variable: 1, operation: set, quantity: N}`, read by `variable_value >= 20`.
 
 ### Resources and tributes
@@ -320,11 +331,12 @@ starting pile and `Resources` filler covers the rest.
 
 Vanilla tributes are stripped and split in two:
 
-1. the vanilla trigger keeps (or gains) a `change_variable` so objectives and victory counters still
-   track, and
+1. the vanilla trigger's `tribute` effect is **replaced in place** by a `change_variable` on the
+   campaign's counter, so objectives and victory conditions still track, and
 2. an `AP Give …` trigger delivers the resource, gated on the item.
 
-Attila 3 went from 14 tributes to 2 this way.
+Attila 3 went from 14 tributes and 0 `change_variable` effects in vanilla to 2 tributes and 14
+`change_variable` effects.
 
 *Deviation, not a pattern:* only Attila 1, Joan 1, Joan 2 and Genghis 1 currently ship with the
 starting pile zeroed. The other fourteen carry vanilla values. Nothing zeroes resources at install
@@ -349,6 +361,29 @@ The repo's `age 2 files/` **is** the live game folder. Edits land in the game im
   `AP_Attila_2`, `AP_Attila_5`, `AP_Attila_6` and all six `AP_Joan_*`.
 - Add a condition with `trigger.new_condition.script_call(xs_function="HasFoo();")`. Set the bare
   string; the parser handles the trailing `\x00`.
+- **Never reassign `trigger.effects` or `trigger.conditions`.** `effect_order` and `condition_order`
+  are separate index lists; replacing the list leaves them pointing at entries that no longer exist
+  and the written file is unreadable — `kit` reports a nonsense length such as
+  `trigger_data[25]: need 1852399949 bytes at offset 31`. Use `remove_effect(effect=...)` and
+  `remove_condition(condition=...)`.
+- **Clone from the vanilla trigger rather than retyping — conditions as well as effects.** Create
+  the condition or effect on the target with `new_condition.<type>()` / `new_effect.<type>()` and
+  copy `vars(src)`. Hand-built ones pick up parser defaults the shipped triggers leave at -1:
+  `objects_in_area` gains `object_state: 2` and `object_group: 0`, `own_fewer_objects` gains
+  `comparison: 0` and `target_player: 1`, and `destroy_object` gains `source_player: 1`. Keyword
+  names also differ from what the file stores — `change_object_attack` holds `operation` and
+  `armour_attack_quantity`, and `change_ownership` carries `object_type: 4`, the units-only class.
+  Cloning reproduces the vanilla record exactly; `kit scen triggers` on both is the check.
+- **Three parser defaults differ from the shipped AP triggers**, and none of them raise:
+
+  | Field | `AoE2ScenarioParser` default | Shipped AP triggers |
+  |---|---|---|
+  | `condition.timer` | 10 | -1 |
+  | `trigger.description_stid` | -1 | 0 |
+  | `trigger.short_description_stid` | -1 | 0 |
+
+  `test_the_branching_tags_are_gone_from_the_scenario_files` catches the stid on branching triggers.
+  Nothing catches the timer. Set all three explicitly after building a trigger.
 - Match stored call strings with a regex such as `^\s*([A-Za-z_]\w*)\s*\(\s*\)\s*;?\s*$`, not
   `.rstrip(';')`, and assert the rewrite count.
 - Diff against a **no-op round trip**, not the original, unless a no-op round trip is confirmed
