@@ -238,6 +238,21 @@ bool HasGenghis2TayichiudBase() {
 }
 
 
+// Attila 5
+bool attila5Deathmatch = false;
+void Attila5Deathmatch() {
+    attila5Deathmatch = true;
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 7000.0, 1);
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 1000.0, 1);
+    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 500.0, 1);
+    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 7250.0, 1);
+}
+
+bool HasAttila5Deathmatch() {
+    return (attila5Deathmatch);
+}
+
+
 void GiveProgressionItem(int itemId = -1) {
     switch(itemId) {
         case 1000: {
@@ -317,6 +332,9 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1026: {
             Genghis2TayichiudBase();
+        }
+        case 1027: {
+            Attila5Deathmatch();
         }
     }
 }
