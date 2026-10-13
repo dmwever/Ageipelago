@@ -282,6 +282,17 @@ bool HasGenghis3Transport() {
 }
 
 
+// Genghis 4
+bool genghis4KipchakCamp = false;
+void Genghis4KipchakCamp() {
+    genghis4KipchakCamp = true;
+}
+
+bool HasGenghis4KipchakCamp() {
+    return (genghis4KipchakCamp);
+}
+
+
 void GiveProgressionItem(int itemId = -1) {
     switch(itemId) {
         case 1000: {
@@ -373,6 +384,9 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1030: {
             Genghis3Transport();
+        }
+        case 1031: {
+            Genghis4KipchakCamp();
         }
     }
 }
