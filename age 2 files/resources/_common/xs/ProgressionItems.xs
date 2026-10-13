@@ -253,6 +253,35 @@ bool HasAttila5Deathmatch() {
 }
 
 
+// Genghis 3
+bool genghis3Engineers = false;
+void Genghis3Engineers() {
+    genghis3Engineers = true;
+}
+
+bool HasGenghis3Engineers() {
+    return (genghis3Engineers);
+}
+
+bool genghis3Bombards = false;
+void Genghis3Bombards() {
+    genghis3Bombards = true;
+}
+
+bool HasGenghis3Bombards() {
+    return (genghis3Bombards);
+}
+
+bool genghis3Transport = false;
+void Genghis3Transport() {
+    genghis3Transport = true;
+}
+
+bool HasGenghis3Transport() {
+    return (genghis3Transport);
+}
+
+
 void GiveProgressionItem(int itemId = -1) {
     switch(itemId) {
         case 1000: {
@@ -335,6 +364,15 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1027: {
             Attila5Deathmatch();
+        }
+        case 1028: {
+            Genghis3Engineers();
+        }
+        case 1029: {
+            Genghis3Bombards();
+        }
+        case 1030: {
+            Genghis3Transport();
         }
     }
 }
