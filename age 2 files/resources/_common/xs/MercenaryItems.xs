@@ -152,6 +152,36 @@ bool HasGenghis1CyanForce() {
 }
 
 
+// Genghis 3
+bool genghis3Engineers = false;
+void Genghis3Engineers() {
+    genghis3Engineers = true;
+}
+
+bool HasGenghis3Engineers() {
+    return (genghis3Engineers);
+}
+
+bool genghis3Bombards = false;
+void Genghis3Bombards() {
+    genghis3Bombards = true;
+}
+
+bool HasGenghis3Bombards() {
+    return (genghis3Bombards);
+}
+
+// Genghis 5
+bool genghis5Hermits = false;
+void Genghis5Hermits() {
+    genghis5Hermits = true;
+}
+
+bool HasGenghis5Hermits() {
+    return (genghis5Hermits);
+}
+
+
 void GiveMercenary(int itemId = -1) {
     switch(itemId) {
         case 4000: {
@@ -201,6 +231,15 @@ void GiveMercenary(int itemId = -1) {
         }
         case 4015: {
             Genghis1CyanForce();
+        }
+        case 4016: {
+            Genghis3Engineers();
+        }
+        case 4017: {
+            Genghis3Bombards();
+        }
+        case 4018: {
+            Genghis5Hermits();
         }
     }
 }
