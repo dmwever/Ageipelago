@@ -182,6 +182,17 @@ bool HasGenghis5Hermits() {
 }
 
 
+// Genghis 6
+bool genghis6SubotaisArmy = false;
+void Genghis6SubotaisArmy() {
+    genghis6SubotaisArmy = true;
+}
+
+bool HasGenghis6SubotaisArmy() {
+    return (genghis6SubotaisArmy);
+}
+
+
 void GiveMercenary(int itemId = -1) {
     switch(itemId) {
         case 4000: {
@@ -240,6 +251,9 @@ void GiveMercenary(int itemId = -1) {
         }
         case 4018: {
             Genghis5Hermits();
+        }
+        case 4019: {
+            Genghis6SubotaisArmy();
         }
     }
 }
