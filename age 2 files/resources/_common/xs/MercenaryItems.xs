@@ -193,6 +193,17 @@ bool HasGenghis6SubotaisArmy() {
 }
 
 
+// The Kereyids ride with their two monks, so they are a muster like any other.
+bool genghis1BlueForce = false;
+void Genghis1BlueForce() {
+    genghis1BlueForce = true;
+}
+
+bool HasGenghis1BlueForce() {
+    return (genghis1BlueForce);
+}
+
+
 void GiveMercenary(int itemId = -1) {
     switch(itemId) {
         case 4000: {
@@ -254,6 +265,9 @@ void GiveMercenary(int itemId = -1) {
         }
         case 4019: {
             Genghis6SubotaisArmy();
+        }
+        case 4020: {
+            Genghis1BlueForce();
         }
     }
 }

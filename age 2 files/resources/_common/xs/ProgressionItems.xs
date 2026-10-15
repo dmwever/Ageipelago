@@ -216,16 +216,6 @@ bool HasJoan6Army() {
     return (joan6Army);
 }
 
-// Genghis 1
-bool genghis1BlueForce = false;
-void Genghis1BlueForce() {
-    genghis1BlueForce = true;
-}
-
-bool HasGenghis1BlueForce() {
-    return (genghis1BlueForce);
-}
-
 
 // Genghis 2
 bool genghis2TayichiudBase = false;
@@ -348,9 +338,6 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1023: {
             Joan6Army();
-        }
-        case 1025: {
-            Genghis1BlueForce();
         }
         case 1026: {
             Genghis2TayichiudBase();
