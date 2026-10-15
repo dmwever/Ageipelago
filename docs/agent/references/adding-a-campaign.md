@@ -40,7 +40,8 @@ trigger leaves the suite red with no intermediate green state.
 | `locations/Civilizations.py` | the campaign's civ, if not already present; `game_id` must match the `(Civ)` techs already in `Age2TechData` |
 | `locations/Locations.py` | at minimum one `VICTORY` location per chapter, id `scenario.id * 100` |
 
-`Age2ScenarioData` members carry `file_stem`, `xsdat_write_name`, `civ` and `vanilla_age`.
+`Age2ScenarioData` members carry `file_stem`, `xsdat_write_name`, `civ`, `vanilla_age`, `max_age`
+(the last age the scenario can reach) and `fixed_force` (fought with what it hands you).
 `vanilla_age` is read off the re-saved scenario's `StartingAge` (2/3/4/5 → Dark/Feudal/Castle/Imperial).
 
 A `VICTORY` location per chapter is not optional. `add_scenario_region` only creates the

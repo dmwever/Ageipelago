@@ -139,9 +139,16 @@ the `"Can Build"` exits at construction. Then `Rules.set_rules()` in fixed order
 `TechRules` skips the `set_rule` call when a tech's rule resolves to bare `True_`, which is equivalent
 to leaving it unset.
 
-`AgeRules.py` also defines `TwoBuildingsRequirement(NestedRule["Age2World"])`, with its own
-`Resolved._evaluate` and an `explain_json` override. It is the only hand-written `rule_builder`
-`NestedRule` in the codebase — copy it rather than inventing a second pattern.
+Hand-written `rule_builder` rules live in `logic/custom_logic/`. Copy one of these rather than
+inventing a new pattern:
+
+- `AgeUpRequirement` (`NestedRule`): two of an age's climb buildings, or the Castle that counts for
+  both. It also carries which buildings those are, so `/explain` can name them.
+- `ScenarioQuestion` and its subclasses (`ScenarioCanBuild`, `ScenarioCanResearch`,
+  `ScenarioCanTrain`, `ScenarioHasReached`, `ScenarioHasEasyResource`): one
+  question about one scenario, answered once per seed in `Logic.scenario_answers` and shared by
+  every rule that asks it. Each explains itself in one line instead of dumping its subtree.
+- `HasResourceAmount`, `SufficientRawResources`: pile and raw-resource sums.
 
 ### `logic/` versus `rules/`
 
@@ -159,7 +166,9 @@ def can_build_building(self, building: Age2BuildingData) -> Rule:
 
 Each scenario has a `*StartingState` dataclass subclass (`logic/attila/attila_1.py` …) declaring
 `is_unlocked`, `has_vils`, `has_base`, `age_playable`, `starts_with_building`, `has_water_access`,
-`fixed_force`, every field with its own `default_factory`. It is instantiated inside the matching
+every field with its own `default_factory`. A scenario's last age (`max_age`) and whether it is a
+fixed force (`fixed_force`) are not rules, so they sit on its `Age2ScenarioData` row, where the
+pools can read them before any logic exists. It is instantiated inside the matching
 `*Rules.__init__` and wrapped in a `ScenarioLogic`.
 
 **A new `ScenarioRules` subclass must set `self.scenario_logic` itself.** The base class only declares
@@ -169,6 +178,51 @@ at rule time.
 
 **A location with no explicit `set_rule` is deliberate**, not an omission: it means being in the
 scenario is the whole requirement, and the scenario's entrance rule already gates it.
+
+### Paying for things
+
+Every priced location (a tech, a unit, a building, an age) pays with **easy sources only**:
+`economy.can_pay(costs)` is `can_sustain` over the resources it costs - one
+`ScenarioHasEasyResource` per resource - and `True_` for a free one. Paying out of the starting
+pile used to put dozens of priced locations into logic at once, each a restart to do "in logic".
+A budget order replaced that for a while (sample, per-scenario order, running totals); it was
+removed in October 2026 after a paired 500-seed fuzz showed it admitted about one location per
+world and changed neither victory spheres nor fill.
+
+- **Structural versus paid.** Each kind has a structural rule that never pays
+  (`can_research_structurally`, `can_train_structurally`, `ages.can_reach_structurally`,
+  `units.can_field_structurally`, `has_building`) and a paid one built on it
+  (`techs.can_research`, `ages.can_reach`, `units.can_field`). Anything the easy sources read must
+  stay structural - `has_reached`, `ScenarioCan*` questions, `can_protect_boats` - or an easy
+  source would ask for itself.
+- **Ages.** `ages.can_pay_for(age)` is `can_pay(age.cost)` above the scenario's
+  `ages.start_age` (the Dark Age when every scenario starts there), `True_` at or below it or where
+  `age_playable` hands the age over, and `False_` for a fixed force. `ages.can_reach(age)` adds it
+  to the structural climb; the age location itself asks `can_research & can_pay` in `age_logic`.
+- **Armies.** `units.can_field(line, age)` pays for each tier's own age (`can_pay_for(unit.age)`),
+  so Monks fielded "at Imperial" pay for the Castle Age, not the Imperial. `can_field_role` and
+  `can_counter` use it; `can_protect_boats` uses `can_field_structurally`, because the fishing
+  tiers feed the easy sources.
+- **The base** is the one thing the starting items pay for: `has_base()` is `can_have_base` &
+  `Has(Starting Villager Food)` & (a Town Center standing | a starting base |
+  `Has(Starting Town Center Wood)` & `Has(Starting Town Center Stone)`). Never an easy source - the
+  easy sources ask for a base themselves.
+- **The pile still counts** where a source needs seeding: Fishing Ship wood, ally trade's seed
+  gold and wood, and LocalStart's base check read `resources.has_amount` (`HasResourceAmount` over
+  `contributors()`). Starting-resource items stay progression for that reason. Relics seed the
+  Monk's gold with `can_mine_some()`.
+- **Early items** that keep a seed from stalling: the House when economy buildings are shuffled,
+  and the Builder profession when professions are shuffled (without it nobody can build).
+
+### Roles and counters
+
+- `locations/connections/UnitRoles.py` (`ROLE_TO_LINES`): siege is never `military`, and the
+  one-shot rafts (`SUICIDE_RAFT_LINES`: Demolition and Incendiary) are never `navy`.
+- `locations/connections/UnitCounters.py` (`countered_by`): a ship never counters a land unit -
+  an import-time assert holds it. Land units on the shore may counter ships.
+- `locations/connections/TechCounters.py` (`counter_techs`): a counter that answers some targets
+  only once a tech is researched - Monks and Missionaries against siege need Redemption.
+  `can_counter` adds `techs.has_researched(tech)` for those pairs.
 
 ## Data tables
 
@@ -438,8 +492,9 @@ Nearly every file-write path is wrapped in `except Exception as ex: print(ex)`. 
   `tech_behavior` and `local_start` decide how a rule is written rather than what
   exists, and `test_pools.py` fails if a pool ever reads one. The pool takes the world, so it draws
   on the same seeded `random` and cannot drift from the multiworld.
-  - `TechPool` decides whether a tech is a location: techsanity on, some included civ can research
-    it, it matches the mode filter, uniques are shuffled if it is unique, and it is reachable given
+  - `TechPool` decides whether a tech is a location: techsanity on, some included scenario can
+    research it (its civ has it, the scenario's `excluded_techs` leaves it, the scenario reaches its
+    age, and it is not a fixed force), it matches the mode filter, uniques are shuffled if it is unique, and it is reachable given
     the earliest age. `host_building` places a shared tech under the first building that names it,
     and `shuffled` is the locations in that order.
   - `UnitPool` holds unit content — `line_locations`, the include predicates, the grants. It does

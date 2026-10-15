@@ -16,7 +16,7 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-10-11a**
+Skill revision: **2026-10-14a**
 
 A randomizer in two halves that ship separately and must stay in step.
 
@@ -141,7 +141,8 @@ Each of these touches both halves. Doing only one side is the usual failure.
 ### Adding a scenario
 
 1. `locations/Scenarios.py`: the id is derived as `campaign.value * 100 + chapter`, so both must stay
-   within 1-99. Set `file_stem`, `xsdat_write_name`, `civ` and `vanilla_age`.
+   within 1-99. Set `file_stem`, `xsdat_write_name`, `civ`, `vanilla_age`, `max_age` and
+   `fixed_force`.
 2. Add its locations to `locations/Locations.py`.
 3. Write a `*StartingState` in `logic/` and a `*Rules` in `rules/`.
 4. **Bind both** in `locations/connections/ScenarioDataLogic.py` and `ScenarioDataRules.py`. A missed
@@ -174,6 +175,34 @@ AGEIPELAGO_PATH=/path/to/Ageipelago python -m pytest worlds/age2de/test
 # XS lint, from the xs folder. Needs v0.2.30 or later for Update 185872.
 ./xs-check.exe -I . -- AP_Attila_1.xs
 ```
+
+### Fuzzing the apworld
+
+[Archipelago-fuzzer](https://github.com/Eijebong/Archipelago-fuzzer) generates random YAMLs and
+fills them, many at once. A copy of its `fuzz.py` lives in the Archipelago checkout at
+`worlds/age2de/fuzz/fuzz.py`, git-ignored next to the committed meta `age2de.yaml`; copy a new
+release over it to update. Run it from that folder:
+
+```
+PYTHONHASHSEED=0 PYTHONPATH=../../.. python fuzz.py -r 1000 -j 18 -g age2de -n 1-3 -m age2de.yaml -t 90
+```
+
+- `-g` takes the apworld **module** name (`age2de`), not the display name. `-t 90`, not the
+  default 15: the largest configurations take 20-50s to fill.
+- `-m` is a meta file. An option named there is fixed to that value. `fuzz_constraints` adjust
+  what was rolled: `if_selected` + `must_include` / `must_exclude`, `if_value` + `then` /
+  `then_include` / `then_exclude`, `if_any_selected` + `requires_any`, `mutually_exclusive`,
+  `ensure_any`, and the numeric caps (`max_count_of`, `max_remaining_from`, `sum_cap`). Put
+  throwaway metas in `_*.yaml`, which the folder's `.gitignore` covers.
+- `--hook module:Class` runs code around each generation (`setup_main`, `setup_worker`,
+  `before_generate(args)`, `after_generate(multiworld, output_dir)`, `finalize`). Keep throwaway
+  hooks in the ignored `bench/` folder. The vendored copy rejects a hook class that *does*
+  subclass `fuzz.BaseHook` (its check is inverted), so write a plain class with those methods.
+- `--skip-output` skips writing the multiworld, which is all a fill test needs.
+- Failures land in `fuzz_output/error/age2de/<n>/` with the YAMLs and a log carrying `Seed:`.
+- **Pairing runs**: two runs only roll the same YAMLs with `PYTHONHASHSEED=0` and a hook that seeds
+  `random` in `setup_main` and sets `args.seed` in `before_generate`. Otherwise fuzz rates vary by
+  several points between identical runs, so treat a difference under about 3 points as noise.
 
 There is no Python tooling left in this repo — no `Scripts/`, no `Data/`. The pavilion is created
 by `APavilion.xs` at run time, so nothing authors triggers any more and there is nothing to keep
