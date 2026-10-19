@@ -29,6 +29,7 @@ does `getattr(self.options, option_name)` with the internal name. All six curren
 | [shuffle-villager](shuffle-villager.md) | `shuffle_villager` | Choice | no | yes | `AP_US_VILLAGER` |
 | [include-unique-units](include-unique-units.md) | `include_unique_units` | Choice | none | yes | `AP_US_UNIQUES` |
 | [caveman](caveman.md) | `caveman` | Toggle | off | yes | `AP_US_CAVEMAN` |
+| [monks-can-counter](monks-can-counter.md) | `monks_can_counter` | Toggle | off | — | — |
 | [start-inventory-pool](start-inventory-pool.md) | `startInventoryPool` | core AP | — | — | — |
 
 Twelve options reach the game. The rest are generation-only: they shape the item pool, the location
@@ -54,6 +55,7 @@ Age Of Empires II: Definitive Edition:
   shuffle_villager: no
   include_unique_units: none
   caveman: false
+  monks_can_counter: false
 ```
 
 `startInventoryPool` is core Archipelago's and takes its usual form. Note `startInventoryPool` is the

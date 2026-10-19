@@ -7,7 +7,7 @@
 
 > Place the items needed for a playable opening in your own world.
 >     No: Place nothing locally.
->     Base: Place the items needed to build a town centre locally.
+>     Base: Place the items needed to build a town centre locally. Pairs with Shuffle Buildings' Base.
 >     Guarantee Win First Scenario: Place everything needed to beat one of your starting scenarios locally.
 >     Both: Place both sets locally.
 
