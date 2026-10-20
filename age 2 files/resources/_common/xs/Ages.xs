@@ -113,9 +113,11 @@ rule ShuffleAgesUpdate
             AP_Check_Location(age);
             if (age == FEUDAL_AGE && has_castle) {
                 UnlockAge(CASTLE_AGE);
+                has_castle = false;
             }
             if (age == CASTLE_AGE && has_imperial) {
                 UnlockAge(IMPERIAL_AGE);
+                has_imperial = false;
             }
             reached++;
         }
