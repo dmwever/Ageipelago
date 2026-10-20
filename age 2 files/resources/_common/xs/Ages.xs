@@ -2,6 +2,9 @@ extern int apVanillaAge = DARK_AGE;
 
 extern int apMaxAge = IMPERIAL_AGE;
 
+bool has_castle = false;
+bool has_imperial = false;
+
 int ageTechFor(int age = -1) {
     if (age == FEUDAL_AGE) {
         return (FEUDAL_AGE_TECH);
@@ -67,7 +70,17 @@ void UnlockAge(int itemId = -1) {
     if (xsGetTechState(id, 1) == cTechStateDone) {
         return;
     }
-    xsEffectAmount(cModifyTech, id, cAttrSetState, STATE_ENABLE, 1);
+    if (ageReached(itemId - 1)) {
+        xsEffectAmount(cModifyTech, id, cAttrSetState, STATE_ENABLE, 1);
+    }
+    else {
+        if (itemId = CASTLE_AGE) {
+            has_castle = true;
+        }
+        if (itemId = IMPERIAL_AGE) {
+            has_imperial = true;
+        }
+    }
 }
 
 void InitAges() {
@@ -98,10 +111,17 @@ rule ShuffleAgesUpdate
     for (age = FEUDAL_AGE; <= IMPERIAL_AGE) {
         if (xsGetTechState(ageTechFor(age), 1) == cTechStateDone) {
             AP_Check_Location(age);
+            if (age == FEUDAL_AGE && has_castle) {
+                UnlockAge(CASTLE_AGE);
+            }
+            if (age == CASTLE_AGE && has_imperial) {
+                UnlockAge(IMPERIAL_AGE);
+            }
             reached++;
         }
     }
-    if (reached == 3) {
+
+    if (reached == apMaxAge - DARK_AGE) {
         xsDisableSelf();
     }
 }
