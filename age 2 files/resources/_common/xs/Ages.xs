@@ -74,10 +74,10 @@ void UnlockAge(int itemId = -1) {
         xsEffectAmount(cModifyTech, id, cAttrSetState, STATE_ENABLE, 1);
     }
     else {
-        if (itemId = CASTLE_AGE) {
+        if (itemId == CASTLE_AGE) {
             has_castle = true;
         }
-        if (itemId = IMPERIAL_AGE) {
+        if (itemId == IMPERIAL_AGE) {
             has_imperial = true;
         }
     }
