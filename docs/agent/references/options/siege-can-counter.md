@@ -14,13 +14,14 @@ Whether the logic may expect anti-unit siege micro of P1.
 ## Generation effect
 
 The anti-unit siege is `ANTI_UNIT_SIEGE` in `locations/connections/UnitRoles.py`: the Mangonel,
-Bombard Cannon, Rocket Cart and Heavy Rocket Cart lines. Not the Scorpion, which is easy enough to
-count as an ordinary counter, and not the Organ Gun.
+Bombard Cannon and Rocket Cart lines; the Heavy Rocket Cart is the Rocket Cart line's upgrade, not a
+line of its own. Not the Scorpion, which is easy enough to count as an ordinary counter, and not the
+Organ Gun.
 
 The exception beside it, `SIEGE_TARGETS`, is the Battering Ram, Armored Elephant, Trebuchet,
-Traction Trebuchet, Mounted Trebuchet, Bombard Cannon, Mangonel, Scorpion, Rocket Cart and Heavy
-Rocket Cart lines. It is its own group, not `SIEGE` (the building breakers): the Fire Archer and
-Petard lines are left out and count as armies, and so does the Organ Gun.
+Traction Trebuchet, Mounted Trebuchet, Bombard Cannon, Mangonel, Scorpion and Rocket Cart lines. It
+is its own group, not `SIEGE` (the building breakers): the Fire Archer and Petard lines are left out
+and count as armies, and so does the Organ Gun.
 
 `ScenarioUnitLogic.can_counter` asks `_is_expected_counter(line, target)` of every entry in
 `target.countered_by`. With the option off, an anti-unit-siege line is dropped as a counter of any
@@ -28,7 +29,7 @@ target outside `SIEGE_TARGETS`; against a siege target it counts as before. With
 anti-unit-siege entry counts.
 
 The ram sponge obeys it too. A ram-counter target (the archer lines, Ballista Elephant, Skirmisher) is
-countered by a ram plus any military line, and the Mangonel and rocket cart lines are in the military
+countered by a ram plus any military line, and the Mangonel and Rocket Cart lines are in the military
 role. `can_sponge_for_military` asks `_is_expected_escort(line)` of each military line, so with the
 option off anti-unit siege is no escort, since doing the ram's killing is fighting an army.
 
@@ -36,8 +37,8 @@ The filtering happens where counters are resolved. The counter table in `UnitCou
 option markers. Its `# should be for harder difficulty` comments on Mangonel and Bombard Cannon
 entries are what this option now decides, except on siege-target rows, where the entries always
 count. Mangonels and rocket carts do not counter the Bombard Cannon; the table has no such entries
-and none were added. The rocket cart lines counter nothing in the table today, so for them the option
-decides only whether they escort rams.
+and none were added. The Rocket Cart line counters nothing in the table today, so for it the option
+decides only whether it escorts rams.
 
 ## Game effect
 
