@@ -17,7 +17,7 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-10-20a**
+Skill revision: **2026-10-21a**
 
 A randomizer in two halves that ship separately and must stay in step.
 
