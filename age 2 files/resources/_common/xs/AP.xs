@@ -21,6 +21,7 @@ int worldMinor = 3;
 int lastMessageId = -1;
 int scenarioItemsRead = 0;
 int reportedMissingItems = 0;
+int clientElsewhere = 0;
 
 bool AP_INITIALIZED = false;
 
@@ -88,14 +89,12 @@ void AP_Read()
         return;
     }
 
-    // Check Scenario
+    // The client writes one packet, for whichever scenario it is attached to. During a
+    // save/load switch that is not this one -- an expected state, not an install error -- so note
+    // it here and act on it below. The checks in between read fields the client fills from the
+    // install rather than from the scenario, so they are worth running either way.
     int receivedScenarioId = xsReadInt();
-    if (receivedScenarioId != scenarioId) {
-        xsChatData("<RED>Wrong Scenario ID from Client: " + receivedScenarioId);
-        xsChatData("<RED>Expected Scenario Id: " + scenarioId);
-        xsCloseFile();
-        return;
-    }
+    bool addressedHere = (receivedScenarioId == scenarioId);
 
     // Update Ping
     lastPing = clientPing;
@@ -137,6 +136,18 @@ void AP_Read()
         xsCloseFile();
         return;
     }
+
+    // The install checks out and the packet is simply addressed elsewhere. Say so once per
+    // absence, then wait: the client scans for the running scenario and will come back to this one.
+    if (addressedHere == false) {
+        if (clientElsewhere == 0) {
+            clientElsewhere = 1;
+            xsChatData("<YELLOW>The AP client is on another scenario. Waiting for it to switch here.");
+        }
+        xsCloseFile();
+        return;
+    }
+    clientElsewhere = 0;
 
     int items = xsReadInt();
     if (items == 1) {
@@ -217,14 +228,16 @@ rule ReadAP
     maxInterval 4
 {
     AP_Read();
-    if (clientPing > lastPing) {
+    if (clientPing != lastPing) {
         pingRepeatCount = 0;
     }
     else {
         pingRepeatCount++;
     }
 
-    if (pingRepeatCount >= 5) {
+    // A client sitting on another scenario is not disconnected, and it has already said so in
+    // yellow. Only warn when the silence is unexplained.
+    if (pingRepeatCount >= 5 && clientElsewhere == 0) {
         xsChatData("<RED>AP Client disconnected. Cannot send locations or receive items until connection is reestablised.");
     }
 }
