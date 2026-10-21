@@ -18,20 +18,21 @@ Bombard Cannon and Rocket Cart lines; the Heavy Rocket Cart is the Rocket Cart l
 line of its own. Not the Scorpion, which is easy enough to count as an ordinary counter, and not the
 Organ Gun.
 
-The exception beside it, `SIEGE_TARGETS`, is the Battering Ram, Armored Elephant, Trebuchet,
+The exception beside it, `SIEGE_ALWAYS_COUNTERS`, is the Battering Ram, Armored Elephant, Trebuchet,
 Traction Trebuchet, Mounted Trebuchet, Bombard Cannon, Mangonel, Scorpion and Rocket Cart lines. It
 is its own group, not `SIEGE` (the building breakers): the Fire Archer and Petard lines are left out
 and count as armies, and so does the Organ Gun.
 
-`ScenarioUnitLogic.can_counter` asks `_is_expected_counter(line, target)` of every entry in
-`target.countered_by`. With the option off, an anti-unit-siege line is dropped as a counter of any
-target outside `SIEGE_TARGETS`; against a siege target it counts as before. With it on, every
+`ScenarioUnitLogic.can_counter` passes every entry in `target.countered_by` through
+`_with_counter_options(way, line, target)`, which ANDs `SIEGE_CAN_COUNTER` (an `OptionFilter`) onto an
+anti-unit-siege line's rule against any target outside `SIEGE_ALWAYS_COUNTERS`. With the option off,
+that way resolves to `False`; against a siege target it counts as before. With it on, every
 anti-unit-siege entry counts.
 
 The ram sponge obeys it too. A ram-counter target (the archer lines, Ballista Elephant, Skirmisher) is
 countered by a ram plus any military line, and the Mangonel and Rocket Cart lines are in the military
-role. `can_sponge_for_military` asks `_is_expected_escort(line)` of each military line, so with the
-option off anti-unit siege is no escort, since doing the ram's killing is fighting an army.
+role. `can_sponge_for_military` passes each military line through `_with_escort_options(escort, line)`,
+which ANDs `SIEGE_CAN_COUNTER` onto anti-unit siege, so with the option off it is no escort, since doing the ram's killing is fighting an army.
 
 The filtering happens where counters are resolved. The counter table in `UnitCounters.py` carries no
 option markers. Its `# should be for harder difficulty` comments on Mangonel and Bombard Cannon
@@ -57,7 +58,7 @@ counter the Archer line nor the Bombard Cannon line the Cannon Galleon line, but
 siege targets; on, all count. The Scorpion counters the Archer line either way, and off the Mangonel
 does not counter the Organ Gun. Off, a Battering Ram with a Mangonel or a Rocket Cart does not
 counter the Archer line; on, a ram with a Rocket Cart does. The Fire Archer, Petard and Organ Gun
-lines are checked to be outside `SIEGE_TARGETS`. It mocks `can_field` so the lines each test names
+lines are checked to be outside `SIEGE_ALWAYS_COUNTERS`. It mocks `can_field` so the lines each test names
 are all P1 fields.
 
 `test_slot_data_wire.py::TestLogicOnlyOptionsStayOutOfTheGame` keeps it out of `SlotData.OPTIONS` and

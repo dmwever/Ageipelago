@@ -247,11 +247,10 @@ P1 defeat this player" is asked of the record, never of a local `can_beat_*` var
   ally's, or an undefended enemy's such as Joan 3's English dock) or `ONCE_DEFEATED`. A **main
   opponent**'s buildings stay `CLOSED` unless undefended - by the time it falls the scenario is
   won. Never correct an access value from a scenario scan.
-- **Gates.** `ScenarioPlayerLogic` (`logic/scenarios/`, reached as `scenario_logic.players`) turns
+- **Gates.** `ScenarioPlayerLogic` (`logic/scenarios/`, reached as `scenario_logic.player_logic`) turns
   each record into a gate on its market or dock: `OPEN` is `True_()`, `ONCE_DEFEATED` is
   `has_defeated(player)`, `CLOSED` drops out. `can_reach_partner(building)` ORs the gates of the
-  partners `partner_trade` admits; `has_trading_ally()` reads open ally buildings straight off the
-  records.
+  partners `partner_trade` admits.
 - **Defeat rules.** A `*StartingState` overrides `defeat_rules(scenario_logic)` and returns
   `{Age2PlayerData: Rule}`. The base returns `{}`. Only players victory or trade asks about need an
   entry, but every player with a `ONCE_DEFEATED` building must have one
@@ -259,7 +258,7 @@ P1 defeat this player" is asked of the record, never of a local `can_beat_*` var
   no resistance; two interchangeable players may share one rule object.
 - **`defeats(player)`** is the one reader. It builds the dict once per scenario and wraps each rule
   under the label `"<scenario> can defeat <player_name>"`, so `/explain` shows it as one line. Victory and objective rules in `rules/` call it
-  (`defeats = self.scenario_logic.players.defeats`). A player with no entry is a `KeyError`.
+  (`defeats = self.scenario_logic.player_logic.defeats`). A player with no entry is a `KeyError`.
 - **Trade never reads `defeats` inline.** A defeat asks for an army, the army asks `can_pay`,
   `can_pay` asks the easy sources, and easy gold and wood ask trade: inline, that is a
   `RecursionError` at `set_rules`. Instead `has_defeated(player)` is
@@ -680,7 +679,7 @@ Other tests worth knowing: `test_item_delivery.py` drives a `FakeGame` through t
   `Age2PlayerData` for each ally and enemy (slot, side, main opponent, market and dock access), an
   entry in `ScenarioPlayers.py` (empty for a fixed force), and a `defeat_rules` override covering
   every opponent the victory rules name and every `ONCE_DEFEATED` building's owner. Victory rules
-  then read `scenario_logic.players.defeats(player)`. See *Players and defeats*.
+  then read `scenario_logic.player_logic.defeats(player)`. See *Players and defeats*.
 - **Version discipline**: `archipelago.json`'s `world_version` is the single source of truth. Any
   slot_data shape change needs a minor bump, and `AP.xs` must declare the same major and minor.
 - **File naming is load-bearing.** Everything in `client/` depends on `Identity`'s exact output shape;

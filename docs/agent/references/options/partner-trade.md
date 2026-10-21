@@ -24,7 +24,7 @@ One option covers carts and cogs together.
 
 ## Generation effect
 
-`ScenarioPlayerLogic.can_reach_partner(building)` (`scenario_logic.players`) is the gate, for `MARKET` (carts) or `DOCK`
+`ScenarioPlayerLogic.can_reach_partner(building)` (`scenario_logic.player_logic`) is the gate, for `MARKET` (carts) or `DOCK`
 (cogs): an OR of one gate per partner. At `none` it is `False_()`. At `allies` the partners are the
 allies; at `allies_and_enemies` the enemies too. Each player's gate comes from its access to that
 building: `OPEN` is `True_()` (an ally's, or Joan 3's undefended English dock), `ONCE_DEFEATED` is
@@ -38,20 +38,22 @@ easy gold and wood ask trade. Reading `defeats(player)` inline made `ScenarioHas
 itself (`RecursionError` at `set_rules`) for any defeat that costs resources. The sweep settles the
 cycle instead.
 
-Only at `allies_and_enemies`, `add_scenario_region` adds one event per player with
-`trades_once_defeated` (hidden from the spoiler, like "Complete <scenario>"), and
-`ScenarioRules.set_defeat_event_rules` gives it `defeats(player)` as its rule. At the other values
+`PartnerTrade.needs_defeat_event(player)` decides which players get one: only at
+`allies_and_enemies`, and only a player with `can_trade_once_defeated`. `add_scenario_region` adds
+the event (hidden from the spoiler, like "Complete <scenario>") and
+`ScenarioRules.set_defeat_event_rules` gives it `defeats(player)` as its rule; both ask the same
+method, so a missing event is a `KeyError`, not a silent skip. At the other values
 the region graph is unchanged. The name is `Age2PlayerData.defeat_event(scenario_name)`; "Can Defeat",
 not "Defeat", because "Defeat Metz" and the like are real objective locations.
 
-Two rules read the gate:
+Two routes read the gate: `can_run_trade_carts` (a partner market, Feudal Age, P1's own Market, the
+Trade Cart, wood) and `can_run_trade_cogs` (a partner dock, Feudal Age, P1's own Dock, the Trade Cog,
+wood or a little seed wood). Each returns `False_()` outright when no partner building is open, so a
+scenario without one never builds the rest of the rule. Two rules use the routes, both behind
+`_can_seed_trade_gold` (gather gold, or hold a little):
 
-- `can_earn_gold_by_partner_trade` - carts to a partner market, or cogs to a partner dock; Feudal Age,
-  some gold to seed it, and P1's own Market or Dock and the trader's unit items.
-- `can_earn_wood_by_partner_trade` - cogs only: a sea route brings wood home, a cart does not.
-
-Each returns `False_()` outright when no partner building is open, so a scenario without one never
-builds the rest of the rule. `ScenarioHasEasyResource` ORs the gold rule into easy gold, and
+- `can_earn_gold_by_partner_trade` - carts or cogs.
+- `can_earn_wood_by_partner_trade` - cogs only: a sea route brings wood home, a cart does not. `ScenarioHasEasyResource` ORs the gold rule into easy gold, and
 `_can_get_wood_easily` ORs the wood rule into easy wood.
 
 ### Player records
@@ -63,8 +65,7 @@ undefended enemy's, like Joan 3's English dock) or `ONCE_DEFEATED`. `connections
 routes them to scenarios (`SCENARIO_TO_PLAYERS`, copied onto `Age2ScenarioData.players`). Fixed-force
 scenarios (Joan 1, Joan 5) have none. Defeat rules are keyed by these members.
 
-`ScenarioPlayerLogic.has_trading_ally()` is true when any ally keeps a market or dock `OPEN`, read straight
-off the players. No starting state overrides it.
+An ally's access is the whole answer: no starting state overrides it.
 
 The access values come from PR 19's judged flags and the design rulings. The flags mean usability,
 not existence: never correct one from a scenario scan.
@@ -99,7 +100,7 @@ Polish and the Germans; Joan 3's English dock needs no defeat, and stays closed 
 
 `test_player_records.py` - every scenario is routed and every player belongs to one; ids, slots,
 sides, absent neutral slots, main opponents and access follow the rulings and agree with the judged
-flags; the Kipchaks are never a trade partner; `has_trading_ally` follows the players.
+flags; the Kipchaks are never a trade partner.
 
 `test_slot_data_wire.py::TestLogicOnlyOptionsStayOutOfTheGame` keeps it out of `SlotData.OPTIONS` and
 slot data.

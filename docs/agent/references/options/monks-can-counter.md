@@ -15,12 +15,13 @@ Whether the logic may expect conversion micro of P1.
 ## Generation effect
 
 The faith lines are `FAITH_LINES` in `locations/connections/UnitRoles.py`: the Monk and Missionary
-lines. The elephant exception beside it, `FAITH_EXCEPTION_TARGETS`, is the Battle Elephant, War
+lines. The elephant exception beside it, `MONKS_ALWAYS_COUNTER`, is the Battle Elephant, War
 Elephant and Elephant Archer lines.
 
-`ScenarioUnitLogic.can_counter` asks `_is_expected_counter(line, target)` of every entry in
-`target.countered_by`. With the option off, a faith line is dropped as a counter of any target
-outside the elephant exception; against an elephant line it counts as before. With it on, every
+`ScenarioUnitLogic.can_counter` passes every entry in `target.countered_by` through
+`_with_counter_options(way, line, target)`, which ANDs `MONKS_CAN_COUNTER` (an `OptionFilter`) onto a
+faith line's rule against any target outside `MONKS_ALWAYS_COUNTER`. With the option off, that way
+resolves to `False`; against an elephant line it counts as before. With it on, every
 faith-line entry counts.
 
 The filtering happens where counters are resolved. The counter table in `UnitCounters.py` carries no

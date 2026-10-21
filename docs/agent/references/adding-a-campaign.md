@@ -134,7 +134,7 @@ for the model; ADR 0001 for why.
    every owner of a `ONCE_DEFEATED` market or dock — partner trade waits on that defeat. What each
    defeat takes (age, base, siege, which lines to counter) is **[ask]**; `True_()` is fine for a
    player that offers no resistance.
-4. **Victory rules** read `defeats = self.scenario_logic.players.defeats` and combine
+4. **Victory rules** read `defeats = self.scenario_logic.player_logic.defeats` and combine
    `defeats(Age2PlayerData.<MEMBER>)`. Never a local `can_beat_*` rule; never `defeats` from inside
    logic that trade or the economy reads (see the recursion note in `apworld.md`).
 

@@ -151,7 +151,7 @@ Each of these touches both halves. Doing only one side is the usual failure.
    `locations/connections/ScenarioPlayers.py` (`[]` for a fixed force).
 4. Write a `*StartingState` in `logic/`, overriding `defeat_rules` for every player the victory
    rules name and every owner of a market or dock that opens once defeated, and a `*Rules` in
-   `rules/` whose victory rules read `scenario_logic.players.defeats(player)`. See *Players and
+   `rules/` whose victory rules read `scenario_logic.player_logic.defeats(player)`. See *Players and
    defeats* in `references/apworld.md`.
 5. **Bind both** in `locations/connections/ScenarioDataLogic.py` and `ScenarioDataRules.py`. A missed
    binding leaves `scenario.rules` as `None`, and `Rules.set_rules()` then calls `None(self)` —
