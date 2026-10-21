@@ -138,13 +138,14 @@ Game -> Client. Written by `AP_Write`, read by `Age2Packet`.
 |3|WorldMajor|int|Major `world_version` of the installed Age2 files|
 |4|SlotId|int|The AP slot this install was set up for, from `SlotData.xs`|
 |5|LatestMessageId|int|The ID of the latest played message, assumes all previously sent messages have been played in order|
-|6-17|ItemId1-ItemId12|int*12|The most recent item packet Ids received by the game|
+|6-17|Unused|int*12|Was the echo ring, retired once the window gained a base. Written as `-1`, and kept only so ScenarioId stays at byte offset 72|
 |18|ScenarioCompleted|bool|Scenario global `completed`, 1 if the scenario has been completed|
 |19|ScenarioId|int|The id of the scenario, used when the player is playing a campaign. **Byte offset 72** — `find_active_campaign` depends on this|
 |20|WorldMinor|int|Minor `world_version`. First of the reserved block; see *Versioning*|
 |21|CompletedMercenaryId|int|A mercenary the game has finished spawning, `-1` when idle. Second of the reserved block. The game holds any others until this one is acknowledged; see *Mercenaries*|
 |22|ConsumedQueueSerial|int|The serial of the `mercenary_queue.xsdat` this game has read, `-1` before it has read one. Third of the reserved block|
-|23-49|Reserved|int*27|Reserved for future use, currently written as `0..26`|
+|23|AppliedItemCount|int|How many entries of the client's item stream this scenario's state has consumed. A plain `int`, so the save carries it: a loaded save reports where that save had got to, and the client replays the gap into it. Fourth of the reserved block|
+|24-49|Reserved|int*26|Reserved for future use, currently written as `0..25`|
 |50+|Locations (L)|int*L|All locations checked that have not been confirmed by AP client|
 
 `AP_Write` returns without creating the file at all while `AP_SLOT_ID` is `-1`, so the client never
