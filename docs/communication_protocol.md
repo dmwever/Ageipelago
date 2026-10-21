@@ -90,8 +90,9 @@ with a hardcoded `skip_int(fp, 18)`.
 A scenario can read an arbitrary number of `.xsdat` files from the `$USER\Games\Age of Empires 2 DE\$STEAM_PROFILE\profile` folder using `xsScript`. This allows different files to be used for different purposes on the client side, with each scenario sharing methods for common access.
 
 For example, the client loads into `AP.xsdat` a current ping value and a set of flags telling the
-game which other files to read. In `items.xsdat` the client writes a list of item ids; the game reads
-each one and processes it.
+game which other files to read. In `items.xsdat` the client writes a window of item ids addressed to
+the game's own delivery cursor; the game applies it only if the address matches, then advances the
+cursor.
 
 These filenames are hardcoded on both sides and are **not** seed-tagged.
 
@@ -165,12 +166,11 @@ Confirms that the client is still connected, and tells the game which other file
 |6|SeedHigh|int|High 16 bits of the client's seed tag, or `-1` before it has one|
 |7|SeedLow|int|Low 16 bits of the same|
 |8|SendItems|bool|If 1, the game reads `items.xsdat`|
-|9|FreeItems|bool|If 1, the game reads `free_items.xsdat`|
-|10|FreeLocations|bool|If 1, the game reads `locations.xsdat`|
-|11|SendMercenaries|bool|If 1, the game reads `mercenary_queue.xsdat`. Set while the client's queue serial differs from `ConsumedQueueSerial`, so it clears on acknowledgement rather than on client state. Was `SendUnits`, which was never implemented and hardcoded to 0|
-|12|SendMessages|bool|If 1, the game reads `messages.xsdat`|
-|13|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
-|14|AckMercenaryId|int|Echoes `CompletedMercenaryId` back. The game drops that mercenary from its pending list and may then name the next one|
+|9|FreeLocations|bool|If 1, the game reads `locations.xsdat`|
+|10|SendMercenaries|bool|If 1, the game reads `mercenary_queue.xsdat`. Set while the client's queue serial differs from `ConsumedQueueSerial`, so it clears on acknowledgement rather than on client state. Was `SendUnits`, which was never implemented and hardcoded to 0|
+|11|SendMessages|bool|If 1, the game reads `messages.xsdat`|
+|12|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
+|13|AckMercenaryId|int|Echoes `CompletedMercenaryId` back. The game drops that mercenary from its pending list and may then name the next one|
 
 `AP_Read` validates in order — scenario, ping, version, slot, seed — and returns early on the
 first failure, so no dispatch flag is acted on until the identity checks have passed.
@@ -202,28 +202,24 @@ Client -> Game
 
 The game reads these items one at a time. Each item here will have a corresponding xsScript waiting for the itemId based on the type of item. If itemId1 is a tech, it will unlock that respective tech for the player that corresponds to that itemId.
 
-Variable length, **at most 12** — the client sends the window of items AP has granted that the game
-has not yet acked, not a fixed twelve.
+A leading `WindowBase` names the cursor the window was written for, followed by the entries
+themselves. The game applies the window only when `WindowBase` equals its own `AppliedItemCount`,
+all of it or none, and then advances that count by what it read. A window addressed to any other
+cursor is a leftover and is ignored, which is what makes re-reading the file harmless.
+
+Entries the client has already paid out — a trap or a filler resource it has a record of
+delivering, or a mercenary the pavilion has spawned — are replaced in place by `AP_ITEM_SKIP`
+(`-2`). The window is positional, so they cannot simply be dropped: every later entry would shift
+and the cursor would stop meaning what both sides think it means. `GiveItem` returns early on the
+sentinel.
+
+Variable length, at most `AP_ITEM_WINDOW` (64) entries.
 
 |Name|Type|Purpose|
 |---|---|---|
-|ItemIds (I)|int*I|Ids of up to 12 unacked items|
+|WindowBase|int|The `AppliedItemCount` this window starts at|
+|ItemIds (I)|int*I|Item ids, or `AP_ITEM_SKIP` for an entry already paid out|
 
-### `free_items.xsdat`
-
-Client -> Game
-
-The client lists every item id the game echoed back that the client no longer holds in flight. The
-game frees those slots in its local cache, so a new window can be loaded.
-
-Freeing lags the acknowledgement by one pass: an id leaves the in-flight list when `ack_items`
-confirms it, and is therefore listed here on the *next* pass. Ids from a previous session that the
-client never sent are freed the same way. In the steady state, with a window still in flight and
-nothing acked since the last pass, this file is written empty.
-
-|Name|Type|Purpose|
-|---|---|---|
-|ItemIds (I)|int*I|Echoed ids the client no longer has in flight: those acked on the previous pass, plus orphans from an earlier session|
 
 ### `locations.xsdat`
 
