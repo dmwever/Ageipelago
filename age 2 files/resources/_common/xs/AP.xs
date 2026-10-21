@@ -7,7 +7,7 @@ include "./MercenarySeats.xs";
 include "./MercenarySpawn.xs";
 include "./APavilion.xs";
 
-int itemArray = -1;
+int apArrayProbe = -1;
 
 int clientPing = -1;
 int lastPing = -1;
@@ -61,8 +61,9 @@ void AP_Write()
     xsWriteInt(worldMajor);
     xsWriteInt(AP_SLOT_ID);
     xsWriteInt(lastMessageId);
+    // Dead weight, kept so ScenarioId stays at byte offset 72 for find_active_campaign.
     for (i = 0; < 12) {
-        xsWriteInt(xsArrayGetInt(itemArray, i));
+        xsWriteInt(-1);
     }
     xsWriteInt(completed);
     xsWriteInt(scenarioId);
@@ -155,10 +156,6 @@ void AP_Read()
     if (items == 1) {
         xsEnableRule("ReadItems");
     }
-    int free_items = xsReadInt();
-    if (free_items == 1) {
-        xsEnableRule("FreeItems");
-    }
     int free_locations = xsReadInt();
     if (free_locations == 1) {
         xsEnableRule("MarkServerLocations");
@@ -246,13 +243,13 @@ rule ReadAP
 
 void InitAP() {
     if (AP_INITIALIZED == true) {
-        if (xsArrayGetSize(itemArray) == 12) {
+        if (xsArrayGetSize(apArrayProbe) == 1) {
             return;
         }
         xsChatData("<RED>AP session state was lost. Reinitializing.");
     }
 
-    itemArray = xsArrayCreateInt(12, -1, "Item Array");
+    apArrayProbe = xsArrayCreateInt(1, 0, "ap-array-probe");
 
     initializeStructsScript();
     InitLocations();
@@ -354,36 +351,6 @@ rule ReadItems
     xsDisableSelf();
 }
 
-rule FreeItems
-    inactive
-    minInterval 1
-    maxInterval 1
-{
-    bool opened = xsOpenFile("free_items");
-    if (opened == false) {
-        xsDisableSelf();
-        return;
-    }
-    int freeCount = xsGetFileSize() / 4; // byte to int
-    if (freeCount > 12) {
-        freeCount = 12;
-    }
-    int freed = 0;
-    for (i = 0; < freeCount) {
-        int itemId = xsReadInt();
-        if (itemId != -1) {
-            freed = 0;
-            for (j = 0; < 12) {
-                if (freed == 0 && xsArrayGetInt(itemArray, j) == itemId) {
-                    xsArraySetInt(itemArray, j, -1);
-                    freed = 1;
-                }
-            }
-        }
-    }
-    xsCloseFile();
-    xsDisableSelf();
-}
 
 rule MarkServerLocations
     inactive
