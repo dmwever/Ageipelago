@@ -14,7 +14,7 @@ Whether the logic may expect P1 to buy and sell at its own market.
 
 `ScenarioResourceLogic.can_trade_at_market` is the rule. With the option off it is `False_()`.
 With it on it is the scenario's Market and either easy wood (`_can_get_wood_easily`: gathering it,
-or ally trade for it) or `endless_food`. The rule is written against the leaf gatherers, not the
+or partner trade for it) or `endless_food`. The rule is written against the leaf gatherers, not the
 `ScenarioHasEasyResource` aggregate, so asking for wood never asks the market which asks for wood.
 
 `endless_food` itself needs easy wood, since farms and fish traps are rebuilt in wood, so in practice
@@ -33,14 +33,14 @@ needed no world version bump. The market buys and sells in game whatever it says
 ## Interactions
 
 `shuffle_buildings`: with Economy shuffled the Market is an item, and the rule waits on it unless
-the scenario starts with one. Building one also needs the Mill. Ally trade for wood (`ALLY_TRADE`,
-still a module constant switched off) is one way the rule finds wood to sell.
+the scenario starts with one. Building one also needs the Mill. Partner trade for wood (see
+[partner-trade](partner-trade.md)) is one way the rule finds wood to sell.
 
 ## Tests
 
 `test_economy_rules.py::TestMarketTrade` - off by default; off, `can_trade_at_market` resolves false
 in every scenario; on, it depends on the Market item, fails with neither wood nor endless food, and
-holds with wood. `TestStubs::test_the_market_rule_terminates_when_switched_on` resolves every easy
+holds with wood. `TestMarketTrade::test_the_market_rule_terminates_when_switched_on` resolves every easy
 source with the option on and checks no shared question is left open.
 
 `test_slot_data_wire.py::TestLogicOnlyOptionsStayOutOfTheGame` keeps it out of `SlotData.OPTIONS` and

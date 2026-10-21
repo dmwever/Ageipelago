@@ -4,11 +4,11 @@ What a new vanilla campaign needs on both sides, in the order the dependencies a
 and Joan of Arc are complete and are the worked examples; Genghis Khan is partial and is not a
 reference for anything not listed as done.
 
-A campaign is finished when every chapter has: enums, resource counts, locations, items, an XS entry
-point, triggers in the scenario binary calling those locations, logic, rules, and the bindings for
-both. Missing any one of them fails somewhere that is not a compile error.
+A campaign is finished when every chapter has: enums, resource counts, locations, items, player
+records and defeat rules, an XS entry point, triggers in the scenario binary calling those
+locations, logic, rules, and the bindings for both. Missing any one of them fails somewhere that is not a compile error.
 
-**Three things are the user's to decide, not the agent's.** They are marked
+**Some things are the user's to decide, not the agent's.** They are marked
 **[ask]** throughout and collected under *What needs user guidance*.
 
 ---
@@ -20,8 +20,9 @@ both. Missing any one of them fails somewhere that is not a compile error.
 3. Locations and items — ids are a permanent contract with the XS and the client.
 4. XS entry point and the item/mercenary dispatch.
 5. Triggers in the scenario binaries.
-6. Logic, rules, and their bindings.
-7. Test edits.
+6. Players and their defeat rules — the victory rules read the defeats.
+7. Logic, rules, and their bindings.
+8. Test edits.
 
 Steps 3 and 5 land together for branching locations: `test_branching_install.py` asserts every
 branching location has exactly one trigger in the scenario, so declaring one without authoring its
@@ -110,6 +111,33 @@ table, counting conventions, terrain reading and the tiering method. Tier assign
 
 Fixed-force scenarios declare all zeroes and join `FIXED_FORCE` in `test_scenario_resources.py`.
 
+### Players and defeat rules
+
+Connecting a scenario covers trade as well as victory. See *Players and defeats* in `apworld.md`
+for the model; ADR 0001 for why.
+
+1. **Records.** One `Age2PlayerData` member in `locations/Players.py` per ally and enemy, under a
+   comment naming the scenario and any neutral or ignored slot left out:
+
+   ```python
+   # Attila 1. Bleda (P2) is ignored. Ruled: the Scythians are an ally.
+   ATT1_SCYTHIANS =            1013, "the Scythians",              3, Side.ALLY,  False, TradeAccess.OPEN,          TradeAccess.CLOSED
+   ```
+
+   Id `scenario.id * 10 + slot`; then readable name, slot (2-8), side, main opponent, market access,
+   dock access. Side, main opponent and access are **[ask]**.
+2. **Routing.** An entry in `SCENARIO_TO_PLAYERS` in `locations/connections/ScenarioPlayers.py`,
+   `[]` for a fixed force. A missing entry is not an import error; `test_player_records.py` catches
+   it.
+3. **Defeat rules.** Override `defeat_rules(self, scenario_logic)` on the `*StartingState` and
+   return `{Age2PlayerData: Rule}`. Cover every player the victory and objective rules name, and
+   every owner of a `ONCE_DEFEATED` market or dock — partner trade waits on that defeat. What each
+   defeat takes (age, base, siege, which lines to counter) is **[ask]**; `True_()` is fine for a
+   player that offers no resistance.
+4. **Victory rules** read `defeats = self.scenario_logic.players.defeats` and combine
+   `defeats(Age2PlayerData.<MEMBER>)`. Never a local `can_beat_*` rule; never `defeats` from inside
+   logic that trade or the economy reads (see the recursion note in `apworld.md`).
+
 ### Import-time asserts
 
 Each fails collection rather than one test:
@@ -125,7 +153,7 @@ Each fails collection rather than one test:
 `logic/` and *attached* in `rules/`; nothing in `logic/` calls `set_rule`.
 
 Every `ScenarioStartingState` field has a default. The minimum sets `self.logic` and
-`self.is_unlocked`. Chapter 1 gates on the campaign-unlock item; chapters 2+ gate on the previous
+`self.is_unlocked`; any scenario with opponents also overrides `defeat_rules` (above). Chapter 1 gates on the campaign-unlock item; chapters 2+ gate on the previous
 chapter's `"<scenario>: Unlock Next Scenario"` plus `Has("Progressive <Campaign> Scenario", n)`.
 
 Rules subclasses call `super().set_rules()` **and** set a rule on the `VICTORY` location and on
@@ -144,6 +172,11 @@ An unbound scenario leaves `.rules` as `None` and generation dies with
   `needs_mercenary` ignores whether the mercenary's scenario is in the seed, so a mercenary belonging
   to a campaign outside the seed is claimed as needed and can never be referenced.
 - `test_scenario_resources.py` — `FIXED_FORCE`, and the hardcoded relic map.
+- `test_player_records.py` — `JUDGED_FLAGS` (one row per scenario: ally market, enemy market, ally
+  dock, enemy dock), `MAIN_OPPONENTS`, and the neutral and ignored slots in
+  `test_neutral_and_ignored_slots_have_no_player`. The records are written by hand from these.
+- `test_defeat_rules.py`, `test_economy_rules.py` — `campaigns` on the classes that sweep every
+  scenario's players.
 - `test_tech_data.py` — `test_units_and_find_items_matches_the_measured_shape` hardcodes two counts
   derived from `SEED_CIVS`; a new civ shifts both.
 - `Options.py` — the `EnabledCampaigns` and `StartingCampaigns` docstrings list campaign names by
@@ -427,6 +460,10 @@ counts as deep, a salmon against a beach counts as shore. **It is not mechanical
 Measured against the scenarios whose fish totals are sound, a pure species rule reproduces 3 of 11, a
 distance-to-land threshold peaks at 5, and species-with-adjacency-promotion peaks at 5; the
 deviations run in both directions. Treat the totals as authoritative and confirm the split.
+
+**Players.** Each other player's side (ally, enemy, or left out as neutral), whether it is the main
+opponent, and whether its market and dock are usable — closed, open, or open once defeated. These
+record judged usability, not what the scan shows exists. And what defeating each one takes.
 
 **Chapter display names.** Scenarios carry only string-id references; the bundle carries filenames,
 and `key-value-strings-utf8.txt` holds no mission titles. They cannot be read from the files.

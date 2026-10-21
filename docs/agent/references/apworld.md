@@ -16,8 +16,8 @@ over `.xsdat` files. The game-side mod is a separate repo — see `xs-mod.md` an
 | `archipelago.json` | manifest: game name, `minimum_ap_version`, `world_version`, authors |
 | `items/Items.py` | the payload dataclasses **and** the `Age2ItemData` table |
 | `items/Events.py` | 10-line stub, imported by nothing. Reserved for scenario-completion and victory events |
-| `locations/` | `Locations.py` (scenario objectives), `Ages.py`, `Buildings.py`, `Techs.py`, `Campaigns.py`, `Scenarios.py`, `Civilizations.py`, `Units.py`, `UnitLines.py`, `UnitLocations.py` |
-| `locations/connections/` | `LocationMapping.py`, the civ matrices, the two late-binding modules, and the four unit binders (`UnitLineUnits`, `UnitBuildings`, `UnitTechs`, `UnitVariants`) |
+| `locations/` | `Locations.py` (scenario objectives), `Ages.py`, `Buildings.py`, `Techs.py`, `Campaigns.py`, `Scenarios.py`, `Players.py`, `Civilizations.py`, `Units.py`, `UnitLines.py`, `UnitLocations.py` |
+| `locations/connections/` | `LocationMapping.py`, the civ matrices, the two late-binding modules, `ScenarioPlayers.py`, and the four unit binders (`UnitLineUnits`, `UnitBuildings`, `UnitTechs`, `UnitVariants`) |
 | `logic/` | classes that *produce* rules. Per-scenario starting states in `attila/`, `joan/` |
 | `rules/` | classes that *attach* rules to locations and entrances |
 | `regions/` | `UnitRegions.py`. The rest of region building is still inline in `create_regions` |
@@ -71,7 +71,9 @@ places locations for what the pool says exists.
 2. One region per scenario, chained: Menu → scenario 1 → scenario 2 … per campaign, over
    `pool.scenarios.of(campaign)`. Locations come from `REGION_TO_LOCATIONS`, filtered by
    `pool.scenarios.includes_location`. Each scenario with a victory location also gets a hidden
-   event location granting `"<scenario>: Unlock Next Scenario"`.
+   event location granting `"<scenario>: Unlock Next Scenario"`. At `partner_trade:
+   allies_and_enemies` only, each player whose market or dock opens once defeated gets a hidden
+   `"<scenario>: Can Defeat <player>"` event too — see *Players and defeats*.
 3. A `"Can Build"` hub off Menu, with no entrance rule.
 4. One building location in the hub per `pool.buildings.locations`.
 5. One age location per `pool.ages.locations` — empty when `shuffle_ages` is off. `pool.ages.shuffled`
@@ -133,7 +135,8 @@ the `"Can Build"` exits at construction. Then `Rules.set_rules()` in fixed order
 1. `completion_condition[player] = lambda state: state.has("Victory", player)` — set directly, outside
    the rule_builder machinery. This is the real seed gate.
 2. The `"Victory"` event location's rule ← `logic.has_goal()`.
-3. Construct each scenario's `ScenarioRules` subclass, then call each one's `set_rules()`.
+3. Construct each scenario's `ScenarioRules` subclass, then call each one's `set_rules()` and
+   `set_defeat_event_rules()` (a no-op when the scenario has no defeat events).
 4. `AgeRules` (no-op unless `shuffle_ages`), `BuildingRules`, `TechRules` (no-op if techsanity is off).
 
 `TechRules` skips the `set_rule` call when a tech's rule resolves to bare `True_`, which is equivalent
@@ -223,6 +226,48 @@ world and changed neither victory spheres nor fill.
 - `locations/connections/TechCounters.py` (`counter_techs`): a counter that answers some targets
   only once a tech is researched - Monks and Missionaries against siege need Redemption.
   `can_counter` adds `techs.has_researched(tech)` for those pairs.
+
+### Players and defeats
+
+ADR 0001 (`docs/adr/0001-defeat-rules-live-in-per-player-logic.md`) is the why. Every other
+player in a connected scenario that victory or trade cares about is a **`Player` record**, and "can
+P1 defeat this player" is asked of the record, never of a local `can_beat_*` variable.
+
+- **Records.** `Age2PlayerData` (`locations/Players.py`), one member per ally and enemy, ids
+  `scenario.id * 10 + slot` (Attila 1's P3 is 1013). Columns: `player_name` (readable, used in
+  rule labels and event names), `slot` (P2-P8; P1 is the person playing and is never a record),
+  `side` (`Side.ALLY` or `Side.ENEMY`, fixed for the whole scenario), `is_main_opponent`, and a
+  `TradeAccess` for its `market` and its `dock`. Neutral and ignored slots get no member at all;
+  `Side.NEUTRAL` exists but nothing uses it.
+- **Routing.** `locations/connections/ScenarioPlayers.py` maps each scenario to its records
+  (`SCENARIO_TO_PLAYERS`) and copies them onto `Age2ScenarioData.players` as an import side effect.
+  Every scenario needs an entry, an empty list for a fixed force. Nothing asserts at import;
+  `test_player_records.py::test_every_scenario_is_routed` is the check.
+- **Trade access** is judged usability, not whether the building exists: `CLOSED`, `OPEN` (an
+  ally's, or an undefended enemy's such as Joan 3's English dock) or `ONCE_DEFEATED`. A **main
+  opponent**'s buildings stay `CLOSED` unless undefended - by the time it falls the scenario is
+  won. Never correct an access value from a scenario scan.
+- **Gates.** `ScenarioPlayerLogic` (`logic/scenarios/`, reached as `scenario_logic.players`) turns
+  each record into a gate on its market or dock: `OPEN` is `True_()`, `ONCE_DEFEATED` is
+  `has_defeated(player)`, `CLOSED` drops out. `can_reach_partner(building)` ORs the gates of the
+  partners `partner_trade` admits; `has_trading_ally()` reads open ally buildings straight off the
+  records.
+- **Defeat rules.** A `*StartingState` overrides `defeat_rules(scenario_logic)` and returns
+  `{Age2PlayerData: Rule}`. The base returns `{}`. Only players victory or trade asks about need an
+  entry, but every player with a `ONCE_DEFEATED` building must have one
+  (`test_every_defended_trade_partner_has_a_rule`). A rule may be `True_()` for a city that offers
+  no resistance; two interchangeable players may share one rule object.
+- **`defeats(player)`** is the one reader. It builds the dict once per scenario and wraps each rule
+  under the label `"<scenario> can defeat <player_name>"`, so `/explain` shows it as one line. Victory and objective rules in `rules/` call it
+  (`defeats = self.scenario_logic.players.defeats`). A player with no entry is a `KeyError`.
+- **Trade never reads `defeats` inline.** A defeat asks for an army, the army asks `can_pay`,
+  `can_pay` asks the easy sources, and easy gold and wood ask trade: inline, that is a
+  `RecursionError` at `set_rules`. Instead `has_defeated(player)` is
+  `Has("<scenario>: Can Defeat <player>")`, an event `create_regions` adds only at
+  `allies_and_enemies`, whose rule `ScenarioRules.set_defeat_event_rules` sets to `defeats(player)`.
+  The sweep settles the cycle. "Can Defeat", because "Defeat Metz" and the like are real
+  locations. `test_defeat_rules.py::TestDefeatAndTradeTerminate` builds every defeat and trade rule
+  to guard this.
 
 ## Data tables
 
@@ -631,7 +676,11 @@ Other tests worth knowing: `test_item_delivery.py` drives a `FakeGame` through t
   and keep `ItemHandler.xs`'s band comment in step.
 - **Adding a scenario**: define it in `Scenarios.py` (id is derived, so campaign and chapter must stay
   within 1-99), add its locations, write a `*StartingState` and a `*Rules`, and bind **both** in
-  `ScenarioDataLogic.py` and `ScenarioDataRules.py`.
+  `ScenarioDataLogic.py` and `ScenarioDataRules.py`. Then declare its players: a member in
+  `Age2PlayerData` for each ally and enemy (slot, side, main opponent, market and dock access), an
+  entry in `ScenarioPlayers.py` (empty for a fixed force), and a `defeat_rules` override covering
+  every opponent the victory rules name and every `ONCE_DEFEATED` building's owner. Victory rules
+  then read `scenario_logic.players.defeats(player)`. See *Players and defeats*.
 - **Version discipline**: `archipelago.json`'s `world_version` is the single source of truth. Any
   slot_data shape change needs a minor bump, and `AP.xs` must declare the same major and minor.
 - **File naming is load-bearing.** Everything in `client/` depends on `Identity`'s exact output shape;

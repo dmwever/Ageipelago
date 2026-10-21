@@ -1,6 +1,6 @@
 # Player options
 
-Twenty-three fields on `Age2Options` in `worlds/age2de/Options.py`. One file here per option,
+Twenty-four fields on `Age2Options` in `worlds/age2de/Options.py`. One file here per option,
 except `trap_difficulty`, `trap_percentage` and `trap_distribution`, which have none yet.
 
 **The yaml key is the dataclass field name** on `Age2Options` — not `display_name`, and not the
@@ -33,6 +33,7 @@ does `getattr(self.options, option_name)` with the internal name. All six curren
 | [monks-can-counter](monks-can-counter.md) | `monks_can_counter` | Toggle | off | — | — |
 | [siege-can-counter](siege-can-counter.md) | `siege_can_counter` | Toggle | off | — | — |
 | [market-trade](market-trade.md) | `market_trade` | Toggle | off | — | — |
+| [partner-trade](partner-trade.md) | `partner_trade` | Choice | allies | — | — |
 | [start-inventory-pool](start-inventory-pool.md) | `startInventoryPool` | core AP | — | — | — |
 
 Twelve options reach the game. The rest are generation-only: they shape the item pool, the location
@@ -61,6 +62,7 @@ Age Of Empires II: Definitive Edition:
   monks_can_counter: false
   siege_can_counter: false
   market_trade: false
+  partner_trade: allies
 ```
 
 `startInventoryPool` is core Archipelago's and takes its usual form. Note `startInventoryPool` is the
