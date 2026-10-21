@@ -19,6 +19,7 @@ int scenarioId = 0;
 int worldMajor = 0;
 int worldMinor = 3;
 int lastMessageId = -1;
+int appliedItemCount = 0;
 int scenarioItemsRead = 0;
 int reportedMissingItems = 0;
 int clientElsewhere = 0;
@@ -68,7 +69,8 @@ void AP_Write()
     xsWriteInt(worldMinor);
     xsWriteInt(PendingMercenary());
     xsWriteInt(ConsumedQueueSerial());
-    for (i = 0; < 27) {
+    xsWriteInt(appliedItemCount);
+    for (i = 0; < 26) {
         xsWriteInt(i);
     }
     int sendingLocations = FilterCompletedNotSent();
@@ -325,17 +327,29 @@ rule ReadItems
         xsDisableSelf();
         return;
     }
-    int itemCount = xsGetFileSize() / 4; // byte to int
-    if (itemCount > 12) {   // itemArray is 12 slots; never index past it
-        itemCount = 12;
+    int fileInts = xsGetFileSize() / 4; // byte to int
+    if (fileInts < 1) {
+        xsCloseFile();
+        xsDisableSelf();
+        return;
     }
+
+    int clientAppliedItems = xsReadInt();
+    if (clientAppliedItems != appliedItemCount) {
+        xsCloseFile();
+        xsDisableSelf();
+        return;
+    }
+
+    int itemCount = fileInts - 1; // less the header
+    if (itemCount > AP_ITEM_WINDOW) {
+        itemCount = AP_ITEM_WINDOW;
+    }
+    // All of it or none: the cursor counts entries, so a partial apply would desync it.
     for (i = 0; < itemCount) {
-        int itemId = xsReadInt();
-        if (xsArrayGetInt(itemArray, i) == -1) {
-            GiveItem(itemId);
-            xsArraySetInt(itemArray, i, itemId);
-        }
+        GiveItem(xsReadInt());
     }
+    appliedItemCount = appliedItemCount + itemCount;
     xsCloseFile();
     xsDisableSelf();
 }

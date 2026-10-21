@@ -46,6 +46,9 @@ const int AP_TRAP_ITEM_MIN        = 5000;
 const int AP_TRAP_ITEM_MAX        = 5100;
 
 void GiveItem(int itemId = -1) {
+    if (itemId == AP_ITEM_SKIP) {
+        return;
+    }
     if (itemId >= AP_RESOURCE_ITEM_MIN && itemId < AP_RESOURCE_ITEM_MAX) {
         GiveResource(itemId);
         return;
