@@ -5,6 +5,10 @@ extern int apMaxAge = IMPERIAL_AGE;
 bool has_castle = false;
 bool has_imperial = false;
 
+bool feudalRegistered = false;
+bool castleRegistered = false;
+bool imperialRegistered = false;
+
 int ageTechFor(int age = -1) {
     if (age == FEUDAL_AGE) {
         return (FEUDAL_AGE_TECH);
@@ -16,6 +20,31 @@ int ageTechFor(int age = -1) {
         return (IMPERIAL_AGE_TECH);
     }
     return (-1);
+}
+
+bool ageRegistered(int age = -1) {
+    if (age == FEUDAL_AGE) {
+        return (feudalRegistered);
+    }
+    if (age == CASTLE_AGE) {
+        return (castleRegistered);
+    }
+    if (age == IMPERIAL_AGE) {
+        return (imperialRegistered);
+    }
+    return (false);
+}
+
+void setAgeRegistered(int age = -1) {
+    if (age == FEUDAL_AGE) {
+        feudalRegistered = true;
+    }
+    if (age == CASTLE_AGE) {
+        castleRegistered = true;
+    }
+    if (age == IMPERIAL_AGE) {
+        imperialRegistered = true;
+    }
 }
 
 void SetVanillaAge(int age = -1) {
@@ -84,6 +113,9 @@ void UnlockAge(int itemId = -1) {
 }
 
 void InitAges() {
+    feudalRegistered = false;
+    castleRegistered = false;
+    imperialRegistered = false;
     SetScenarioAge();
     ClimbToVanillaAge();
     for (capped = FEUDAL_AGE; <= IMPERIAL_AGE) {
@@ -95,8 +127,13 @@ void InitAges() {
         return;
     }
     for (age = FEUDAL_AGE; <= IMPERIAL_AGE) {
-        vector location = AddLocation(age);
-        lockAge(age);
+        if (age <= apMaxAge && xsGetTechState(ageTechFor(age), 1) != cTechStateDone) {
+            vector location = AddLocation(age);
+            if (location != cInvalidVector) {
+                setAgeRegistered(age);
+            }
+            lockAge(age);
+        }
     }
     xsEnableRule("ShuffleAgesUpdate");
 }
@@ -110,7 +147,9 @@ rule ShuffleAgesUpdate
     int reached = 0;
     for (age = FEUDAL_AGE; <= IMPERIAL_AGE) {
         if (xsGetTechState(ageTechFor(age), 1) == cTechStateDone) {
-            AP_Check_Location(age);
+            if (ageRegistered(age)) {
+                AP_Check_Location(age);
+            }
             if (age == FEUDAL_AGE && has_castle) {
                 UnlockAge(CASTLE_AGE);
                 has_castle = false;
