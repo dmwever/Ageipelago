@@ -365,9 +365,17 @@ rule MarkServerLocations
             continue;
         }
 
-        // Scenario locations start with the scenario's location id. values below the minimum scenario id are safe to include.
         int locationScenarioId = locationId / 10 / 10;
-        if (locationScenarioId < MIN_SCENARIO_ID || locationScenarioId == scenarioId) {
+        if (locationScenarioId < MIN_SCENARIO_ID) {
+            vector location = FindLocationById(locationId);
+            if (location == cInvalidVector) {
+                continue;
+            }
+            structSetBool(location, "serverComplete", true);
+            continue;
+        }
+
+        if (locationScenarioId == scenarioId) {
             SetServerLocationComplete(locationId);
         }
     }
