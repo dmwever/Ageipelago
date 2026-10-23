@@ -39,8 +39,8 @@ Naming: `has_x` for possession, `can_x` for capability, `counters_x` in `Militar
 `start_with_x` / `start_past_x` in `ScenarioLogic`.
 
 ```python
-def can_build_building(self, building: Age2BuildingData) -> Rule:
-    can_build: Rule = (self.buildings.has_building(building)
+def can_build_structurally(self, building: Age2BuildingData) -> Rule:
+    can_build: Rule = (self.buildings.has_building_items(building)
                        & self.buildings.has_prerequisites(building))
     return can_build & self.has_vils() & self.can_reach_age(building.age)
 ```
