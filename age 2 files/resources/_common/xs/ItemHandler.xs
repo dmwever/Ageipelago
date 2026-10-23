@@ -120,16 +120,3 @@ void GiveStartupUnits() {
     bool closed = xsCloseFile();
     RefreshProfessions();
 }
-
-void GiveStartupItems() {
-    bool opened = xsOpenFile("startup");
-    if (opened == false) {
-        return;
-    }
-    int itemCount = xsGetFileSize() / 4; // byte to int
-    for (i = 0; < itemCount) {
-        int itemId = xsReadInt();
-        GiveItem(itemId);
-    }
-    bool closed = xsCloseFile();
-}

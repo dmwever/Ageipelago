@@ -233,10 +233,6 @@ extern const int TRAP_FLEMISH_MILITIA = 1699;
 // One sweep never collects more than this many units. Well above any campaign army.
 extern const int TRAP_SCAN_CAPACITY = 512;
 
-// The item window. The client never writes more entries than this, and the game applies the
-// whole window or none of it. Must agree with ITEM_WINDOW in the apworld's Items.py.
-extern const int AP_ITEM_WINDOW = 12;
-
 // Sent in place of an entry the window has to count but must not deliver, because it has
 // already been paid out. -1 is taken: it marks an empty slot elsewhere in the protocol.
 extern const int AP_ITEM_SKIP = -2;

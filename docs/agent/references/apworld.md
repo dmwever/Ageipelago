@@ -482,7 +482,7 @@ Two halves. `Age2Context` (in `ApClient.py`) faces the Archipelago server; `Age2
 callbacks — `on_location_received`, `on_scenario_completion`, `on_goal`. The fourth,
 `fetch_locations_collected`, is declared but called by nothing.
 
-`status_loop` runs every 0.5s (2s when idle), in this order per pass: write `startup.xsdat`, sync each
+`status_loop` runs every 0.5s (2s when idle), in this order per pass: sync each
 unlocked scenario's own item file, write `locations.xsdat`, `buildings.xsdat`, `techs.xsdat`,
 `messages.xsdat`; find the active campaign or scenario by peeking the leading active byte of each
 candidate `.xsdat`; read the scenario packet; classify it; handle location updates, item acks and

@@ -72,7 +72,7 @@ Two versions are compatible when **major and minor match**; build is free to dif
 covers both checks:
 
 | Check | Compares |
-|---|---|
+| --- | --- |
 | client ↔ seed | `world_version` in `slot_data` against the client's own. `/install` refuses on a mismatch |
 | client ↔ installed files | `WorldMajor` / `WorldMinor` in the packet. A mismatch is reported once and stops the exchange |
 
@@ -214,13 +214,16 @@ delivering, or a mercenary the pavilion has spawned — are replaced in place by
 and the cursor would stop meaning what both sides think it means. `GiveItem` returns early on the
 sentinel.
 
-Variable length, at most `AP_ITEM_WINDOW` (64) entries.
+Starting resources and town-centre resources come through this window too, and only through it.
+The cursor starts at 0 in every new scenario, so the window replays the whole stream there and pays
+each of them once per scenario run. There used to be a separate `startup.xsdat` for them.
+
+Variable length.
 
 |Name|Type|Purpose|
 |---|---|---|
 |WindowBase|int|The `AppliedItemCount` this window starts at|
 |ItemIds (I)|int*I|Item ids, or `AP_ITEM_SKIP` for an entry already paid out|
-
 
 ### `locations.xsdat`
 
@@ -231,16 +234,6 @@ The game reads a location file that echoes back the locations sent in past packe
 |Name|Type|Purpose|
 |---|---|---|
 |Locations (L)|int*L|Every location the client has checked|
-
-### `startup.xsdat`
-
-Client -> Game. Read by `ItemHandler.xs`.
-
-Resource items to apply at scenario start, re-synced every tick so a reconnect cannot strand them.
-
-|Name|Type|Purpose|
-|---|---|---|
-|ItemIds (I)|int*I|Starting-resource and town-centre-resource item ids|
 
 ### `buildings.xsdat`
 

@@ -294,7 +294,6 @@ rule ConnectAP
 
     if (startupGranted == 0) {
         xsChatData("<GREEN>Client Connected!");
-        GiveStartupItems();
         GiveStartupBuildings();
         GiveStartupTechs();
         GiveStartupUnits();
@@ -339,9 +338,6 @@ rule ReadItems
     }
 
     int itemCount = fileInts - 1; // less the header
-    if (itemCount > AP_ITEM_WINDOW) {
-        itemCount = AP_ITEM_WINDOW;
-    }
     // All of it or none: the cursor counts entries, so a partial apply would desync it.
     for (i = 0; < itemCount) {
         GiveItem(xsReadInt());
