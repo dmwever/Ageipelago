@@ -168,11 +168,17 @@ def can_build_building(self, building: Age2BuildingData) -> Rule:
 ```
 
 Each scenario has a `*StartingState` dataclass subclass (`logic/attila/attila_1.py` …) declaring
-`is_unlocked`, `has_vils`, `has_base`, `age_playable`, `starts_with_building`, `has_water_access`,
-every field with its own `default_factory`. A scenario's last age (`max_age`) and whether it is a
-fixed force (`fixed_force`) are not rules, so they sit on its `Age2ScenarioData` row, where the
-pools can read them before any logic exists. It is instantiated inside the matching
-`*Rules.__init__` and wrapped in a `ScenarioLogic`.
+`is_unlocked`, `has_vils`, `age_playable`, `starts_with_building`, `has_water_access`,
+every field with its own `default_factory`. There is no base field: a standing Town Center
+(`starts_with_building[TOWN_CENTER]`) is what grants a base. A scenario's last age (`max_age`)
+and whether it is a fixed force (`fixed_force`) are not rules, so they sit on its
+`Age2ScenarioData` row, where the pools can read them before any logic exists. It is instantiated
+inside the matching `*Rules.__init__` and wrapped in a `ScenarioLogic`.
+
+**`obtains_unit` is not only what the subclass writes.** `ScenarioLogic.__init__` calls
+`default_mercenary_grants`, which adds every `Mercenary` item's units for the scenario. Grep the
+items, not the assignments, before claiming a scenario grants no unit. Under caveman those grants
+need a gate - see *Scenario rules bypass that gate* in `options/caveman.md`.
 
 **A new `ScenarioRules` subclass must set `self.scenario_logic` itself.** The base class only declares
 it as an annotation, and `ScenarioRules.set_rules()` calls `self.scenario_logic.is_unlocked()`. All 12

@@ -53,6 +53,17 @@ item - there is no building to unlock it at - but under caveman that item is the
 a granted unit, so `UnitPool.items` pools it when caveman is on. Without it, `unit_line` + caveman
 left `Own Mangudai` with a rule no item could satisfy.
 
+**Scenario rules bypass that gate.** `can_own_anywhere` is the only place `NOT_CAVEMAN | can_restore`
+is applied. A scenario rule that reads a granted unit directly sees it at full strength under
+caveman. That covers `ScenarioLogic.obtains_unit`, or a bare `Has(<mercenary item>)` such as Genghis
+1's Kereyid gate. `obtains_unit` is fed without any visible assignment:
+`ScenarioStartingState.default_mercenary_grants` runs for every scenario and adds every `Mercenary`
+item's units to it. Grepping for `obtains_unit[...] =` therefore misses Genghis 1's Kereyid and
+Ungirrad monks and Genghis 5's Hermit Monks. Any rule built on a granted unit that caveman can
+knock down needs a caveman gate of its own. Units released by a scenario mercenary count here; units
+spawned by a pavilion mercenary are immune and need no gate. See *Mercenaries split by how they
+arrive* below.
+
 Caveman also **forces the dark-age rebase**. `scenario_needs_age_up()` returns true whenever caveman
 is on, independent of techsanity, so `/install` rebases the scenario to the Dark Age and XS climbs
 back - see below.

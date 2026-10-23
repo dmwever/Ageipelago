@@ -17,7 +17,7 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-10-21a**
+Skill revision: **2026-10-22a**
 
 A randomizer in two halves that ship separately and must stay in step.
 
@@ -53,7 +53,7 @@ is the normal state on a machine where nobody has installed it.
 | a scenario's resource counts, tiers, map object ids, gather amounts, terrain | `references/apworld.md` -> *Scenario resource scans* |
 | adding a whole campaign, scenario triggers, the AP trigger block, what to ask the user | `references/adding-a-campaign.md` |
 | a packet field, byte offsets, `.xsdat` layout, seed tags, versioning, the item window | `references/protocol.md` |
-| what a yaml option does, on either side | `references/options/index.md`, then the one option's file |
+| what a yaml option does on either side, or a bug that only shows with one on (caveman, techsanity, …) | `references/options/index.md`, then the one option's file |
 | how to write it so it matches the codebase | `references/conventions/index.md` |
 
 Engine-level questions — the exact signature of an `xs*` function, a constant's value, a unit or tech
