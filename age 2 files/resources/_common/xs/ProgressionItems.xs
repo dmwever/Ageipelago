@@ -7,6 +7,27 @@ void TOWN_CENTER_STONE() {
     xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 100.0, 1);
 }
 
+void StartingVillagerFood() {
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 150.0, 1);
+}
+
+void LumberCampWood() {
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 100.0, 1);
+}
+
+void MuleCartResources() {
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 80.0, 1);
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 20.0, 1);
+}
+
+void DockWood() {
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 150.0, 1);
+}
+
+void MarketWood() {
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 175.0, 1);
+}
+
 // Scenario-specific items
 
 //Attila 1
@@ -339,6 +360,9 @@ void GiveProgressionItem(int itemId = -1) {
         case 1023: {
             Joan6Army();
         }
+        case 1024: {
+            StartingVillagerFood();
+        }
         case 1026: {
             Genghis2TayichiudBase();
         }
@@ -350,6 +374,18 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1031: {
             Genghis4KipchakCamp();
+        }
+        case 1032: {
+            LumberCampWood();
+        }
+        case 1033: {
+            MuleCartResources();
+        }
+        case 1034: {
+            DockWood();
+        }
+        case 1035: {
+            MarketWood();
         }
     }
 }
