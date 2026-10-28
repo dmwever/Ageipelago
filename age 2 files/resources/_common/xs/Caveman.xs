@@ -3,6 +3,9 @@ const int CAVEMAN_IMMUNE_CAPACITY = 256;
 const int CAVEMAN_EXEMPT_CAPACITY = 32;
 const int CAVEMAN_MILITIA = 74;
 const int CAVEMAN_REMOVED = 0;
+const int CAVEMAN_REAP_SECONDS = 2;
+
+int lastCavemanReap = -1;
 
 int cavemanUnitIds = -1;
 int originalUnitTypes = -1;
@@ -184,6 +187,7 @@ int cavemanTarget(int originalTypeId = -1) {
 void transformUnit(int unitId = -1, int toTypeId = -1, int originalTypeId = -1) {
     vector position = xsGetUnitPosition(unitId);
     xsRemoveUnit(unitId);
+    UntrackUnit(unitId);
     rememberOriginalType(unitId, CAVEMAN_REMOVED);
     int created = xsCreateUnit(toTypeId, 1, position, false, true, false);
     if (created < 0) {
@@ -211,10 +215,14 @@ void ApplyCaveman(int units = -1) {
     if (cavemanTargetsStale) {
         forgetCavemanTargets();
     }
-    removeDeadCavemen();
+    if (xsGetGameTime() - lastCavemanReap >= CAVEMAN_REAP_SECONDS) {
+        lastCavemanReap = xsGetGameTime();
+        removeDeadCavemen();
+    }
     for (i = 0; < xsArrayGetSize(units)) {
         int unitId = xsArrayGetInt(units, i);
-        if (unitId < 0 || xsDoesUnitExist(unitId) == false || isUnitCavemanImmune(unitId)) {
+        if (unitId < 0 || xsDoesUnitExist(unitId) == false || IsUnitUntracked(unitId)
+                || isUnitCavemanImmune(unitId)) {
             continue;
         }
         int currentTypeId = canonicalTypeOf(xsGetUnitObjectId(unitId));

@@ -3,13 +3,74 @@ include "./UnitData.xs";
 int unitArray = -1;
 extern int unitTableCount = 0;   /* not unitCount: MercenarySeats.xs has a parameter by that name */
 
-extern int unitsOwned = -1;
+const int UNTRACKED_UNIT_CAPACITY = 256;
 
 int receivedItems = -1;
 
 int typeRowIndex = -1;
 int canonicalType = -1;
 int professionTypes = -1;
+
+int unitScan = -1;
+int lastUnitScan = -1;
+int lastUnitCount = 0;
+int newUnits = -1;
+
+int untrackedUnitIds = -1;
+int untrackedUnitCount = 0;
+
+bool IsUnitUntracked(int unitId = -1) {
+    for (i = 0; < untrackedUnitCount) {
+        if (xsArrayGetInt(untrackedUnitIds, i) == unitId) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
+void UntrackUnit(int unitId = -1) {
+    if (untrackedUnitIds < 0 || unitId < 0 || IsUnitUntracked(unitId)) {
+        return;
+    }
+    if (untrackedUnitCount >= UNTRACKED_UNIT_CAPACITY) {
+        xsChatData("<RED>Unitsanity: untracked-unit list is full, so unit " + unitId
+                   + " may still send a check.");
+        return;
+    }
+    xsArraySetInt(untrackedUnitIds, untrackedUnitCount, unitId);
+    untrackedUnitCount = untrackedUnitCount + 1;
+}
+
+bool isUnitListed(int units = -1, int unitId = -1) {
+    int low = 0;
+    int high = xsArrayGetSize(units) - 1;
+    while (low <= high) {
+        int middle = (low + high) / 2;
+        int listed = xsArrayGetInt(units, middle);
+        if (listed == unitId) {
+            return (true);
+        }
+        if (listed < unitId) {
+            low = middle + 1;
+        } else {
+            high = middle - 1;
+        }
+    }
+    return (false);
+}
+
+void pruneUntrackedUnits(int units = -1) {
+    int i = 0;
+    while (i < untrackedUnitCount) {
+        if (isUnitListed(units, xsArrayGetInt(untrackedUnitIds, i))) {
+            i = i + 1;
+        } else {
+            untrackedUnitCount = untrackedUnitCount - 1;
+            xsArraySetInt(untrackedUnitIds, i, xsArrayGetInt(untrackedUnitIds, untrackedUnitCount));
+            xsArraySetInt(untrackedUnitIds, untrackedUnitCount, -1);
+        }
+    }
+}
 
 
 vector getUnit(int i = -1) {
@@ -200,7 +261,7 @@ bool MarkOwnedByType(int typeId = -1) {
 void checkOwnedUnits(int units = -1) {
     for (i = 0; < xsArrayGetSize(units)) {
         int unitId = xsArrayGetInt(units, i);
-        if (unitId < 0) {
+        if (unitId < 0 || IsUnitUntracked(unitId)) {
             continue;
         }
         if (MarkOwnedByType(xsGetUnitCopyId(unitId)) == false) {
@@ -282,6 +343,10 @@ void InitUnitsanityStructs() {
     canonicalType = xsArrayCreateInt(TYPE_INDEX_CAPACITY, -1, "us-canonical");
     professionTypes = xsArrayCreateInt(TYPE_INDEX_CAPACITY, 0, "us-professions");
     receivedItems = xsArrayCreateBool(UNIT_ITEM_SPAN, false, "us-received");
+    unitScan = xsArrayCreateInt(1, -1, "us-scan-a");
+    lastUnitScan = xsArrayCreateInt(1, -1, "us-scan-b");
+    newUnits = xsArrayCreateInt(1, -1, "us-new");
+    untrackedUnitIds = xsArrayCreateInt(UNTRACKED_UNIT_CAPACITY, -1, "us-untracked");
 }
 
 void InitUnitsanity() {
@@ -314,53 +379,104 @@ void InitUnitsanity() {
     xsEnableRule("UnitsanityChecks");
 }
 
-int testArray = -1;
-
 int PROFESSION_SWEEP_SECONDS = 2;
 int lastProfessionSweep = -1;
 float unitsResearchCount = -1.0;
 
+int collectNewUnits(int units = -1) {
+    int newCount = 0;
+    int j = 0;
+    for (i = 0; < xsArrayGetSize(units)) {
+        int unitId = xsArrayGetInt(units, i);
+        while (j < lastUnitCount && xsArrayGetInt(lastUnitScan, j) < unitId) {
+            j = j + 1;
+        }
+        if (j < lastUnitCount && xsArrayGetInt(lastUnitScan, j) == unitId) {
+            continue;
+        }
+        if (newCount >= xsArrayGetSize(newUnits)) {
+            xsArrayResizeInt(newUnits, newCount * 2);
+        }
+        xsArraySetInt(newUnits, newCount, unitId);
+        newCount = newCount + 1;
+    }
+    if (newCount == 0) {
+        return (-1);
+    }
+    xsArrayResizeInt(newUnits, newCount);
+    return (newUnits);
+}
+
+bool anyUnitWithLockedProfession(int units = -1) {
+    if (professionsReady == false) {
+        return (false);
+    }
+    for (i = 0; < xsArrayGetSize(units)) {
+        int unitId = xsArrayGetInt(units, i);
+        if (unitId < 0) {
+            continue;
+        }
+        if (IsUnitUntracked(unitId)) {
+            continue;
+        }
+        int typeId = xsGetUnitObjectId(unitId);
+        if (isProfessionType(typeId) && structGetBool(getUnit(findUnit(typeId)), "locked")) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
+void swapUnitScans(int units = -1) {
+    unitScan = lastUnitScan;
+    lastUnitScan = units;
+    lastUnitCount = xsArrayGetSize(units);
+}
+
 rule UnitsanityChecks
     inactive
-    minInterval 1
-    maxInterval 1
+    highFrequency
     group Unitsanity
 {
     if (unitsanityReady == false || startupGranted == 0) {
         return;
     }
 
-    int units = xsGetPlayerUnitIds(1, -1, testArray);
-
-    int owned = xsArrayGetSize(units);
-    if (owned != unitsOwned) {
-        unitsOwned = owned;
-        unitsDirty = true;
+    int units = xsGetPlayerUnitIds(1, -1, unitScan);
+    if (units < 0) {
         return;
     }
+    unitScan = units;
+    pruneUntrackedUnits(units);
 
     float researched = xsPlayerAttribute(1, cAttributeResearchCount);
     if (researched > unitsResearchCount) {
         unitsResearchCount = researched;
         unitsDirty = true;
-        return;
     }
 
+    int passUnits = units;
     if (unitsDirty == false) {
-        if (xsGetGameTime() - lastProfessionSweep >= PROFESSION_SWEEP_SECONDS) {
-            lastProfessionSweep = xsGetGameTime();
-            CheckProfessionLocations(units);
-        }
-        return;
+        passUnits = collectNewUnits(units);
     }
 
-    unitsTransformed = false;
-    ApplyCaveman(units);
-    EvictProfessions();
-    if (unitsTransformed) {
-        return;
+    if (passUnits >= 0) {
+        unitsTransformed = false;
+        ApplyCaveman(passUnits);
+        if (anyUnitWithLockedProfession(passUnits)) {
+            EvictProfessions();
+        }
+        if (unitsTransformed) {
+            return;
+        }
+        checkOwnedUnits(passUnits);
     }
 
     unitsDirty = false;
-    checkOwnedUnits(units);
+    swapUnitScans(units);
+
+    if (xsGetGameTime() - lastProfessionSweep >= PROFESSION_SWEEP_SECONDS) {
+        lastProfessionSweep = xsGetGameTime();
+        CheckProfessionLocations(units);
+    }
 }

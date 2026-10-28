@@ -17,9 +17,15 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-10-22a**
+Skill revision: **2026-10-26a**
 
 A randomizer in two halves that ship separately and must stay in step.
+
+> **Age of Empires II has no copy/paste.** Nothing in the game can be selected or copied, not even
+> the chat. Never ask the user to copy, paste or transcribe chat output. Any spike, probe or
+> diagnostic whose result has to reach you writes it to an `.xsdat` file (`xsCreateFile` …
+> `xsCloseFile`), which you then read off disk. `xsChatData` is only for progress and
+> pass/fail at a glance. See `references/xs-mod.md` → *Getting data out of the game*.
 
 ## Where this lives
 

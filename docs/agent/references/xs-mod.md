@@ -422,10 +422,11 @@ than nothing because a single mistyped digit is indistinguishable from a real me
 `xsWriteInt` / `xsWriteFloat` / `xsWriteString` / `xsWriteVector`, then `xsCloseFile()`.
 
 - `xsCreateFile` writes into the profile folder - on this machine
-  `C:/Users/dmwev/Games/Age of Empires 2 DE/<steamid>/profile/` - but **do not assume the
-  file name**. It is not named after the script, and not reliably after the scenario either:
-  `XsTesting.aoe2scenario`, whose script is `Test.xs`, wrote `default1.xsdat`. Find the output
-  by mtime instead. See the same measured note in `XS_MEASURED_BEHAVIOR.md` section 10.
+  `C:/Users/dmwev/Games/Age of Empires 2 DE/<steamid>/profile/`. The file is named after the
+  scenario (`<scenario>.xsdat`) or is `default0.xsdat` / `default1.xsdat`, never after the
+  script: `XsTesting.aoe2scenario`, whose script is `Test.xs`, wrote `default1.xsdat`. Look
+  for exactly those three names, not the newest file by mtime, because the AP client writes
+  its own `.xsdat` files into the same folder.
 - Pass `true` to append instead of truncating.
 - **Data is not durable until `xsCloseFile()`.** A spike that writes and never closes leaves nothing.
 - Ints and floats are 4 bytes, little-endian — the same encoding `XsdatFile.py` uses on the Python

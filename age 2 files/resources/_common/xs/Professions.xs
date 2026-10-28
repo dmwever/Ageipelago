@@ -28,11 +28,12 @@ void evictProfession(vector unit = cInvalidVector, int baseVillagerId = -1) {
     int found = xsGetPlayerUnitIds(1, structGetInt(unit, "typeId"));
     for (i = 0; < xsArrayGetSize(found)) {
         int unitId = xsArrayGetInt(found, i);
-        if (unitId < 0 || xsDoesUnitExist(unitId) == false) {
+        if (unitId < 0 || xsDoesUnitExist(unitId) == false || IsUnitUntracked(unitId)) {
             continue;
         }
         vector position = xsGetUnitPosition(unitId);
         xsRemoveUnit(unitId);
+        UntrackUnit(unitId);
         int created = xsCreateUnit(baseVillagerId, 1, position, false, true, false);
         unitsTransformed = true;
     }
@@ -66,7 +67,7 @@ void CheckProfessionLocations(int units = -1) {
     }
     for (i = 0; < xsArrayGetSize(units)) {
         int unitId = xsArrayGetInt(units, i);
-        if (unitId < 0) {
+        if (unitId < 0 || IsUnitUntracked(unitId)) {
             continue;
         }
         int typeId = xsGetUnitObjectId(unitId);
