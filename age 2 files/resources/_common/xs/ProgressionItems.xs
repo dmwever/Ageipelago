@@ -28,6 +28,10 @@ void MarketWood() {
     xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 175.0, 1);
 }
 
+void FeudalAgeFood() {
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 500.0, 1);
+}
+
 // Scenario-specific items
 
 //Attila 1
@@ -386,6 +390,9 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1035: {
             MarketWood();
+        }
+        case 1036: {
+            FeudalAgeFood();
         }
     }
 }
