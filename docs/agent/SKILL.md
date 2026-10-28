@@ -54,11 +54,12 @@ is the normal state on a machine where nobody has installed it.
 | The question is about | Open |
 |---|---|
 | an `.xs` file, a rule, a struct, include order, linting, the pavilion, scenario scripts | `references/xs-mod.md` |
+| writing a spike, probe or harness, map coordinates, getting a measurement out of the game | `references/xs-mod.md` |
 | items, locations, enums, logic vs rules, regions, the client, handlers, generation, tests | `references/apworld.md` |
 | a scenario's players, sides, trade access, main opponents, defeat rules | `references/apworld.md` -> *Players and defeats* |
 | a scenario's resource counts, tiers, map object ids, gather amounts, terrain | `references/apworld.md` -> *Scenario resource scans* |
 | adding a whole campaign, scenario triggers, the AP trigger block, what to ask the user | `references/adding-a-campaign.md` |
-| a packet field, byte offsets, `.xsdat` layout, seed tags, versioning, the item window | `references/protocol.md` |
+| a packet field, byte offsets, the `.xsdat` **packet** layout, seed tags, versioning, the item window | `references/protocol.md` |
 | what a yaml option does on either side, or a bug that only shows with one on (caveman, techsanity, …) | `references/options/index.md`, then the one option's file |
 | how to write it so it matches the codebase | `references/conventions/index.md` |
 

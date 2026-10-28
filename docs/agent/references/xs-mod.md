@@ -410,6 +410,18 @@ What the linter cannot catch here: a misspelled struct field-name string, a miss
 function body, a `switch` with no `default`, a mistyped rule name in `xsEnableRule`. See
 `XS_MEASURED_BEHAVIOR.md` in the `aoe2-modding` KB.
 
+## Map coordinates
+
+**Every position in this mod is `xsVectorSet(x, y, 0.0)`** — the map axes are x and y, and the
+third slot is unused. `APavilion.xs:38` (`PavilionOffsetPoint`) and `TrapItems.xs:414`
+(`RaidCorner`) are the two call sites to copy. Read one back with `xsVectorGetX` and
+`xsVectorGetY`.
+
+Writing `xsVectorSet(x, 0.0, y)` instead is accepted silently and puts the unit on map row 0, so
+there is no error to notice — see the `[M]` entries on map positions and on `xsCreateUnit` in
+`XS_MEASURED_BEHAVIOR.md` in the `aoe2-modding` KB, which also covers why a successful
+`xsCreateUnit` tells you nothing about the terrain under it.
+
 ## Getting data out of the game
 
 **Age of Empires II has no copy/paste.** Nothing on screen can be selected or copied — not the chat
@@ -458,9 +470,10 @@ precisely because chat is a dead end for machine-readable output. See `protocol.
 - **Struct fields are runtime strings, case-sensitive, and fail to `-1` silently.** A past bug was
   exactly this: `"CastlesBuilt"` versus `"castlesBuilt"`, fixed in `31eecd4`. Grep every string
   occurrence when renaming a field.
-- **`MarkServerLocations` contains the only `continue` in project XS.** Whether `continue` skips a
-  `for` loop's increment is unresolved; if it does, that loop never terminates. First suspect if the
-  rule ever hangs.
+- **`continue` is safe in a `for` loop and is used throughout.** It does not skip the implicit
+  increment. This was an open question in the KB while `MarkServerLocations` held the only
+  `continue` in project XS; `Unitsanity.xs`, `Caveman.xs` and `Professions.xs` now take the branch
+  on most iterations of every sweep. Settled in `XS_MEASURED_BEHAVIOR.md` section 4.
 - **`UnlockBuilding(index)` does not bounds-check.** Item ids 200-299 map to indices 0-99 but only
   0-34 are populated, so an id of 235 or higher would read an unset slot and write with id -1. Latent
   only: the apworld emits 200-234.
