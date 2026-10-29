@@ -14,7 +14,6 @@ int lastPing = -1;
 int pingRepeatCount = 0;
 
 int completed = 0;
-int scenarioId = 0;
 
 int worldMajor = 0;
 int worldMinor = 3;

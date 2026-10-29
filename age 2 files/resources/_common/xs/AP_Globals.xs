@@ -1,3 +1,4 @@
+extern int scenarioId = 0;
 extern bool unitsanityReady = false;
 extern bool cavemanReady = false;
 extern bool professionsReady = false;
