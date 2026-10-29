@@ -36,7 +36,9 @@ mutable void CheckProfessionLocations(int units = -1) {
 mutable void EvictProfessions() {
 }
 
-mutable void CavemanExemption() {
+mutable void ExemptUnitTypeFromCaveman(int typeId = -1) {
+    xsChatData("<RED>ExemptUnitTypeFromCaveman is still the stub, so unit type " + typeId
+               + " is being left cavemanifiable. Caveman.xs did not define it.");
 }
 
 mutable void InitScenarioLocations() {
