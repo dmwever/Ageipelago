@@ -121,11 +121,11 @@ for the model; ADR 0001 for why.
 
    ```python
    # Attila 1. Bleda (P2) is ignored. Ruled: the Scythians are an ally.
-   ATT1_SCYTHIANS =            1013, "the Scythians",              3, Side.ALLY,  False, TradeAccess.OPEN,          TradeAccess.CLOSED
+   ATT1_SCYTHIANS =            1013, "the Scythians",              3, Side.ALLY,  TradeAccess.OPEN,          TradeAccess.CLOSED
    ```
 
-   Id `scenario.id * 10 + slot`; then readable name, slot (2-8), side, main opponent, market access,
-   dock access. Side, main opponent and access are **[ask]**.
+   Id `scenario.id * 10 + slot`; then readable name, slot (2-8), side, market access, dock access.
+   Side and access are **[ask]**.
 2. **Routing.** An entry in `SCENARIO_TO_PLAYERS` in `locations/connections/ScenarioPlayers.py`,
    `[]` for a fixed force. A missing entry is not an import error; `test_player_records.py` catches
    it.
@@ -173,7 +173,7 @@ An unbound scenario leaves `.rules` as `None` and generation dies with
   to a campaign outside the seed is claimed as needed and can never be referenced.
 - `test_scenario_resources.py` — `FIXED_FORCE`, and the hardcoded relic map.
 - `test_player_records.py` — `JUDGED_FLAGS` (one row per scenario: ally market, enemy market, ally
-  dock, enemy dock), `MAIN_OPPONENTS`, and the neutral and ignored slots in
+  dock, enemy dock) and the neutral and ignored slots in
   `test_neutral_and_ignored_slots_have_no_player`. The records are written by hand from these.
 - `test_defeat_rules.py`, `test_economy_rules.py` — `campaigns` on the classes that sweep every
   scenario's players.

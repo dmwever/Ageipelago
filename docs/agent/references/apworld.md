@@ -242,17 +242,15 @@ P1 defeat this player" is asked of the record, never of a local `can_beat_*` var
 - **Records.** `Age2PlayerData` (`locations/Players.py`), one member per ally and enemy, ids
   `scenario.id * 10 + slot` (Attila 1's P3 is 1013). Columns: `player_name` (readable, used in
   rule labels and event names), `slot` (P2-P8; P1 is the person playing and is never a record),
-  `side` (`Side.ALLY` or `Side.ENEMY`, fixed for the whole scenario), `is_main_opponent`, and a
-  `TradeAccess` for its `market` and its `dock`. Neutral and ignored slots get no member at all;
+  `side` (`Side.ALLY` or `Side.ENEMY`, fixed for the whole scenario), and a `TradeAccess` for its `market` and its `dock`. Neutral and ignored slots get no member at all;
   `Side.NEUTRAL` exists but nothing uses it.
 - **Routing.** `locations/connections/ScenarioPlayers.py` maps each scenario to its records
   (`SCENARIO_TO_PLAYERS`) and copies them onto `Age2ScenarioData.players` as an import side effect.
   Every scenario needs an entry, an empty list for a fixed force. Nothing asserts at import;
   `test_player_records.py::test_every_scenario_is_routed` is the check.
 - **Trade access** is judged usability, not whether the building exists: `CLOSED`, `OPEN` (an
-  ally's, or an undefended enemy's such as Joan 3's English dock) or `ONCE_DEFEATED`. A **main
-  opponent**'s buildings stay `CLOSED` unless undefended - by the time it falls the scenario is
-  won. Never correct an access value from a scenario scan.
+  ally's, or an undefended enemy's such as Thessalonica's dock), `ONCE_DEFEATED` or `GUARDED`
+  (once defeated, or guarded; the guard rule is the scenario's `trade_guard_rules`). Never correct an access value from a scenario scan.
 - **Gates.** `ScenarioPlayerLogic` (`logic/scenarios/`, reached as `scenario_logic.player_logic`) turns
   each record into a gate on its market or dock: `OPEN` is `True_()`, `ONCE_DEFEATED` is
   `has_defeated(player)`, `CLOSED` drops out. `can_reach_partner(building)` ORs the gates of the
@@ -682,7 +680,7 @@ Other tests worth knowing: `test_item_delivery.py` drives a `FakeGame` through t
 - **Adding a scenario**: define it in `Scenarios.py` (id is derived, so campaign and chapter must stay
   within 1-99), add its locations, write a `*StartingState` and a `*Rules`, and bind **both** in
   `ScenarioDataLogic.py` and `ScenarioDataRules.py`. Then declare its players: a member in
-  `Age2PlayerData` for each ally and enemy (slot, side, main opponent, market and dock access), an
+  `Age2PlayerData` for each ally and enemy (slot, side, market and dock access), an
   entry in `ScenarioPlayers.py` (empty for a fixed force), and a `defeat_rules` override covering
   every opponent the victory rules name and every `ONCE_DEFEATED` building's owner. Victory rules
   then read `scenario_logic.player_logic.defeats(player)`. See *Players and defeats*.

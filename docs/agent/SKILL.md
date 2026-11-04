@@ -56,7 +56,7 @@ is the normal state on a machine where nobody has installed it.
 | an `.xs` file, a rule, a struct, include order, linting, the pavilion, scenario scripts | `references/xs-mod.md` |
 | writing a spike, probe or harness, map coordinates, getting a measurement out of the game | `references/xs-mod.md` |
 | items, locations, enums, logic vs rules, regions, the client, handlers, generation, tests | `references/apworld.md` |
-| a scenario's players, sides, trade access, main opponents, defeat rules | `references/apworld.md` -> *Players and defeats* |
+| a scenario's players, sides, trade access, defeat rules | `references/apworld.md` -> *Players and defeats* |
 | a scenario's resource counts, tiers, map object ids, gather amounts, terrain | `references/apworld.md` -> *Scenario resource scans* |
 | adding a whole campaign, scenario triggers, the AP trigger block, what to ask the user | `references/adding-a-campaign.md` |
 | a packet field, byte offsets, the `.xsdat` **packet** layout, seed tags, versioning, the item window | `references/protocol.md` |
@@ -154,7 +154,7 @@ Each of these touches both halves. Doing only one side is the usual failure.
    `fixed_force`.
 2. Add its locations to `locations/Locations.py`.
 3. Declare its players: an `Age2PlayerData` member in `locations/Players.py` per ally and enemy
-   (slot, side, main opponent, market and dock access — ask the user for these), and an entry in
+   (slot, side, market and dock access — ask the user for these), and an entry in
    `locations/connections/ScenarioPlayers.py` (`[]` for a fixed force).
 4. Write a `*StartingState` in `logic/`, overriding `defeat_rules` for every player the victory
    rules name and every owner of a market or dock that opens once defeated, and a `*Rules` in

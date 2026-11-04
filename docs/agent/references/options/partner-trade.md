@@ -11,8 +11,8 @@ dock, and to whose.
 > dock, and to whose.
 > None: Trade with other players is never needed to afford anything.
 > Allies: Only an ally's market or dock, and only where the scenario's ally keeps one usable.
-> Allies And Enemies: An enemy's too, once you can defeat its owner, or straight away if it is
-> undefended. A main opponent's only if undefended.
+> Allies And Enemies: An enemy's too, once you can defeat its owner, straight away if it is
+> undefended, or once you can guard the route to it.
 
 | Value | Number |
 |---|---|
@@ -27,8 +27,9 @@ One option covers carts and cogs together.
 `ScenarioPlayerLogic.can_reach_partner(building)` (`scenario_logic.player_logic`) is the gate, for `MARKET` (carts) or `DOCK`
 (cogs): an OR of one gate per partner. At `none` it is `False_()`. At `allies` the partners are the
 allies; at `allies_and_enemies` the enemies too. Each player's gate comes from its access to that
-building: `OPEN` is `True_()` (an ally's, or Joan 3's undefended English dock), `ONCE_DEFEATED` is
-`ScenarioPlayerLogic.has_defeated(player)`, `CLOSED` drops out. With no gate left it is `False_()`.
+building: `OPEN` is `True_()` (an ally's, or an undefended enemy's like Thessalonica's dock),
+`ONCE_DEFEATED` is `ScenarioPlayerLogic.has_defeated(player)`, `GUARDED` is `has_defeated(player)`
+or `has_guarded(player, building)`, `CLOSED` drops out. With no gate left it is `False_()`.
 
 ### Defeat events
 
@@ -59,9 +60,9 @@ scenario without one never builds the rest of the rule. Two rules use the routes
 ### Player records
 
 Usability is hard-coded per player on `Age2PlayerData` (`locations/Players.py`): one member per ally
-and enemy of each scenario, id = scenario id then slot, with columns for name, slot, `Side`, main
-opponent, and a `TradeAccess` for the market and the dock - `CLOSED`, `OPEN` (an ally's, or an
-undefended enemy's, like Joan 3's English dock) or `ONCE_DEFEATED`. `connections/ScenarioPlayers.py`
+and enemy of each scenario, id = scenario id then slot, with columns for name, slot, `Side`, and a
+`TradeAccess` for the market and the dock - `CLOSED`, `OPEN` (an ally's, or an undefended enemy's,
+like Thessalonica's dock), `ONCE_DEFEATED` or `GUARDED` (once defeated, or guarded). `connections/ScenarioPlayers.py`
 routes them to scenarios (`SCENARIO_TO_PLAYERS`, copied onto `Age2ScenarioData.players`). Fixed-force
 scenarios (Joan 1, Joan 5) have none. Defeat rules are keyed by these members.
 
@@ -92,14 +93,14 @@ ask the Market, cogs the Dock; every scenario's easy sources resolve with no que
 
 `test_economy_rules.py::TestPartnerTradeWithEnemies` - `allies` waits on no defeat and creates no
 event; `allies_and_enemies` waits on exactly the defended owners of each building no partner keeps
-open, never a main opponent; each event's rule is its owner's defeat; Genghis 5's gold waits on the
-Polish and the Germans; Joan 3's English dock needs no defeat, and stays closed at `allies`.
+open; each event's rule is its owner's defeat; Genghis 5's gold waits on the
+Polish and the Germans; Joan 3's English dock stays closed at `allies`.
 
 `test_defeat_rules.py` - every player with a `ONCE_DEFEATED` building has a defeat rule;
 `TestDefeatAndTradeTerminate` builds every defeat and trade rule at `allies_and_enemies`.
 
 `test_player_records.py` - every scenario is routed and every player belongs to one; ids, slots,
-sides, absent neutral slots, main opponents and access follow the rulings and agree with the judged
+sides, absent neutral slots and access follow the rulings and agree with the judged
 flags; the Kipchaks are never a trade partner.
 
 `test_slot_data_wire.py::TestLogicOnlyOptionsStayOutOfTheGame` keeps it out of `SlotData.OPTIONS` and
