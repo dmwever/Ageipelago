@@ -257,10 +257,12 @@ bool HasGenghis2TayichiudBase() {
 bool attila5Deathmatch = false;
 void Attila5Deathmatch() {
     attila5Deathmatch = true;
-    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 7000.0, 1);
-    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 1000.0, 1);
-    xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 500.0, 1);
-    xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 7250.0, 1);
+    if (scenarioId == 105) {
+        xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 7000.0, 1);
+        xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 1000.0, 1);
+        xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 500.0, 1);
+        xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 7250.0, 1);
+    }
 }
 
 bool HasAttila5Deathmatch() {
