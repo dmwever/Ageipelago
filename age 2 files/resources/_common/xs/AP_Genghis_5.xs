@@ -53,5 +53,5 @@ void RescueTheHermit() {
 }
 
 void SetPavilionLayout() {
-    SetPavilionPlacement(130, 62, PAVILION_FACE_NE);
+    SetPavilionPlacement(143, 73, PAVILION_FACE_SW);
 }

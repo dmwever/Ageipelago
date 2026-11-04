@@ -41,5 +41,5 @@ void AssassinateTheShah() {
 }
 
 void SetPavilionLayout() {
-    SetPavilionPlacement(189, 139, PAVILION_FACE_NE);
+    SetPavilionPlacement(219, 58, PAVILION_FACE_SW);
 }

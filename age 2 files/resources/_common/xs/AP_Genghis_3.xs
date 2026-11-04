@@ -53,5 +53,5 @@ void FindTransportShip() {
 }
 
 void SetPavilionLayout() {
-    SetPavilionPlacement(177, 22, PAVILION_FACE_NW);
+    SetPavilionPlacement(183, 13, PAVILION_FACE_SW);
 }
