@@ -40,6 +40,14 @@ extern const int UNIT_VARIANT_CAPACITY = 16;
 extern const int TYPE_INDEX_CAPACITY = 4000;
 extern const int TECH_SHADOW = 1181;
 
+extern const int HEAVY_WARSHIPS_TECH = 35;
+extern const int GALLEON_TECH = 911;
+extern const int CARRACK_TECH = 904;
+extern const int FAST_FIRE_SHIP_TECH = 246;
+extern const int GALLEON_EFFECT = 170;
+extern const int CARRACK_EFFECT = 911;
+extern const int FAST_FIRE_SHIP_EFFECT = 235;
+
 /* Techsanity */
 
 extern const int TECHSANITY_NONE = 0;
