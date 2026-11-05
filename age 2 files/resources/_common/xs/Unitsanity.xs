@@ -201,8 +201,8 @@ void setObjectDisable(int objectId = -1, float disableFlag = 1.0, bool enable = 
 
 void setUnitDisable(vector unit = cInvalidVector, float disableFlag = 1.0) {
     bool enable = false;
-    if (disableFlag == 0.0 && ageReached(structGetInt(unit, "age"))
-        && structGetBool(unit, "trainable")) {
+    if (disableFlag == 0.0 && structGetInt(unit, "tier") == 0
+        && ageReached(structGetInt(unit, "age")) && structGetBool(unit, "trainable")) {
         enable = true;
     }
     setObjectDisable(structGetInt(unit, "typeId"), disableFlag, enable);
