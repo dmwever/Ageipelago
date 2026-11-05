@@ -102,6 +102,25 @@ Withholding all upgrades rather than the militia line specifically needs no new 
 table does not exist yet at `InitTechsanity` time - and is truer to the feature. The Militia line
 still turns out Militia, being tier 0 with no upgrade tech.
 
+**The shadow tech is what keeps a knocked-down unit down**, and this is the part that looks like a
+bug until you know it. A researched upgrade is standing: the engine lifts anything you create up to
+the researched tier, so knocking a Light Cavalry down by creating a Scout Cavalry in its place
+hands the unit straight back as a Light Cavalry. Nothing in `Caveman.xs` prevents that. What
+prevents it is Techsanity never leaving an upgrade researched - `initTech` strips every tech's
+effect to `NOOP_EFFECT`, and `applyViaShadow` fires the real effect one-shot off `TECH_SHADOW`,
+which converts the units standing on the map and leaves nothing behind for a later creation to
+inherit. So the knock-down holds because the line was never upgraded, only its units were.
+
+Two readings this forecloses, both of which look right from `Caveman.xs` alone. `ApplyCaveman`
+keys off `canonicalTypeOf(xsGetUnitObjectId(unitId))`, and an upgraded unit reports its **line's
+base** id there, not its tier - a Light Cavalry reads 448, a Siege Ram reads 1258. Read on its own
+that says caveman mistakes every upgraded unit for tier 0 and skips it. It does not matter: under
+the shadow design an upgraded unit is the only shape a knocked-down one could climb back into, and
+there is nothing for caveman to knock down in the first place. Nor is the copy id the fix - swapping
+`ApplyCaveman` to read `xsGetUnitCopyId` would have it chase tiers the strip already prevents.
+`checkOwnedUnits` in `Unitsanity.xs` is the one place that **does** need the tier, and it reads the
+copy id for exactly that reason.
+
 **Exemption is a struct field**, `Unit.cavemanExempt`, set by the installer rather than kept as a
 hand-written list in XS. Heroes, escorts and villager jobs are emitted as rows so their locations
 reach the game at all, and the flag is what stops `findUnit` succeeding on them and caveman
