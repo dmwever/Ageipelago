@@ -5,6 +5,10 @@ void InitScenarioLocations() {
   AddLocations(30300, 30307);
 }
 
+void InitScenarioThreats() {
+  EnableWonderThreat(4);
+}
+
 void GiveScenarioItems() {
   ReadScenarioItemFile("GEN3");
 }

@@ -41,6 +41,7 @@ them. There is no CI and no test suite in this repo.
 | `Ages.xs` | 70 | age shuffle |
 | `MercenaryLedger.xs` | 55 | the pending completed-mercenary queue |
 | `AP_Headers.xs` | 55 | the nine `mutable` stubs, each of which warns when it runs |
+| `VictoryThreats.xs` | 405 | Wonder and relic countdowns that custom victory switched off; a scenario opts in from `InitScenarioThreats()` |
 | `APavilion.xs` | 172 | creates the pavilion, hardens it, owns the victory flow and colour cycle |
 | `SlotData.xs` | 9 | per-seed identity and options, written by `/install` |
 | `TechData.xs` | 6 | per-seed tech table, written by `/install` |
@@ -160,6 +161,7 @@ with the pavilion points.
 | `GiveScenarioItems()` | each of the 12 scenario files |
 | `SetScenarioAge()` | each of the 12 scenario files |
 | `SetPavilionLayout()` | each of the 12 scenario files |
+| `InitScenarioThreats()` | `AP_Genghis_3.xs` and `AP_Attila_6.xs` only; silent by design, since most scenarios have no threat |
 
 **Every stub announces itself in red when it runs.** A stub still holding the floor means the real
 definition never arrived — a scenario forgot an override, or an include moved and a library one is

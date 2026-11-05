@@ -6,6 +6,7 @@ include "./MercenaryLedger.xs";
 include "./MercenarySeats.xs";
 include "./MercenarySpawn.xs";
 include "./APavilion.xs";
+include "./VictoryThreats.xs";
 
 int apArrayProbe = -1;
 
@@ -259,6 +260,8 @@ void InitAP() {
     InitCaveman();
     InitProfessions();
     InitScenarioLocations();
+    InitVictoryThreats();
+    InitScenarioThreats();
     InitMercenaryLedger();
     InitMercenarySeats();
     InitMercenarySpawn();

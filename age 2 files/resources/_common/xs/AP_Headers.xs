@@ -46,6 +46,9 @@ mutable void InitScenarioLocations() {
                + " locations and can never send a check.");
 }
 
+mutable void InitScenarioThreats() {
+}
+
 mutable void GiveScenarioItems() {
     xsChatData("<RED>This scenario does not define GiveScenarioItems, so its item file is never"
                + " read and nothing arrives.");

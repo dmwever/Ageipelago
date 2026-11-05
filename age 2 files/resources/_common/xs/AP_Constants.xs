@@ -244,3 +244,14 @@ extern const int TRAP_SCAN_CAPACITY = 512;
 // Sent in place of an entry the window has to count but must not deliver, because it has
 // already been paid out. -1 is taken: it marks an empty slot elsewhere in the protocol.
 extern const int AP_ITEM_SKIP = -2;
+
+/* Victory threats */
+
+extern const int THREATENED_PLAYER = 1;
+extern const int THREAT_BASE_YEARS = 200;
+extern const float THREAT_MODIFIER_PER_YEAR = 10.0;
+extern const int THREAT_REVEAL_RADIUS = 10;
+extern const int THREAT_ANNOUNCE_SECONDS = 10;
+extern const int THREAT_WONDER_CAPACITY = 8;
+extern const int THREAT_RELIC_REVEAL_CAPACITY = 16;
+extern const int MAP_REVEALER = 837;
