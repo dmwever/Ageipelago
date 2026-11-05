@@ -164,6 +164,7 @@ void onTechResearched(vector tech = cInvalidVector) {
     }
     structSetBool(tech, "researched", true);
     AP_Check_Location(structGetInt(tech, "itemId"));
+    unitsDirty = true;
     tryApplyEffect(tech);
 }
 
