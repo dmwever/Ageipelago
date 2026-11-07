@@ -40,11 +40,11 @@ void InitVictoryThreats() {
 }
 
 void EnableWonderThreat(int owner = -1) {
-    if (owner < 0 || owner >= xsArrayGetSize(wonderThreatOwners)) {
+    if (owner < 1 || owner > xsArrayGetSize(wonderThreatOwners)) {
         xsChatData("<RED>EnableWonderThreat: player " + owner + " is not in this scenario.");
         return;
     }
-    xsArraySetBool(wonderThreatOwners, owner, true);
+    xsArraySetBool(wonderThreatOwners, owner - 1, true);
     xsEnableRule("WonderThreatWatch");
 }
 
@@ -171,7 +171,7 @@ bool IsWonderStanding(int slot = -1) {
 }
 
 void RetireWonderOwner(int owner = -1) {
-    xsArraySetBool(wonderThreatOwners, owner, false);
+    xsArraySetBool(wonderThreatOwners, owner - 1, false);
     for (slot = 0; < THREAT_WONDER_CAPACITY) {
         if (xsArrayGetInt(wonderSlotOwners, slot) == owner) {
             ReleaseWonderSlot(slot);
@@ -222,8 +222,9 @@ rule WonderThreatWatch
     maxInterval 1
 {
     int players = xsArrayGetSize(wonderThreatOwners);
-    for (owner = 0; < players) {
-        if (xsArrayGetBool(wonderThreatOwners, owner)) {
+    for (index = 0; < players) {
+        if (xsArrayGetBool(wonderThreatOwners, index)) {
+            int owner = index + 1;
             if (xsGetPlayerInGame(owner)) {
                 ScanOwnerWonders(owner);
             }
@@ -269,8 +270,9 @@ int FindRelicMonastery(int relicId = -1) {
 
 bool IsAlliedWithHolders(int player = -1) {
     int players = xsArrayGetSize(relicHolders);
-    for (other = 0; < players) {
-        if (other != player && xsArrayGetBool(relicHolders, other)) {
+    for (index = 0; < players) {
+        int other = index + 1;
+        if (other != player && xsArrayGetBool(relicHolders, index)) {
             if (xsGetDiplomacy(player, other) != cDiplomacyAlly
                 || xsGetDiplomacy(other, player) != cDiplomacyAlly) {
                 return (false);
@@ -283,11 +285,12 @@ bool IsAlliedWithHolders(int player = -1) {
 int FindRelicHolder() {
     int holder = -1;
     int relics = 0;
-    int players = xsGetNumPlayers();
-    for (player = 0; < players) {
-        xsArraySetBool(relicHolders, player, false);
+    int players = xsArrayGetSize(relicHolders);
+    for (index = 0; < players) {
+        xsArraySetBool(relicHolders, index, false);
     }
-    for (player = 0; < players) {
+    for (slot = 0; < players) {
+        int player = slot + 1;
         relicScan = xsGetPlayerUnitIds(player, cRelicClass, relicScan);
         int found = xsArrayGetSize(relicScan);
         for (i = 0; < found) {
@@ -303,7 +306,7 @@ int FindRelicHolder() {
             if (IsAlliedWithHolders(monasteryOwner) == false) {
                 return (-1);
             }
-            xsArraySetBool(relicHolders, monasteryOwner, true);
+            xsArraySetBool(relicHolders, monasteryOwner - 1, true);
             if (holder == -1) {
                 holder = monasteryOwner;
             }
@@ -325,9 +328,9 @@ bool HasRevealedMonastery(int monasteryId = -1) {
 }
 
 void RevealRelicMonasteries() {
-    int players = xsGetNumPlayers();
-    for (player = 0; < players) {
-        relicScan = xsGetPlayerUnitIds(player, cRelicClass, relicScan);
+    int players = xsArrayGetSize(relicHolders);
+    for (slot = 0; < players) {
+        relicScan = xsGetPlayerUnitIds(slot + 1, cRelicClass, relicScan);
         int found = xsArrayGetSize(relicScan);
         for (i = 0; < found) {
             int monasteryId = FindRelicMonastery(xsArrayGetInt(relicScan, i));
