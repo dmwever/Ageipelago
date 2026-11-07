@@ -54,6 +54,7 @@ void EnableRelicThreat() {
 }
 
 int RevealAround(vector position = cInvalidVector, int radius = 0) {
+    xsEffectAmount(cSetAttribute, MAP_REVEALER, cLineOfSight, 1.0 * radius, THREATENED_PLAYER);
     int revealerId = xsCreateUnit(MAP_REVEALER, THREATENED_PLAYER, position, false, false, false);
     if (revealerId == -1) {
         return (-1);
@@ -67,9 +68,7 @@ void RemoveRevealer(int revealerId = -1) {
     if (revealerId == -1) {
         return;
     }
-    if (xsDoesUnitExist(revealerId)) {
-        xsRemoveUnit(revealerId);
-    }
+    xsRemoveUnit(revealerId);
 }
 
 int CountdownYears(float modifier = 0.0) {
