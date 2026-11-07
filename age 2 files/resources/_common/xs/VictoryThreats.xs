@@ -14,7 +14,7 @@ int relicHolder = -1;
 int relicStartedAt = -1;
 float relicModifier = 0.0;
 int relicRevealers = -1;
-int relicRevealedMonasteries = -1;
+int relicRevealedIds = -1;
 int relicRevealerCount = 0;
 int relicScan = -1;
 int relicHolders = -1;
@@ -32,8 +32,8 @@ void InitVictoryThreats() {
     relicThreatEnabled = false;
     relicCounting = false;
     relicRevealers = xsArrayCreateInt(THREAT_RELIC_REVEAL_CAPACITY, -1, "ap-threat-relic-revealers");
-    relicRevealedMonasteries = xsArrayCreateInt(THREAT_RELIC_REVEAL_CAPACITY, -1,
-                                                "ap-threat-relic-monasteries");
+    relicRevealedIds = xsArrayCreateInt(THREAT_RELIC_REVEAL_CAPACITY, -1,
+                                                "ap-threat-relic-ids");
     relicRevealerCount = 0;
     relicScan = xsArrayCreateInt(1, -1, "ap-threat-relic-scan");
     relicHolders = xsArrayCreateBool(xsGetNumPlayers(), false, "ap-threat-relic-holders");
@@ -284,66 +284,77 @@ bool IsAlliedWithHolders(int player = -1) {
 
 int FindRelicHolder() {
     int holder = -1;
-    int relics = 0;
     int players = xsArrayGetSize(relicHolders);
     for (index = 0; < players) {
         xsArraySetBool(relicHolders, index, false);
     }
-    for (slot = 0; < players) {
-        int player = slot + 1;
-        relicScan = xsGetPlayerUnitIds(player, cRelicClass, relicScan);
-        int found = xsArrayGetSize(relicScan);
-        for (i = 0; < found) {
-            int monasteryId = FindRelicMonastery(xsArrayGetInt(relicScan, i));
-            relics++;
-            if (monasteryId == -1) {
-                return (-1);
-            }
-            int monasteryOwner = xsGetUnitOwner(monasteryId);
-            if (IsRelicThreatHolder(monasteryOwner) == false) {
-                return (-1);
-            }
-            if (IsAlliedWithHolders(monasteryOwner) == false) {
-                return (-1);
-            }
-            xsArraySetBool(relicHolders, monasteryOwner - 1, true);
-            if (holder == -1) {
-                holder = monasteryOwner;
-            }
-        }
+
+    int found = xsGetPlayerUnitIds(0, cRelicClass, relicScan);
+    if (found >= 0) {
+        relicScan = found;
     }
+    if (relicScan < 0) {
+        return (-1);
+    }
+    int relics = xsArrayGetSize(relicScan);
     if (relics == 0) {
         return (-1);
+    }
+
+    for (i = 0; < relics) {
+        int relicId = xsArrayGetInt(relicScan, i);
+        if (relicId < 0) {
+            continue;
+        }
+        int monasteryId = FindRelicMonastery(relicId);
+        if (monasteryId == -1) {
+            return (-1);
+        }
+        int monasteryOwner = xsGetUnitOwner(monasteryId);
+        if (IsRelicThreatHolder(monasteryOwner) == false) {
+            return (-1);
+        }
+        if (IsAlliedWithHolders(monasteryOwner) == false) {
+            return (-1);
+        }
+        xsArraySetBool(relicHolders, monasteryOwner - 1, true);
+        if (holder == -1) {
+            holder = monasteryOwner;
+        }
     }
     return (holder);
 }
 
-bool HasRevealedMonastery(int monasteryId = -1) {
+bool HasRevealedRelic(int relicId = -1) {
     for (i = 0; < relicRevealerCount) {
-        if (xsArrayGetInt(relicRevealedMonasteries, i) == monasteryId) {
+        if (xsArrayGetInt(relicRevealedIds, i) == relicId) {
             return (true);
         }
     }
     return (false);
 }
 
-void RevealRelicMonasteries() {
-    int players = xsArrayGetSize(relicHolders);
-    for (slot = 0; < players) {
-        relicScan = xsGetPlayerUnitIds(slot + 1, cRelicClass, relicScan);
-        int found = xsArrayGetSize(relicScan);
-        for (i = 0; < found) {
-            int monasteryId = FindRelicMonastery(xsArrayGetInt(relicScan, i));
-            if (monasteryId != -1 && HasRevealedMonastery(monasteryId) == false) {
-                if (relicRevealerCount >= THREAT_RELIC_REVEAL_CAPACITY) {
-                    return;
-                }
-                xsArraySetInt(relicRevealedMonasteries, relicRevealerCount, monasteryId);
-                xsArraySetInt(relicRevealers, relicRevealerCount,
-                              RevealAround(xsGetUnitPosition(monasteryId)));
-                relicRevealerCount++;
-            }
+void RevealRelics() {
+    int found = xsGetPlayerUnitIds(0, cRelicClass, relicScan);
+    if (found >= 0) {
+        relicScan = found;
+    }
+    if (relicScan < 0) {
+        return;
+    }
+    int relics = xsArrayGetSize(relicScan);
+    for (i = 0; < relics) {
+        int relicId = xsArrayGetInt(relicScan, i);
+        if (relicId < 0 || HasRevealedRelic(relicId)) {
+            continue;
         }
+        if (relicRevealerCount >= THREAT_RELIC_REVEAL_CAPACITY) {
+            return;
+        }
+        xsArraySetInt(relicRevealedIds, relicRevealerCount, relicId);
+        xsArraySetInt(relicRevealers, relicRevealerCount,
+                      RevealAround(xsGetUnitPosition(relicId)));
+        relicRevealerCount++;
     }
 }
 
@@ -351,7 +362,7 @@ void ClearRelicRevealers() {
     for (i = 0; < relicRevealerCount) {
         RemoveRevealer(xsArrayGetInt(relicRevealers, i));
         xsArraySetInt(relicRevealers, i, -1);
-        xsArraySetInt(relicRevealedMonasteries, i, -1);
+        xsArraySetInt(relicRevealedIds, i, -1);
     }
     relicRevealerCount = 0;
 }
@@ -361,7 +372,7 @@ void StartRelicCountdown(int holder = -1) {
     relicHolder = holder;
     relicStartedAt = xsGetGameTime();
     relicModifier = xsPlayerAttribute(holder, cAttributeHunRelicBonus);
-    RevealRelicMonasteries();
+    RevealRelics();
     xsDisplayTimer(THREAT_WONDER_CAPACITY, RelicTimerMessage(holder), CountdownYears(relicModifier),
                    cTimerUnitYears, true, -1);
     xsDisplayInstructions(ThreatOwnerLabel(holder) + " holds every relic! Take one back before time runs out.",
