@@ -112,9 +112,23 @@ void applyShadowEffect(int effectId = -1) {
 
 void applyViaShadow(vector tech = cInvalidVector) {
     if (isHeavyWarships(tech)) {
-        applyShadowEffect(GALLEON_EFFECT);
-        applyShadowEffect(CARRACK_EFFECT);
-        applyShadowEffect(FAST_FIRE_SHIP_EFFECT);
+        int galleon = -1;
+        int carrack = -1;
+        int fireShip = -1;
+        if (unitsanityReady) {
+            galleon = findUnit(GALLEON);
+            carrack = findUnit(CARRACK);
+            fireShip = findUnit(FAST_FIRE_SHIP);
+        }
+        if (galleon < 0 || structGetBool(getUnit(galleon), "trainable")) {
+            applyShadowEffect(GALLEON_EFFECT);
+        }
+        if (carrack < 0 || structGetBool(getUnit(carrack), "trainable")) {
+            applyShadowEffect(CARRACK_EFFECT);
+        }
+        if (fireShip < 0 || structGetBool(getUnit(fireShip), "trainable")) {
+            applyShadowEffect(FAST_FIRE_SHIP_EFFECT);
+        }
         return;
     }
     applyShadowEffect(structGetInt(tech, "effectId"));
