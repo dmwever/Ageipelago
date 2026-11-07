@@ -254,6 +254,7 @@ extern const int THREATENED_PLAYER = 1;
 extern const int THREAT_BASE_YEARS = 200;
 extern const float THREAT_MODIFIER_PER_YEAR = 10.0;
 extern const int THREAT_REVEAL_RADIUS = 10;
+extern const int THREAT_RELIC_REVEAL_RADIUS = 3;
 extern const int THREAT_ANNOUNCE_SECONDS = 10;
 extern const int THREAT_WONDER_CAPACITY = 8;
 extern const int THREAT_RELIC_REVEAL_CAPACITY = 16;

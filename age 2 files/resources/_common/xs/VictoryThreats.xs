@@ -14,7 +14,7 @@ int relicHolder = -1;
 int relicStartedAt = -1;
 float relicModifier = 0.0;
 int relicRevealers = -1;
-int relicRevealedIds = -1;
+int relicRevealedMonasteries = -1;
 int relicRevealerCount = 0;
 int relicScan = -1;
 int relicHolders = -1;
@@ -32,8 +32,8 @@ void InitVictoryThreats() {
     relicThreatEnabled = false;
     relicCounting = false;
     relicRevealers = xsArrayCreateInt(THREAT_RELIC_REVEAL_CAPACITY, -1, "ap-threat-relic-revealers");
-    relicRevealedIds = xsArrayCreateInt(THREAT_RELIC_REVEAL_CAPACITY, -1,
-                                                "ap-threat-relic-ids");
+    relicRevealedMonasteries = xsArrayCreateInt(THREAT_RELIC_REVEAL_CAPACITY, -1,
+                                                "ap-threat-relic-monasteries");
     relicRevealerCount = 0;
     relicScan = xsArrayCreateInt(1, -1, "ap-threat-relic-scan");
     relicHolders = xsArrayCreateBool(xsGetNumPlayers(), false, "ap-threat-relic-holders");
@@ -53,13 +53,13 @@ void EnableRelicThreat() {
     xsEnableRule("RelicThreatWatch");
 }
 
-int RevealAround(vector position = cInvalidVector) {
+int RevealAround(vector position = cInvalidVector, int radius = 0) {
     int revealerId = xsCreateUnit(MAP_REVEALER, THREATENED_PLAYER, position, false, false, false);
     if (revealerId == -1) {
         return (-1);
     }
     xsEffectAmount(cSetUnitAttribute, revealerId, cLineOfSight,
-                   1.0 * THREAT_REVEAL_RADIUS, THREATENED_PLAYER);
+                   1.0 * radius, THREATENED_PLAYER);
     return (revealerId);
 }
 
@@ -135,7 +135,7 @@ void TrackWonder(int unitId = -1, int owner = -1) {
     }
     xsArraySetInt(wonderSlotUnits, slot, unitId);
     xsArraySetInt(wonderSlotOwners, slot, owner);
-    xsArraySetInt(wonderSlotRevealers, slot, RevealAround(xsGetUnitPosition(unitId)));
+    xsArraySetInt(wonderSlotRevealers, slot, RevealAround(xsGetUnitPosition(unitId), THREAT_REVEAL_RADIUS));
     xsArraySetBool(wonderSlotCounting, slot, false);
 }
 
@@ -325,9 +325,9 @@ int FindRelicHolder() {
     return (holder);
 }
 
-bool HasRevealedRelic(int relicId = -1) {
+bool HasRevealedMonastery(int monasteryId = -1) {
     for (i = 0; < relicRevealerCount) {
-        if (xsArrayGetInt(relicRevealedIds, i) == relicId) {
+        if (xsArrayGetInt(relicRevealedMonasteries, i) == monasteryId) {
             return (true);
         }
     }
@@ -345,15 +345,20 @@ void RevealRelics() {
     int relics = xsArrayGetSize(relicScan);
     for (i = 0; < relics) {
         int relicId = xsArrayGetInt(relicScan, i);
-        if (relicId < 0 || HasRevealedRelic(relicId)) {
+        if (relicId < 0) {
+            continue;
+        }
+        int monasteryId = FindRelicMonastery(relicId);
+        if (monasteryId < 0 || HasRevealedMonastery(monasteryId)) {
             continue;
         }
         if (relicRevealerCount >= THREAT_RELIC_REVEAL_CAPACITY) {
             return;
         }
-        xsArraySetInt(relicRevealedIds, relicRevealerCount, relicId);
+        xsArraySetInt(relicRevealedMonasteries, relicRevealerCount, monasteryId);
         xsArraySetInt(relicRevealers, relicRevealerCount,
-                      RevealAround(xsGetUnitPosition(relicId)));
+                      RevealAround(xsGetUnitPosition(monasteryId),
+                                   THREAT_RELIC_REVEAL_RADIUS));
         relicRevealerCount++;
     }
 }
@@ -362,7 +367,7 @@ void ClearRelicRevealers() {
     for (i = 0; < relicRevealerCount) {
         RemoveRevealer(xsArrayGetInt(relicRevealers, i));
         xsArraySetInt(relicRevealers, i, -1);
-        xsArraySetInt(relicRevealedIds, i, -1);
+        xsArraySetInt(relicRevealedMonasteries, i, -1);
     }
     relicRevealerCount = 0;
 }
