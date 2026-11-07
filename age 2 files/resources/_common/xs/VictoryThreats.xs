@@ -68,7 +68,7 @@ void RemoveRevealer(int revealerId = -1) {
     if (revealerId == -1) {
         return;
     }
-    xsRemoveUnit(revealerId);
+    xsEffectAmount(cSetUnitAttribute, revealerId, cHitpoints, 0.0, THREATENED_PLAYER);
 }
 
 int CountdownYears(float modifier = 0.0) {
