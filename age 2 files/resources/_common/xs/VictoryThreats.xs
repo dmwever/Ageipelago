@@ -148,26 +148,15 @@ bool IsWonderComplete(int unitId = -1, int owner = -1) {
     return (xsGetUnitBuildPoints(unitId) >= required);
 }
 
-int WonderFootprintAxis(int owner = -1, int attribute = 0) {
-    int tiles = xsCeilToInt(2.0 * xsGetObjectAttribute(owner, WONDER, attribute, 0));
-    if (tiles < 1 || tiles > THREAT_FOUNDATION_MAX_TILES) {
-        return (THREAT_FOUNDATION_TILES);
-    }
-    return (tiles);
-}
-
-void RevealFootprint(int slot = -1, int unitId = -1, int owner = -1) {
-    int tilesX = WonderFootprintAxis(owner, cUnitSizeX);
-    int tilesY = WonderFootprintAxis(owner, cUnitSizeY);
-    int rowsX = tilesX - 1;
-    int rowsY = tilesY - 1;
+void RevealFootprint(int slot = -1, int unitId = -1) {
+    int rows = THREAT_FOUNDATION_ROWS;
     vector centre = xsGetUnitPosition(unitId);
-    float firstX = xsVectorGetX(centre) - 0.5 * (tilesX - 1);
-    float firstY = xsVectorGetY(centre) - 0.5 * (tilesY - 1);
+    float firstX = xsVectorGetX(centre) - 0.5 * rows;
+    float firstY = xsVectorGetY(centre) - 0.5 * rows;
     int base = slot * THREAT_FOUNDATION_CAPACITY;
     int placed = 0;
-    for (ix = 0; < rowsX) {
-        for (iy = 0; < rowsY) {
+    for (ix = 0; < rows) {
+        for (iy = 0; < rows) {
             if (placed >= THREAT_FOUNDATION_CAPACITY) {
                 break;
             }
@@ -234,7 +223,7 @@ void RevealWonderSlot(int slot = -1) {
         return;
     }
     xsArraySetBool(wonderSlotRevealed, slot, true);
-    RevealFootprint(slot, unitId, owner);
+    RevealFootprint(slot, unitId);
     xsDisplayInstructions(ThreatOwnerLabel(owner) + " has begun a Wonder!",
                           THREAT_ANNOUNCE_SECONDS, owner, WONDER, cPanelTop,
                           false, true, "", THREATENED_PLAYER);
