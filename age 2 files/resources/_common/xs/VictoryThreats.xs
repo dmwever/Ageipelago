@@ -26,7 +26,8 @@ void InitVictoryThreats() {
     wonderThreatOwners = xsArrayCreateBool(xsGetNumPlayers(), false, "ap-threat-wonder-owners");
     wonderSlotUnits = xsArrayCreateInt(THREAT_WONDER_CAPACITY, -1, "ap-threat-wonder-units");
     wonderSlotOwners = xsArrayCreateInt(THREAT_WONDER_CAPACITY, -1, "ap-threat-wonder-slot-owners");
-    wonderSlotRevealers = xsArrayCreateInt(THREAT_WONDER_CAPACITY, -1, "ap-threat-wonder-revealers");
+    wonderSlotRevealers = xsArrayCreateInt(THREAT_WONDER_CAPACITY * THREAT_WONDER_REVEAL_CAPACITY,
+                                           -1, "ap-threat-wonder-revealers");
     wonderSlotFootprint = xsArrayCreateInt(THREAT_WONDER_CAPACITY * THREAT_FOUNDATION_CAPACITY,
                                            -1, "ap-threat-wonder-footprint");
     wonderSlotCounting = xsArrayCreateBool(THREAT_WONDER_CAPACITY, false, "ap-threat-wonder-counting");
@@ -80,14 +81,14 @@ int RevealAround(vector position = cInvalidVector, int radius = 0) {
 }
 
 void RepinRevealers() {
-    for (slot = 0; < THREAT_WONDER_CAPACITY) {
-        PinRevealer(xsArrayGetInt(wonderSlotRevealers, slot), THREAT_REVEAL_RADIUS);
+    for (cell = 0; < THREAT_WONDER_CAPACITY * THREAT_WONDER_REVEAL_CAPACITY) {
+        PinRevealer(xsArrayGetInt(wonderSlotRevealers, cell), THREAT_REVEAL_RADIUS);
     }
-    for (cell = 0; < THREAT_WONDER_CAPACITY * THREAT_FOUNDATION_CAPACITY) {
-        PinRevealer(xsArrayGetInt(wonderSlotFootprint, cell), THREAT_FOUNDATION_LOS);
+    for (held = 0; < THREAT_WONDER_CAPACITY * THREAT_FOUNDATION_CAPACITY) {
+        PinRevealer(xsArrayGetInt(wonderSlotFootprint, held), THREAT_FOUNDATION_LOS);
     }
-    for (held = 0; < relicRevealerCount) {
-        PinRevealer(xsArrayGetInt(relicRevealers, held), THREAT_RELIC_REVEAL_RADIUS);
+    for (kept = 0; < relicRevealerCount) {
+        PinRevealer(xsArrayGetInt(relicRevealers, kept), THREAT_RELIC_REVEAL_RADIUS);
     }
 }
 
@@ -148,45 +149,60 @@ bool IsWonderComplete(int unitId = -1, int owner = -1) {
     return (xsGetUnitBuildPoints(unitId) >= required);
 }
 
-void RevealFootprint(int slot = -1, int unitId = -1) {
-    int rows = THREAT_FOUNDATION_ROWS;
+void RevealGrid(int arrayId = -1, int base = 0, int rows = 0, int radius = 0,
+                int unitId = -1) {
     vector centre = xsGetUnitPosition(unitId);
     float firstX = xsVectorGetX(centre) - 0.5 * rows;
     float firstY = xsVectorGetY(centre) - 0.5 * rows;
-    int base = slot * THREAT_FOUNDATION_CAPACITY;
     int placed = 0;
     for (ix = 0; < rows) {
         for (iy = 0; < rows) {
-            if (placed >= THREAT_FOUNDATION_CAPACITY) {
-                break;
-            }
             vector spot = xsVectorSet(firstX + 1.0 * ix, firstY + 1.0 * iy, 0.0);
-            xsArraySetInt(wonderSlotFootprint, base + placed,
-                          RevealAround(spot, THREAT_FOUNDATION_LOS));
+            xsArraySetInt(arrayId, base + placed, RevealAround(spot, radius));
             placed = placed + 1;
         }
     }
     RepinRevealers();
 }
 
-void ClearFootprint(int slot = -1) {
-    int base = slot * THREAT_FOUNDATION_CAPACITY;
-    for (i = 0; < THREAT_FOUNDATION_CAPACITY) {
-        RemoveRevealer(xsArrayGetInt(wonderSlotFootprint, base + i));
-        xsArraySetInt(wonderSlotFootprint, base + i, -1);
+void ClearGrid(int arrayId = -1, int base = 0, int cells = 0) {
+    for (i = 0; < cells) {
+        RemoveRevealer(xsArrayGetInt(arrayId, base + i));
+        xsArraySetInt(arrayId, base + i, -1);
     }
+}
+
+void RevealFootprint(int slot = -1, int unitId = -1) {
+    RevealGrid(wonderSlotFootprint, slot * THREAT_FOUNDATION_CAPACITY,
+               THREAT_FOUNDATION_ROWS, THREAT_FOUNDATION_LOS, unitId);
+}
+
+void ClearFootprint(int slot = -1) {
+    ClearGrid(wonderSlotFootprint, slot * THREAT_FOUNDATION_CAPACITY,
+              THREAT_FOUNDATION_CAPACITY);
+}
+
+void RevealWonder(int slot = -1, int unitId = -1) {
+    RevealGrid(wonderSlotRevealers, slot * THREAT_WONDER_REVEAL_CAPACITY,
+               THREAT_WONDER_REVEAL_ROWS, THREAT_REVEAL_RADIUS, unitId);
+}
+
+void ClearWonderReveal(int slot = -1) {
+    ClearGrid(wonderSlotRevealers, slot * THREAT_WONDER_REVEAL_CAPACITY,
+              THREAT_WONDER_REVEAL_CAPACITY);
+}
+
+bool HasWonderReveal(int slot = -1) {
+    return (xsArrayGetInt(wonderSlotRevealers, slot * THREAT_WONDER_REVEAL_CAPACITY) != -1);
 }
 
 void CompleteWonderReveal(int slot = -1) {
     ClearFootprint(slot);
     xsArraySetBool(wonderSlotRevealed, slot, true);
-    if (xsArrayGetInt(wonderSlotRevealers, slot) != -1) {
+    if (HasWonderReveal(slot)) {
         return;
     }
-    xsArraySetInt(wonderSlotRevealers, slot,
-                  RevealAround(xsGetUnitPosition(xsArrayGetInt(wonderSlotUnits, slot)),
-                               THREAT_REVEAL_RADIUS));
-    RepinRevealers();
+    RevealWonder(slot, xsArrayGetInt(wonderSlotUnits, slot));
 }
 
 bool HasWonderBegun(int unitId = -1) {
@@ -194,13 +210,20 @@ bool HasWonderBegun(int unitId = -1) {
 }
 
 int WonderSlotRevealKind(int slot = -1) {
-    if (xsArrayGetInt(wonderSlotRevealers, slot) != -1) {
+    if (HasWonderReveal(slot)) {
         return (2);
     }
     if (xsArrayGetInt(wonderSlotFootprint, slot * THREAT_FOUNDATION_CAPACITY) != -1) {
         return (1);
     }
     return (0);
+}
+
+bool IsWonderCounting(int slot = -1) {
+    if (slot < 0) {
+        return (false);
+    }
+    return (xsArrayGetBool(wonderSlotCounting, slot));
 }
 
 void RevealWonderSlot(int slot = -1) {
@@ -214,9 +237,7 @@ void RevealWonderSlot(int slot = -1) {
     }
     if (IsWonderComplete(unitId, owner)) {
         xsArraySetBool(wonderSlotRevealed, slot, true);
-        xsArraySetInt(wonderSlotRevealers, slot,
-                      RevealAround(xsGetUnitPosition(unitId), THREAT_REVEAL_RADIUS));
-        RepinRevealers();
+        RevealWonder(slot, unitId);
         return;
     }
     if (HasWonderBegun(unitId) == false) {
@@ -264,12 +285,11 @@ void ReleaseWonderSlot(int slot = -1) {
     if (xsArrayGetBool(wonderSlotCounting, slot)) {
         xsClearTimer(slot, -1);
     }
-    RemoveRevealer(xsArrayGetInt(wonderSlotRevealers, slot));
+    ClearWonderReveal(slot);
     ClearFootprint(slot);
     xsArraySetBool(wonderSlotRevealed, slot, false);
     xsArraySetInt(wonderSlotUnits, slot, -1);
     xsArraySetInt(wonderSlotOwners, slot, -1);
-    xsArraySetInt(wonderSlotRevealers, slot, -1);
     xsArraySetBool(wonderSlotCounting, slot, false);
 }
 
