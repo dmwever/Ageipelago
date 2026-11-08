@@ -26,8 +26,7 @@ void InitVictoryThreats() {
     wonderThreatOwners = xsArrayCreateBool(xsGetNumPlayers(), false, "ap-threat-wonder-owners");
     wonderSlotUnits = xsArrayCreateInt(THREAT_WONDER_CAPACITY, -1, "ap-threat-wonder-units");
     wonderSlotOwners = xsArrayCreateInt(THREAT_WONDER_CAPACITY, -1, "ap-threat-wonder-slot-owners");
-    wonderSlotRevealers = xsArrayCreateInt(THREAT_WONDER_CAPACITY * THREAT_WONDER_REVEAL_CAPACITY,
-                                           -1, "ap-threat-wonder-revealers");
+    wonderSlotRevealers = xsArrayCreateInt(THREAT_WONDER_CAPACITY, -1, "ap-threat-wonder-revealers");
     wonderSlotFootprint = xsArrayCreateInt(THREAT_WONDER_CAPACITY * THREAT_FOUNDATION_CAPACITY,
                                            -1, "ap-threat-wonder-footprint");
     wonderSlotCounting = xsArrayCreateBool(THREAT_WONDER_CAPACITY, false, "ap-threat-wonder-counting");
@@ -81,7 +80,7 @@ int RevealAround(vector position = cInvalidVector, int radius = 0) {
 }
 
 void RepinRevealers() {
-    for (cell = 0; < THREAT_WONDER_CAPACITY * THREAT_WONDER_REVEAL_CAPACITY) {
+    for (cell = 0; < THREAT_WONDER_CAPACITY) {
         PinRevealer(xsArrayGetInt(wonderSlotRevealers, cell), THREAT_REVEAL_RADIUS);
     }
     for (held = 0; < THREAT_WONDER_CAPACITY * THREAT_FOUNDATION_CAPACITY) {
@@ -178,8 +177,8 @@ bool IsWonderComplete(int unitId = -1, int owner = -1) {
 void RevealGrid(int arrayId = -1, int base = 0, int rows = 0, int radius = 0,
                 int unitId = -1) {
     vector centre = xsGetUnitPosition(unitId);
-    float firstX = xsVectorGetX(centre) - 0.5 * rows;
-    float firstY = xsVectorGetY(centre) - 0.5 * rows;
+    float firstX = xsVectorGetX(centre) - 0.5 * (rows - 1);
+    float firstY = xsVectorGetY(centre) - 0.5 * (rows - 1);
     int placed = 0;
     for (ix = 0; < rows) {
         for (iy = 0; < rows) {
@@ -209,17 +208,18 @@ void ClearFootprint(int slot = -1) {
 }
 
 void RevealWonder(int slot = -1, int unitId = -1) {
-    RevealGrid(wonderSlotRevealers, slot * THREAT_WONDER_REVEAL_CAPACITY,
-               THREAT_WONDER_REVEAL_ROWS, THREAT_REVEAL_RADIUS, unitId);
+    xsArraySetInt(wonderSlotRevealers, slot,
+                  RevealAround(xsGetUnitPosition(unitId), THREAT_REVEAL_RADIUS));
+    RepinRevealers();
 }
 
 void ClearWonderReveal(int slot = -1) {
-    ClearGrid(wonderSlotRevealers, slot * THREAT_WONDER_REVEAL_CAPACITY,
-              THREAT_WONDER_REVEAL_CAPACITY);
+    RemoveRevealer(xsArrayGetInt(wonderSlotRevealers, slot));
+    xsArraySetInt(wonderSlotRevealers, slot, -1);
 }
 
 bool HasWonderReveal(int slot = -1) {
-    return (xsArrayGetInt(wonderSlotRevealers, slot * THREAT_WONDER_REVEAL_CAPACITY) != -1);
+    return (xsArrayGetInt(wonderSlotRevealers, slot) != -1);
 }
 
 void CompleteWonderReveal(int slot = -1) {
