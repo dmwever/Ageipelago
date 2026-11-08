@@ -99,8 +99,34 @@ void RemoveRevealer(int revealerId = -1) {
     xsEffectAmount(cSetUnitAttribute, revealerId, cHitpoints, 0.0, THREATENED_PLAYER);
 }
 
+int ThreatBaseYears() {
+    int side = xsGetMapWidth();
+    if (xsGetMapHeight() > side) {
+        side = xsGetMapHeight();
+    }
+    if (side <= THREAT_SIDE_MINI) {
+        return (THREAT_YEARS_MINI);
+    }
+    if (side <= THREAT_SIDE_MEDIUM) {
+        return (THREAT_YEARS_MEDIUM);
+    }
+    if (side <= THREAT_SIDE_NORMAL) {
+        return (THREAT_YEARS_NORMAL);
+    }
+    if (side <= THREAT_SIDE_LARGE) {
+        return (THREAT_YEARS_LARGE);
+    }
+    if (side <= THREAT_SIDE_MASSIVE) {
+        return (THREAT_YEARS_MASSIVE);
+    }
+    if (side <= THREAT_SIDE_INCREDIBLE) {
+        return (THREAT_YEARS_INCREDIBLE);
+    }
+    return (THREAT_YEARS_LUDICROUS);
+}
+
 int CountdownYears(float modifier = 0.0) {
-    return (THREAT_BASE_YEARS + xsCeilToInt(modifier / THREAT_MODIFIER_PER_YEAR));
+    return (ThreatBaseYears() + xsCeilToInt(modifier / THREAT_MODIFIER_PER_YEAR));
 }
 
 string ThreatOwnerLabel(int owner = -1) {

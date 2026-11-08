@@ -251,7 +251,19 @@ extern const int AP_ITEM_SKIP = -2;
 /* Victory threats */
 
 extern const int THREATENED_PLAYER = 1;
-extern const int THREAT_BASE_YEARS = 200;
+extern const int THREAT_SIDE_MINI = 80;
+extern const int THREAT_YEARS_MINI = 100;
+extern const int THREAT_SIDE_MEDIUM = 168;
+extern const int THREAT_YEARS_MEDIUM = 200;
+extern const int THREAT_SIDE_NORMAL = 200;
+extern const int THREAT_YEARS_NORMAL = 300;
+extern const int THREAT_SIDE_LARGE = 220;
+extern const int THREAT_YEARS_LARGE = 350;
+extern const int THREAT_SIDE_MASSIVE = 276;
+extern const int THREAT_YEARS_MASSIVE = 400;
+extern const int THREAT_SIDE_INCREDIBLE = 360;
+extern const int THREAT_YEARS_INCREDIBLE = 450;
+extern const int THREAT_YEARS_LUDICROUS = 500;
 extern const float THREAT_MODIFIER_PER_YEAR = 10.0;
 extern const int THREAT_REVEAL_RADIUS = 8;
 extern const int THREAT_RELIC_REVEAL_RADIUS = 3;
