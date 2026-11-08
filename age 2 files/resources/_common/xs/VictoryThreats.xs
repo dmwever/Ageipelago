@@ -156,25 +156,22 @@ int WonderFootprintAxis(int owner = -1, int attribute = 0) {
     return (tiles);
 }
 
-float TileCentre(float value = 0.0) {
-    return (1.0 * (0 - xsCeilToInt(0.0 - value)) + 0.5);
-}
-
 void RevealFootprint(int slot = -1, int unitId = -1, int owner = -1) {
     int tilesX = WonderFootprintAxis(owner, cUnitSizeX);
     int tilesY = WonderFootprintAxis(owner, cUnitSizeY);
+    int rowsX = tilesX - 1;
+    int rowsY = tilesY - 1;
     vector centre = xsGetUnitPosition(unitId);
     float firstX = xsVectorGetX(centre) - 0.5 * (tilesX - 1);
     float firstY = xsVectorGetY(centre) - 0.5 * (tilesY - 1);
     int base = slot * THREAT_FOUNDATION_CAPACITY;
     int placed = 0;
-    for (ix = 0; < tilesX) {
-        for (iy = 0; < tilesY) {
+    for (ix = 0; < rowsX) {
+        for (iy = 0; < rowsY) {
             if (placed >= THREAT_FOUNDATION_CAPACITY) {
                 break;
             }
-            vector spot = xsVectorSet(TileCentre(firstX + 1.0 * ix),
-                                      TileCentre(firstY + 1.0 * iy), 0.0);
+            vector spot = xsVectorSet(firstX + 1.0 * ix, firstY + 1.0 * iy, 0.0);
             xsArraySetInt(wonderSlotFootprint, base + placed,
                           RevealAround(spot, THREAT_FOUNDATION_LOS));
             placed = placed + 1;

@@ -419,20 +419,6 @@ third slot is unused. `APavilion.xs:38` (`PavilionOffsetPoint`) and `TrapItems.x
 (`RaidCorner`) are the two call sites to copy. Read one back with `xsVectorGetX` and
 `xsVectorGetY`.
 
-**The compass, measured in game 2026-11-07** (playtest #84, two independent sightings): the map
-grid is rotated 45 degrees on screen, so each axis is a diagonal compass point.
-
-| move | on screen |
-| --- | --- |
-| `+x` | north-east |
-| `-x` | south-west |
-| `+y` | south-east |
-| `-y` | north-west |
-
-So "move it ten tiles south-east" is `y + 10`, not `x + 10`, and a move along a single axis is a
-diagonal of the screen, never a straight left or right. Nothing in the `aoe2-modding` KB documents
-this; it was read off a staged object and the player's own description of where it appeared.
-
 Writing `xsVectorSet(x, 0.0, y)` instead is accepted silently and puts the unit on map row 0, so
 there is no error to notice — see the `[M]` entries on map positions and on `xsCreateUnit` in
 `XS_MEASURED_BEHAVIOR.md` in the `aoe2-modding` KB, which also covers why a successful
