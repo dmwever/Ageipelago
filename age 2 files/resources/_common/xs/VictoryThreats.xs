@@ -302,7 +302,11 @@ void RetireWonderOwner(int owner = -1) {
 }
 
 void ScanOwnerWonders(int owner = -1) {
-    wonderScan = xsGetPlayerUnitIds(owner, WONDER, wonderScan);
+    int listed = xsGetPlayerUnitIds(owner, WONDER, wonderScan);
+    if (listed < 0) {
+        return;
+    }
+    wonderScan = listed;
     int found = xsArrayGetSize(wonderScan);
     for (i = 0; < found) {
         int unitId = xsArrayGetInt(wonderScan, i);

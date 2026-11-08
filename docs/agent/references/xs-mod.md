@@ -424,6 +424,25 @@ there is no error to notice — see the `[M]` entries on map positions and on `x
 `XS_MEASURED_BEHAVIOR.md` in the `aoe2-modding` KB, which also covers why a successful
 `xsCreateUnit` tells you nothing about the terrain under it.
 
+## When only a person can see the answer
+
+Fog, a reveal's shape, whether a building offers a unit, where a patch of light sits — none of it
+is readable from script. The maintainer boots the game, looks, and tells you. That makes their
+**boot** the scarcest thing in the loop, and two rules follow.
+
+**One change per boot.** Ship a single change and wait for the reading. Five changes in one boot
+came back broken in #84 with no way to attribute it, and the revert took out a fix that was never
+implicated — the session then spent three more boots re-finding it.
+
+**Their observation outranks your model.** When what they report disagrees with your arithmetic,
+your arithmetic is wrong. In #84 the report was "one tile too much, on the north-east and
+south-east only"; that asymmetry *was* the diagnosis, and it was answered three times with a
+symmetric-bleed model before it was believed. A detail that your model says is impossible is the
+most informative thing in the message — chase it first.
+
+If a geometry resists two boots, stop proposing fixes and ask them for the rule. They can see it;
+you cannot.
+
 ## Getting data out of the game
 
 **Age of Empires II has no copy/paste.** Nothing on screen can be selected or copied — not the chat

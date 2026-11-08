@@ -17,7 +17,7 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-10-26a**
+Skill revision: **2026-11-07a**
 
 A randomizer in two halves that ship separately and must stay in step.
 
@@ -55,6 +55,7 @@ is the normal state on a machine where nobody has installed it.
 |---|---|
 | an `.xs` file, a rule, a struct, include order, linting, the pavilion, scenario scripts | `references/xs-mod.md` |
 | writing a spike, probe or harness, map coordinates, getting a measurement out of the game | `references/xs-mod.md` |
+| a change only a person can verify by playing — fog, a reveal, a train menu | `references/xs-mod.md` -> *When only a person can see the answer* |
 | items, locations, enums, logic vs rules, regions, the client, handlers, generation, tests | `references/apworld.md` |
 | a scenario's players, sides, trade access, defeat rules | `references/apworld.md` -> *Players and defeats* |
 | a scenario's resource counts, tiers, map object ids, gather amounts, terrain | `references/apworld.md` -> *Scenario resource scans* |
