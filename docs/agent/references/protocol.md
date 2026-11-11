@@ -27,7 +27,9 @@ version travels as two ints rather than one float.
 Written by `AP_Write`, read by `Age2Packet`. One file per thing being played — the engine picks the
 name, so a mission played from a campaign bundle writes `<campaign>.xsdat`.
 
-49 fixed ints, 196 bytes, then a variable-length location list to EOF.
+49 fixed ints, 196 bytes, then exactly `CurrentPacketLocationCount` location ids. Bytes after them
+are not the game's (a host such as the XS function injector may append its own section) and the
+client ignores them.
 
 | # | Field | Notes |
 |---|---|---|
@@ -36,14 +38,17 @@ name, so a mission played from a campaign bundle writes `<campaign>.xsdat`.
 | 3 | WorldMajor | |
 | 4 | SlotId | from `SlotData.xs`; `AP_Write` returns without creating the file while this is -1 |
 | 5 | LatestMessageId | the message ack |
-| 6-17 | ItemId1-12 | the game's 12-slot ring; -1 means free |
+| 6-17 | Unused | the retired item ring, written as -1; kept so ScenarioId stays at offset 72 |
 | 18 | ScenarioCompleted | |
 | 19 | ScenarioId | **byte offset 72** |
 | 20 | WorldMinor | first of the reserved block |
 | 21 | CompletedMercenaryId | a mercenary the game finished spawning, -1 when idle |
 | 22 | ConsumedQueueSerial | the `mercenary_queue.xsdat` serial the game has read, -1 before it reads one |
-| 23-49 | Reserved ×27 | currently written as the loop counter, 0..26 |
-| 50+ | Locations | every location checked and not yet confirmed by the client |
+| 23 | AppliedItemCount | how many entries of the client's item stream this scenario consumed |
+| 24 | CheckedLocationsCount | how many ids the game took in on its last read of `locations.xsdat` |
+| 25 | CurrentPacketLocationCount | how many location ids follow in this packet; the client reads exactly that many |
+| 26-49 | Reserved ×24 | currently written as the loop counter, 0..23 |
+| 50+ | Locations | every location checked and not yet confirmed by the client, `CurrentPacketLocationCount` of them |
 
 **Never insert a field before `ScenarioId`.** `find_active_campaign` reaches it with a hardcoded
 `skip_int(fp, 18)`, and a test pins it at byte offset 72. New fields come out of the reserved block.

@@ -120,8 +120,22 @@ The client/game handshake must be reestablished upon loading.
 
 Items from the last save must be re-sent from the client. Many items, such as techs, are simply flags that are read by the game, but most filler items will need to be loaded upon client reconnection.
 
-The game cannot persist anything across sessions — there is no save/load API — which is why its
-identity has to be *built in* rather than remembered.
+A save carries the game's XS state. Globals, arrays and the phase a rule is holding all come back
+intact, and `main()` does not run again, so a loaded save resumes where it left off rather than
+reinitialising. Measured in `AoE2_AI_Modder`'s `docs/agent/references/XS_MEASURED_BEHAVIOR.md`,
+2026-09-21; this section said the opposite until 2026-11-11, and the guards written under that
+belief are older than the measurement.
+
+What does not carry is a scenario switch. Each scenario starts a fresh XS context, so nothing one
+scenario learned reaches the next, which is why identity has to be *built in* by `/install` rather
+than remembered and why `CheckedLocationsCount` starts at `0` in every scenario.
+
+A reload therefore leaves the game holding the checked set as it stood when the save was written.
+The client's own set never shrinks, so a save loaded into a set that has grown since reads back as
+a `CheckedLocationsCount` disagreement and the client asks for another read. The game's **scenario
+triggers** come back as they were saved, so a trigger that had already fired is live again and the
+objective behind it is there to be done a second time; `FilterCompletedNotSent` keeps that from
+re-sending the location.
 
 ## Packets
 
@@ -146,8 +160,9 @@ Game -> Client. Written by `AP_Write`, read by `Age2Packet`.
 |22|ConsumedQueueSerial|int|The serial of the `mercenary_queue.xsdat` this game has read, `-1` before it has read one. Third of the reserved block|
 |23|AppliedItemCount|int|How many entries of the client's item stream this scenario's state has consumed. A plain `int`, so the save carries it: a loaded save reports where that save had got to, and the client replays the gap into it. Fourth of the reserved block|
 |24|CheckedLocationsCount|int|How many ids the game took in on its last read of `locations.xsdat`, `0` before it has read one. Reset by every scenario, because each one starts a fresh XS context. The client asks for another read while this disagrees with the checked set it is writing, which is what gets the set into a scenario entered with nothing new to report. Fifth of the reserved block|
-|25-49|Reserved|int*25|Reserved for future use, currently written as `0..24`|
-|50+|Locations (L)|int*L|All locations checked that have not been confirmed by AP client|
+|25|CurrentPacketLocationCount|int|How many location ids follow the header in *this* packet (`L` below). The client reads exactly that many and ignores anything after them, which is what lets a host append its own section to this file (the XS function injector's response section, when its wiring in `AP.xs` is uncommented). Sixth of the reserved block|
+|26-49|Reserved|int*24|Reserved for future use, currently written as `0..23`|
+|50+|Locations (L)|int*L|All locations checked that have not been confirmed by AP client. Exactly `CurrentPacketLocationCount` ids|
 
 `AP_Write` returns without creating the file at all while `AP_SLOT_ID` is `-1`, so the client never
 sees a packet from an install that `/install` has not set up.

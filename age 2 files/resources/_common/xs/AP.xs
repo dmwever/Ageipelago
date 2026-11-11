@@ -7,6 +7,8 @@ include "./MercenarySeats.xs";
 include "./MercenarySpawn.xs";
 include "./APavilion.xs";
 include "./VictoryThreats.xs";
+// XS function injector (off by default): recipe in aoe2-xs-injector/docs/agents/hosting.md
+// include "./xsinject.xs";
 
 int apArrayProbe = -1;
 
@@ -73,17 +75,19 @@ void AP_Write()
     xsWriteInt(ConsumedQueueSerial());
     xsWriteInt(appliedItemCount);
     xsWriteInt(checkedLocationsCount);
-    for (i = 0; < 25) {
+    // CurrentPacketLocationCount: exactly the ids written below. AddLocation refuses id -1, so
+    // every filtered location is written.
+    int sendingLocations = FilterCompletedNotSent();
+    xsWriteInt(filteredCount);
+    for (i = 0; < 24) {
         xsWriteInt(i);
     }
-    int sendingLocations = FilterCompletedNotSent();
     for (i = 0; < filteredCount) {
         vector location = xsArrayGetVector(sendingLocations, i);
-        int locationId = structGetInt(location, "id");
-        if (locationId != -1) {
-            xsWriteInt(locationId);
-        }
+        xsWriteInt(structGetInt(location, "id"));
     }
+    // XS function injector (off by default): recipe in aoe2-xs-injector/docs/agents/hosting.md
+    // xsInjectWriteSection();
     xsCloseFile();
 }
 
@@ -244,6 +248,8 @@ rule ReadAP
 }
 
 void InitAP() {
+    // XS function injector (off by default): recipe in aoe2-xs-injector/docs/agents/hosting.md
+    // xsInjectUseHostWriter();
     if (AP_INITIALIZED == true) {
         if (xsArrayGetSize(apArrayProbe) == 1) {
             return;

@@ -75,7 +75,7 @@ skill and its knowledge base. Do not answer them from here.
    shape change needs a minor bump. A test enforces it, but only when `AGEIPELAGO_PATH` is set.
 2. **Never insert a packet field before `ScenarioId`.** It sits at byte offset 72 and
    `find_active_campaign` reaches it with a hardcoded `skip_int(fp, 18)`. New fields come out of the
-   reserved block, which is down to 27 ints.
+   reserved block, which is down to 24 ints.
 3. **`AP_Constants.xs` is the single home for `extern const`.** XS has no include guards, so the same
    constant in two included files is a build break.
 4. **Include order is load-bearing.** `AP.xs` includes `AP_Constants.xs` first and that is what makes
