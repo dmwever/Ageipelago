@@ -21,6 +21,7 @@ int worldMinor = 3;
 int lastMessageId = -1;
 int appliedItemCount = 0;
 int scenarioItemsRead = 0;
+int checkedLocationsCount = 0;
 int reportedMissingItems = 0;
 int clientElsewhere = 0;
 
@@ -71,7 +72,8 @@ void AP_Write()
     xsWriteInt(PendingMercenary());
     xsWriteInt(ConsumedQueueSerial());
     xsWriteInt(appliedItemCount);
-    for (i = 0; < 26) {
+    xsWriteInt(checkedLocationsCount);
+    for (i = 0; < 25) {
         xsWriteInt(i);
     }
     int sendingLocations = FilterCompletedNotSent();
@@ -381,6 +383,7 @@ rule MarkServerLocations
             SetServerLocationComplete(locationId);
         }
     }
+    checkedLocationsCount = locationCount;
     xsCloseFile();
     xsDisableSelf();
 }

@@ -145,7 +145,8 @@ Game -> Client. Written by `AP_Write`, read by `Age2Packet`.
 |21|CompletedMercenaryId|int|A mercenary the game has finished spawning, `-1` when idle. Second of the reserved block. The game holds any others until this one is acknowledged; see *Mercenaries*|
 |22|ConsumedQueueSerial|int|The serial of the `mercenary_queue.xsdat` this game has read, `-1` before it has read one. Third of the reserved block|
 |23|AppliedItemCount|int|How many entries of the client's item stream this scenario's state has consumed. A plain `int`, so the save carries it: a loaded save reports where that save had got to, and the client replays the gap into it. Fourth of the reserved block|
-|24-49|Reserved|int*26|Reserved for future use, currently written as `0..25`|
+|24|CheckedLocationsCount|int|How many ids the game took in on its last read of `locations.xsdat`, `0` before it has read one. Reset by every scenario, because each one starts a fresh XS context. The client asks for another read while this disagrees with the checked set it is writing, which is what gets the set into a scenario entered with nothing new to report. Fifth of the reserved block|
+|25-49|Reserved|int*25|Reserved for future use, currently written as `0..24`|
 |50+|Locations (L)|int*L|All locations checked that have not been confirmed by AP client|
 
 `AP_Write` returns without creating the file at all while `AP_SLOT_ID` is `-1`, so the client never
@@ -167,7 +168,7 @@ Confirms that the client is still connected, and tells the game which other file
 |6|SeedHigh|int|High 16 bits of the client's seed tag, or `-1` before it has one|
 |7|SeedLow|int|Low 16 bits of the same|
 |8|SendItems|bool|If 1, the game reads `items.xsdat`|
-|9|FreeLocations|bool|If 1, the game reads `locations.xsdat`|
+|9|FreeLocations|bool|If 1, the game reads `locations.xsdat`. `MarkServerLocations` disables itself after one pass, so this has to be set once per scenario, not once per connect. Held set while `CheckedLocationsCount` disagrees with the number of ids the client is writing, so it clears on acknowledgement rather than on the first ping written -- `ConnectAP` does not enable `ReadAP` until it has approved that first ping, so its flags are never read|
 |10|SendMercenaries|bool|If 1, the game reads `mercenary_queue.xsdat`. Set while the client's queue serial differs from `ConsumedQueueSerial`, so it clears on acknowledgement rather than on client state. Was `SendUnits`, which was never implemented and hardcoded to 0|
 |11|SendMessages|bool|If 1, the game reads `messages.xsdat`|
 |12|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
