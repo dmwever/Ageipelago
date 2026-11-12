@@ -44,7 +44,7 @@ int getBuildingsByCost(int arrayId = -1, float cost = -1.0) {
 }
 
 vector createLocationLock(string buildingName = "", int buildingId = -1, float cost = 0.0,
-                          int locationId = -1, int age = 25) {
+                          int locationId = -1, int age = 25, int tooltipId = -1) {
     vector building = new("Building");
     structSetString(building, "name", buildingName);
     structSetInt(building, "id", buildingId);
@@ -52,6 +52,7 @@ vector createLocationLock(string buildingName = "", int buildingId = -1, float c
     structSetFloat(building, "resourceCost", cost);
     structSetInt(building, "locationId", locationId);
     structSetInt(building, "age", age);
+    structSetInt(building, "tooltipId", tooltipId);
     xsEffectAmount(cSetAttribute, buildingId, cDisabledFlag, 1.0, 1);
 
     vector location = AddLocation(locationId);
@@ -66,6 +67,7 @@ void InitBuildsanityStructs() {
     defineStructAttribute("Building", "resourceCost", TYPE_FLOAT);
     defineStructAttribute("Building", "locationId", TYPE_INT);
     defineStructAttribute("Building", "age", TYPE_INT);
+    defineStructAttribute("Building", "tooltipId", TYPE_INT);
 
     defineStruct("Buildsanity");
     defineStructAttribute("Buildsanity", "buildings", TYPE_STRUCT_ARRAY);
@@ -81,115 +83,115 @@ void InitBuildsanityStructs() {
 void CreateBuildingLocations() {
     int buildings = structGetInt(buildsanity, "buildings");
 
-    vector wonder = createLocationLock("Wonder", WONDER, 3000.0, 200, IMPERIAL_AGE);
+    vector wonder = createLocationLock("Wonder", WONDER, 3000.0, 200, IMPERIAL_AGE, 26182);
     xsArraySetVector(buildings, 0, wonder);
 
-    vector outpost = createLocationLock("Outpost", OUTPOST, 30.0, 201, DARK_AGE);
+    vector outpost = createLocationLock("Outpost", OUTPOST, 30.0, 201, DARK_AGE, 26504);
     xsArraySetVector(buildings, 1, outpost);
 
     // Economy
-    vector townCenter = createLocationLock("Town Center", TOWN_CENTER_FOUNDATION, 275.0, 202, DARK_AGE);
+    vector townCenter = createLocationLock("Town Center", TOWN_CENTER_FOUNDATION, 275.0, 202, DARK_AGE, 26164);
     structSetInt(townCenter, "playerCount", xsGetObjectCount(1, townCenterId));
     xsArraySetVector(buildings, 2, townCenter);
 
-    vector house = createLocationLock("House", HOUSE, 25.0, 203, DARK_AGE);
+    vector house = createLocationLock("House", HOUSE, 25.0, 203, DARK_AGE, 26344);
     xsArraySetVector(buildings, 3, house);
 
-    vector mill = createLocationLock("Mill", MILL, 100.0, 204, DARK_AGE);
+    vector mill = createLocationLock("Mill", MILL, 100.0, 204, DARK_AGE, 26157);
     xsArraySetVector(buildings, 4, mill);
     
-    vector miningCamp = createLocationLock("Mining Camp", MINING_CAMP, 100.0, 205, DARK_AGE);
+    vector miningCamp = createLocationLock("Mining Camp", MINING_CAMP, 100.0, 205, DARK_AGE, 26487);
     xsArraySetVector(buildings, 5, miningCamp);
     
-    vector lumberCamp = createLocationLock("Lumber Camp", LUMBER_CAMP, 100.0, 206, DARK_AGE);
+    vector lumberCamp = createLocationLock("Lumber Camp", LUMBER_CAMP, 100.0, 206, DARK_AGE, 26464);
     xsArraySetVector(buildings, 6, lumberCamp);
     
-    vector farm = createLocationLock("Farm", FARM, 60.0, 207, DARK_AGE);
+    vector farm = createLocationLock("Farm", FARM, 60.0, 207, DARK_AGE, 26149);
     xsArraySetVector(buildings, 7, farm);
 
-    vector fishTrap = createLocationLock("Fish Trap", FISH_TRAP, 100.0, 208, FEUDAL_AGE);
+    vector fishTrap = createLocationLock("Fish Trap", FISH_TRAP, 100.0, 208, FEUDAL_AGE, 26495);
     xsArraySetVector(buildings, 8, fishTrap);
 
-    vector dock = createLocationLock("Dock", DOCK, 150.0, 209, DARK_AGE);
+    vector dock = createLocationLock("Dock", DOCK, 150.0, 209, DARK_AGE, 26144);
     xsArraySetVector(buildings, 9, dock);
 
-    vector market = createLocationLock("Market", MARKET, 175.0, 210, FEUDAL_AGE);
+    vector market = createLocationLock("Market", MARKET, 175.0, 210, FEUDAL_AGE, 26161);
     xsArraySetVector(buildings, 10, market);
     
     // Tech
-    vector university = createLocationLock("University", UNIVERSITY, 200.0, 211, CASTLE_AGE);
+    vector university = createLocationLock("University", UNIVERSITY, 200.0, 211, CASTLE_AGE, 26176);
     xsArraySetVector(buildings, 11, university);
 
-    vector blacksmith = createLocationLock("Blacksmith", BLACKSMITH, 150.0, 212, FEUDAL_AGE);
+    vector blacksmith = createLocationLock("Blacksmith", BLACKSMITH, 150.0, 212, FEUDAL_AGE, 26131);
     xsArraySetVector(buildings, 12, blacksmith);
 
-    vector monastery = createLocationLock("Monastery", MONASTERY, 175.0, 213, CASTLE_AGE);
+    vector monastery = createLocationLock("Monastery", MONASTERY, 175.0, 213, CASTLE_AGE, 26138);
     xsArraySetVector(buildings, 13, monastery);
     
     // Military
-    vector barracks = createLocationLock("Barracks", BARRACKS, 175.0, 214, DARK_AGE);
+    vector barracks = createLocationLock("Barracks", BARRACKS, 175.0, 214, DARK_AGE, 26135);
     xsArraySetVector(buildings, 14, barracks);
 
-    vector archeryRange = createLocationLock("Archery Range", ARCHERY_RANGE, 175.0, 215, FEUDAL_AGE);
+    vector archeryRange = createLocationLock("Archery Range", ARCHERY_RANGE, 175.0, 215, FEUDAL_AGE, 26128);
     xsArraySetVector(buildings, 15, archeryRange);
 
-    vector stable = createLocationLock("Stable", STABLE, 175.0, 216, FEUDAL_AGE);
+    vector stable = createLocationLock("Stable", STABLE, 175.0, 216, FEUDAL_AGE, 26171);
     xsArraySetVector(buildings, 16, stable);
 
-    vector siegeWorkshop = createLocationLock("Siege Workshop", SIEGE_WORKSHOP, 200.0, 217, CASTLE_AGE);
+    vector siegeWorkshop = createLocationLock("Siege Workshop", SIEGE_WORKSHOP, 200.0, 217, CASTLE_AGE, 26169);
     xsArraySetVector(buildings, 17, siegeWorkshop);
 
-    vector castle = createLocationLock("Castle", CASTLE, 650.0, 218, CASTLE_AGE);
+    vector castle = createLocationLock("Castle", CASTLE, 650.0, 218, CASTLE_AGE, 26142);
     xsArraySetVector(buildings, 18, castle);
     
     // Defense
-    vector palisadeGate = createLocationLock("Palisade Gate", PALISADE_GATE, 30.0, 219, DARK_AGE);
+    vector palisadeGate = createLocationLock("Palisade Gate", PALISADE_GATE, 30.0, 219, DARK_AGE, 26186);
     xsArraySetVector(buildings, 19, palisadeGate);
 
-    vector gate = createLocationLock("Stone Gate", GATE, 30.0, 220, FEUDAL_AGE);
+    vector gate = createLocationLock("Stone Gate", GATE, 30.0, 220, FEUDAL_AGE, 26185);
     xsArraySetVector(buildings, 20, gate);
 
-    vector palisadeWall = createLocationLock("Palisade Wall", PALISADE_WALL, 3.0, 221, DARK_AGE);
+    vector palisadeWall = createLocationLock("Palisade Wall", PALISADE_WALL, 3.0, 221, DARK_AGE, 26202);
     xsArraySetVector(buildings, 21, palisadeWall);
 
-    vector wall = createLocationLock("Stone Wall", STONE_WALL, 5.0, 222, FEUDAL_AGE);
+    vector wall = createLocationLock("Stone Wall", STONE_WALL, 5.0, 222, FEUDAL_AGE, 26203);
     xsArraySetVector(buildings, 22, wall);
 
-    vector watchTower = createLocationLock("Watch Tower", WATCH_TOWER, 160.0, 223, FEUDAL_AGE);
+    vector watchTower = createLocationLock("Watch Tower", WATCH_TOWER, 160.0, 223, FEUDAL_AGE, 26178);
     xsArraySetVector(buildings, 23, watchTower);
 
-    vector bombardTower = createLocationLock("Bombard Tower", BOMBARD_TOWER, 225.0, 224, IMPERIAL_AGE);
+    vector bombardTower = createLocationLock("Bombard Tower", BOMBARD_TOWER, 225.0, 224, IMPERIAL_AGE, 26156);
     xsArraySetVector(buildings, 24, bombardTower);
     
     // Unique
-    vector folwark = createLocationLock("Folwark", FOLWARK, 100.0, 225, DARK_AGE);
+    vector folwark = createLocationLock("Folwark", FOLWARK, 100.0, 225, DARK_AGE, 26581);
     xsArraySetVector(buildings, 25, folwark);
 
-    vector muleCart = createLocationLock("Mule Cart", MULE_CART, 100.0, 226, DARK_AGE);
+    vector muleCart = createLocationLock("Mule Cart", MULE_CART, 100.0, 226, DARK_AGE, 26045);
     xsArraySetVector(buildings, 26, muleCart);
 
-    vector pasture = createLocationLock("Pasture", PASTURE, 110.0, 227, DARK_AGE);
+    vector pasture = createLocationLock("Pasture", PASTURE, 110.0, 227, DARK_AGE, 26895);
     xsArraySetVector(buildings, 27, pasture);
 
-    vector harbor = createLocationLock("Harbor", HARBOR, 150.0, 228, CASTLE_AGE);
+    vector harbor = createLocationLock("Harbor", HARBOR, 150.0, 228, CASTLE_AGE, 26249);
     xsArraySetVector(buildings, 28, harbor);
 
-    vector caravanserai = createLocationLock("Caravanserai", CARAVANSERAI, 225.0, 229, IMPERIAL_AGE);
+    vector caravanserai = createLocationLock("Caravanserai", CARAVANSERAI, 225.0, 229, IMPERIAL_AGE, 26440);
     xsArraySetVector(buildings, 29, caravanserai);
 
-    vector feitoria = createLocationLock("Feitoria", FEITORIA, 650.0, 230, IMPERIAL_AGE);
+    vector feitoria = createLocationLock("Feitoria", FEITORIA, 650.0, 230, IMPERIAL_AGE, 26159);
     xsArraySetVector(buildings, 30, feitoria);
 
-    vector settlement = createLocationLock("Settlement", SETTLEMENT, 125.0, 231, DARK_AGE);
+    vector settlement = createLocationLock("Settlement", SETTLEMENT, 125.0, 231, DARK_AGE, 26509);
     xsArraySetVector(buildings, 31, settlement);
 
-    vector fortifiedChurch = createLocationLock("Fortified Church", FORTIFIED_CHURCH, 200.0, 232, CASTLE_AGE);
+    vector fortifiedChurch = createLocationLock("Fortified Church", FORTIFIED_CHURCH, 200.0, 232, CASTLE_AGE, 26038);
     xsArraySetVector(buildings, 32, fortifiedChurch);
 
-    vector krepost = createLocationLock("Krepost", KREPOST, 350.0, 233, CASTLE_AGE);
+    vector krepost = createLocationLock("Krepost", KREPOST, 350.0, 233, CASTLE_AGE, 26349);
     xsArraySetVector(buildings, 33, krepost);
 
-    vector donjon = createLocationLock("Donjon", DONJON, 225.0, 234, DARK_AGE);
+    vector donjon = createLocationLock("Donjon", DONJON, 225.0, 234, DARK_AGE, 26544);
     xsArraySetVector(buildings, 34, donjon);
 }
 

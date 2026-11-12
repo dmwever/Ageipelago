@@ -17,7 +17,7 @@ vector getTech(int i = -1) {
 
 void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
              int isUpgrade = 0, int isUnique = 0, int age = 0, int isLocation = 1,
-             int prerequisiteId = -1) {
+             int prerequisiteId = -1, int tooltipId = -1) {
     if (techCount >= TECH_CAPACITY || id < 1) {
         return;
     }
@@ -42,6 +42,7 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
     structSetBool(tech, "researched", false);
     structSetBool(tech, "effectDone", false);
     structSetInt(tech, "prerequisiteId", prerequisiteId);
+    structSetInt(tech, "tooltipId", tooltipId);
 
     xsArraySetVector(techArray, techCount, tech);
     if (isLocation == 1) {
@@ -277,6 +278,7 @@ void InitTechsanityStructs() {
     defineStructAttribute("Tech", "researched", TYPE_BOOL);
     defineStructAttribute("Tech", "effectDone", TYPE_BOOL);
     defineStructAttribute("Tech", "prerequisiteId", TYPE_INT);
+    defineStructAttribute("Tech", "tooltipId", TYPE_INT);
 
     techArray = xsArrayCreateVector(TECH_CAPACITY, cInvalidVector, "ts-techs");
 

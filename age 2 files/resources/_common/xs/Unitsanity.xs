@@ -110,7 +110,8 @@ void appendId(int list = -1, int capacity = 0, int value = -1) {
 }
 
 void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
-             int tier = 0, int upgradeItemId = -1, int cavemanExempt = 0) {
+             int tier = 0, int upgradeItemId = -1, int cavemanExempt = 0,
+             int tooltipId = -1) {
     if (unitTableCount >= UNIT_CAPACITY || typeId < 1) {
         return;
     }
@@ -125,6 +126,7 @@ void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
     structSetInt(unit, "age", age);
     structSetInt(unit, "tier", tier);
     structSetInt(unit, "upgradeItemId", upgradeItemId);
+    structSetInt(unit, "tooltipId", tooltipId);
     structSetBool(unit, "cavemanExempt", cavemanExempt == 1);
     structSetBool(unit, "trainable", true);
     structSetInt(unit, "owned", 0);
@@ -330,6 +332,7 @@ void InitUnitsanityStructs() {
     defineStructAttribute("Unit", "age", TYPE_INT);
     defineStructAttribute("Unit", "tier", TYPE_INT);
     defineStructAttribute("Unit", "upgradeItemId", TYPE_INT);
+    defineStructAttribute("Unit", "tooltipId", TYPE_INT);
     defineStructAttribute("Unit", "cavemanExempt", TYPE_BOOL);
     defineStructAttribute("Unit", "trainable", TYPE_BOOL);
     defineStructAttribute("Unit", "owned", TYPE_INT);
