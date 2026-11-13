@@ -17,7 +17,7 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-11-07a**
+Skill revision: **2026-11-13a**
 
 A randomizer in two halves that ship separately and must stay in step.
 
@@ -191,6 +191,10 @@ AGEIPELAGO_PATH=/path/to/Ageipelago python -m pytest worlds/age2de/test
 
 # XS lint, from the xs folder. Needs v0.2.30 or later for Update 185872.
 ./xs-check.exe -I . -- AP_Attila_1.xs
+
+# Do the baked tooltip ids still name their own objects? Reads the game's strings file, not the
+# dat, so it takes seconds. That file is also the oracle for any "what is string id N" question.
+python -m worlds.age2de.tools.recapture_string_ids --verify
 ```
 
 ### Fuzzing the apworld

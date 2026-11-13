@@ -9,6 +9,8 @@ bool feudalRegistered = false;
 bool castleRegistered = false;
 bool imperialRegistered = false;
 
+int agesSeen = 0;
+
 int ageTechFor(int age = -1) {
     if (age == FEUDAL_AGE) {
         return (FEUDAL_AGE_TECH);
@@ -152,6 +154,8 @@ void InitAges() {
             lockAge(capped);
         }
     }
+    agesSeen = 0;
+    xsEnableRule("AgesUpdate");
     if (AP_SHUFFLE_AGES != 1) {
         return;
     }
@@ -164,10 +168,9 @@ void InitAges() {
             lockAge(age);
         }
     }
-    xsEnableRule("ShuffleAgesUpdate");
 }
 
-rule ShuffleAgesUpdate
+rule AgesUpdate
     inactive
     group Ages
     minInterval 1
@@ -195,6 +198,11 @@ rule ShuffleAgesUpdate
             }
             reached++;
         }
+    }
+
+    if (reached > agesSeen) {
+        agesSeen = reached;
+        RefreshDescriptions();
     }
 
     if (reached == apMaxAge - DARK_AGE) {

@@ -23,31 +23,31 @@ them. There is no CI and no test suite in this repo.
 
 ## The files
 
-| File | Lines | Purpose |
-| --- | --- | --- |
-| `structs.xs` | 990 | vendored XsStructs 1.1.1. Do not audit or edit |
-| `Unitsanity.xs` | 571 | **dead** — included by nothing, called by nothing. See Gotchas |
-| `AP.xs` | 419 | the bridge: `AP_Write`/`AP_Read`, identity checks, `InitAP`, 8 rules |
-| `Buildsanity.xs` | 371 | building unlocks and placement detection |
-| `Techsanity.xs` | 356 | technology unlocks, the shadow-tech effect injector |
-| `ProgressionItems.xs` | 293 | per-scenario one-shot flag items, ids 1000-1023 |
-| `ResourceItems.xs` | 171 | filler and starting resources, ids 1-24 |
-| `MercenarySeats.xs` | 168 | the four pavilion seats and the queue reader |
-| `MercenaryItems.xs` | 155 | mercenary flag items, ids 4000-4011 |
-| `ScenarioLocations.xs` | 147 | the location ledger |
-| `AP_Constants.xs` | 186 | **every** shared `extern const` |
-| `MercenarySpawn.xs` | 116 | area clearing, the per-soldier loop, the muster task |
-| `ItemHandler.xs` | 98 | `GiveItem` band dispatcher, startup-file readers |
-| `Descriptions.xs` | 85 | in-game status lines and the scouted classification table |
-| `Ages.xs` | 70 | age shuffle |
-| `MercenaryLedger.xs` | 55 | the pending completed-mercenary queue |
-| `AP_Headers.xs` | 114 | the `mutable` stubs; the ones that must be overridden warn when they run |
-| `VictoryThreats.xs` | 405 | Wonder and relic countdowns that custom victory switched off; a scenario opts in from `InitScenarioThreats()` |
-| `APavilion.xs` | 172 | creates the pavilion, hardens it, owns the victory flow and colour cycle |
-| `SlotData.xs` | 9 | per-seed identity and options, written by `/install` |
-| `TechData.xs` | 6 | per-seed tech table, written by `/install` |
-| `AP_Attila_1..6.xs` | 41-93 | scenario entry points, ids 101-106 |
-| `AP_Joan_1..6.xs` | 45-85 | scenario entry points, ids 201-206 |
+| File | Purpose |
+| --- | --- |
+| `structs.xs` | vendored XsStructs 1.1.1. Do not audit or edit |
+| `Unitsanity.xs` | unit locks, the owned-unit scan, unit status lines |
+| `AP.xs` | the bridge: `AP_Write`/`AP_Read`, identity checks, `InitAP`, 8 rules |
+| `Buildsanity.xs` | building unlocks and placement detection |
+| `Techsanity.xs` | technology unlocks, the shadow-tech effect injector |
+| `ProgressionItems.xs` | per-scenario one-shot flag items, ids 1000-1023 |
+| `ResourceItems.xs` | filler and starting resources, ids 1-24 |
+| `MercenarySeats.xs` | the four pavilion seats and the queue reader |
+| `MercenaryItems.xs` | mercenary flag items, ids 4000-4011 |
+| `ScenarioLocations.xs` | the location ledger |
+| `AP_Constants.xs` | **every** shared `extern const` |
+| `MercenarySpawn.xs` | area clearing, the per-soldier loop, the muster task |
+| `ItemHandler.xs` | `GiveItem` band dispatcher, startup-file readers |
+| `Descriptions.xs` | in-game status lines and the scouted classification table |
+| `Ages.xs` | age shuffle |
+| `MercenaryLedger.xs` | the pending completed-mercenary queue |
+| `AP_Headers.xs` | the `mutable` stubs; the ones that must be overridden warn when they run |
+| `VictoryThreats.xs` | Wonder and relic countdowns that custom victory switched off; a scenario opts in from `InitScenarioThreats()` |
+| `APavilion.xs` | creates the pavilion, hardens it, owns the victory flow and colour cycle |
+| `SlotData.xs` | per-seed identity and options, written by `/install` |
+| `TechData.xs` | per-seed tech table, written by `/install` |
+| `AP_Attila_1..6.xs` | scenario entry points, ids 101-106 |
+| `AP_Joan_1..6.xs` | scenario entry points, ids 201-206 |
 
 There is no `Tech_Constants.xs`. Its constants were folded into `AP_Constants.xs`, which is now the
 single home for every shared `extern const` — techsanity modes, tech-state write values, cost
@@ -198,9 +198,24 @@ live band is dropped with no output. That is safe only because the Python side n
 
 ### Location ledger — `ScenarioLocations.xs`
 
-A flat array of `Location` structs (`"id"`, `"scenarioComplete"`, `"serverComplete"`), capacity 1024,
-appended in registration order and searched by linear scan. Two independent flags per location: the
-game sets `scenarioComplete`, the client's ack sets `serverComplete`.
+A flat array of `Location` structs (`"id"`, `"scenarioComplete"`, `"serverComplete"`,
+`"classification"`), capacity 1024, appended in registration order and searched by linear scan. Two
+independent flags per location: the game sets `scenarioComplete`, the client's ack sets
+`serverComplete`. `classification` is the scouted item class, written once by `LoadClassification`.
+
+**Every read and write of a location's state goes through `FindLocationById` / `GetLocationById`,
+which return the first id match.** Register one id twice and the ledger holds two `Location` structs
+— `AddLocation` never checks and `new("Location")` allocates a distinct instance per call — but
+nothing can observe the second, because every accessor reaches the first. `InitUnitsanity` does
+exactly this, once per unit row, so under `unitsanity: unit_line` a line sits in the ledger once per
+trainable tier. It costs a few unused struct instances and nothing else. **This is not a defect; it
+has been raised as one and withdrawn.**
+
+What does break is **holding the vector a call returned** instead of resolving the id again at the
+point of use. Only the first instance ever receives `classification` or either complete flag, so a
+held duplicate reads as unscouted and incomplete for the rest of the scenario. `RefreshUnitStatusLine`
+in `Unitsanity.xs` is the worked example: it takes a location, reads its id, and resolves the
+canonical entry with `FindLocationById` before writing anything.
 
 `FilterCompletedNotSent()` collects everything scenario-complete but not server-complete into a reused
 scratch array and reports the count through the `extern int filteredCount` global — the standard XS
@@ -487,7 +502,6 @@ precisely because chat is a dead end for machine-readable output. See `protocol.
   `include "./BuildsanityItems.xs"` points at a file that exists nowhere in the repo — never build or
   lint it. `default0.xs` (3 lines) is engine-generated boilerplate. Neither appears in the file table
   below; an `ls *.xs` will show them anyway.
-- **`Unitsanity.xs` has been deleted.** It was a 571-line prototype nothing included: a `Unit`
   struct mirroring Buildsanity's, ~250 hand-typed unit-id constants and ten bulk-disable functions,
   with no driver. It also carried a live bug - `gbeto` and `elite_gbeto` were `1213`/`1215`, which
   are *bridge terrain objects*; the Gbeto is `1013`/`1015` - and named the Eagle line one tier off,
