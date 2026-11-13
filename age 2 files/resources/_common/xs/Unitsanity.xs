@@ -132,6 +132,7 @@ void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
     structSetInt(unit, "owned", 0);
     structSetBool(unit, "hasItems", false);
     structSetBool(unit, "locked", false);
+    structSetBool(unit, "hasStatusLine", false);
     setIdList(unit, "itemIds",
               xsArrayCreateInt(UNIT_ITEM_CAPACITY, -1, "us-items-" + unitTableCount));
     setIdList(unit, "variantIds",
@@ -226,6 +227,44 @@ void setUnitHidden(vector unit = cInvalidVector, bool hidden = true) {
     structSetBool(unit, "locked", hidden);
 }
 
+void writeUnitStatusLine(vector unit = cInvalidVector, vector location = cInvalidVector) {
+    int tooltipId = structGetInt(unit, "tooltipId");
+    if (tooltipId < 0) {
+        return;
+    }
+    string vanilla = xsGetString(tooltipId);
+    if (vanilla == "") {
+        return;
+    }
+    int typeId = structGetInt(unit, "typeId");
+    if (ShouldDecorateLocation(location) == false) {
+        if (structGetBool(unit, "hasStatusLine")) {
+            xsSetObjectDescription(1, typeId, vanilla);
+            structSetBool(unit, "hasStatusLine", false);
+        }
+        return;
+    }
+    xsSetObjectDescription(1, typeId, CheckedStatusText(location, tooltipId));
+    structSetBool(unit, "hasStatusLine", true);
+}
+
+void RefreshUnitStatusLine(vector location = cInvalidVector) {
+    if (unitsanityReady == false || location == cInvalidVector) {
+        return;
+    }
+    int locationId = structGetInt(location, "id");
+    vector resolved = FindLocationById(locationId);
+    if (resolved == cInvalidVector) {
+        return;
+    }
+    for (j = 0; < unitTableCount) {
+        vector unit = getUnit(j);
+        if (structGetInt(unit, "locationId") == locationId) {
+            writeUnitStatusLine(unit, resolved);
+        }
+    }
+}
+
 void MarkRowOwned(int index = -1) {
     if (index < 0) {
         return;
@@ -240,6 +279,7 @@ void MarkRowOwned(int index = -1) {
     }
     structSetInt(unit, "owned", 1);
     AP_Check_Location(locationId);
+    RefreshUnitStatusLine(FindLocationById(locationId));
 }
 
 bool MarkOwnedByType(int typeId = -1) {
@@ -338,6 +378,7 @@ void InitUnitsanityStructs() {
     defineStructAttribute("Unit", "owned", TYPE_INT);
     defineStructAttribute("Unit", "hasItems", TYPE_BOOL);
     defineStructAttribute("Unit", "locked", TYPE_BOOL);
+    defineStructAttribute("Unit", "hasStatusLine", TYPE_BOOL);
     defineStructAttribute("Unit", "itemIds", TYPE_INT_ARRAY);
     defineStructAttribute("Unit", "variantIds", TYPE_INT_ARRAY);
 
