@@ -50,7 +50,14 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
     techCount = techCount + 1;
 }
 
+bool isHeavyWarships(vector tech = cInvalidVector) {
+    return (structGetInt(tech, "id") == HEAVY_WARSHIPS_TECH);
+}
+
 bool hasNoEffect(vector tech = cInvalidVector) {
+    if (isHeavyWarships(tech)) {
+        return (false);
+    }
     return (structGetInt(tech, "effectId") < 0);
 }
 
@@ -97,11 +104,34 @@ void hardenShadow() {
     xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetState, STATE_ENABLE, 1);
 }
 
-void applyViaShadow(vector tech = cInvalidVector) {
-    float effect = 1.0 * structGetInt(tech, "effectId");
+void applyShadowEffect(int effectId = -1) {
     xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetState, STATE_ENABLE, 1);
-    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetEffect, effect, 1);
+    xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetEffect, 1.0 * effectId, 1);
     xsEffectAmount(cModifyTech, TECH_SHADOW, cAttrSetState, STATE_DONE, 1);
+}
+
+void applyViaShadow(vector tech = cInvalidVector) {
+    if (isHeavyWarships(tech)) {
+        int galleon = -1;
+        int carrack = -1;
+        int fireShip = -1;
+        if (unitsanityReady) {
+            galleon = findUnit(GALLEON);
+            carrack = findUnit(CARRACK);
+            fireShip = findUnit(FAST_FIRE_SHIP);
+        }
+        if (galleon < 0 || structGetBool(getUnit(galleon), "trainable")) {
+            applyShadowEffect(GALLEON_EFFECT);
+        }
+        if (carrack < 0 || structGetBool(getUnit(carrack), "trainable")) {
+            applyShadowEffect(CARRACK_EFFECT);
+        }
+        if (fireShip < 0 || structGetBool(getUnit(fireShip), "trainable")) {
+            applyShadowEffect(FAST_FIRE_SHIP_EFFECT);
+        }
+        return;
+    }
+    applyShadowEffect(structGetInt(tech, "effectId"));
 }
 
 void tryApplyEffect(vector tech = cInvalidVector, bool atStartup = false) {
@@ -129,8 +159,17 @@ void tryApplyEffect(vector tech = cInvalidVector, bool atStartup = false) {
     structSetBool(tech, "effectDone", true);
 }
 
+void stripTechId(int id = -1) {
+    xsEffectAmount(cModifyTech, id, cAttrSetEffect, 1.0 * NOOP_EFFECT, 1);
+}
+
 void stripTech(vector tech = cInvalidVector) {
-    xsEffectAmount(cModifyTech, structGetInt(tech, "id"), cAttrSetEffect, 1.0 * NOOP_EFFECT, 1);
+    stripTechId(structGetInt(tech, "id"));
+    if (isHeavyWarships(tech)) {
+        stripTechId(GALLEON_TECH);
+        stripTechId(CARRACK_TECH);
+        stripTechId(FAST_FIRE_SHIP_TECH);
+    }
 }
 
 void onTechResearched(vector tech = cInvalidVector) {
@@ -139,6 +178,7 @@ void onTechResearched(vector tech = cInvalidVector) {
     }
     structSetBool(tech, "researched", true);
     AP_Check_Location(structGetInt(tech, "itemId"));
+    unitsDirty = true;
     tryApplyEffect(tech);
 }
 

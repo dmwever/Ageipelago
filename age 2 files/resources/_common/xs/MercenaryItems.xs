@@ -1,41 +1,41 @@
 // Mercenaries by Scenario
 
 //Attila 1
-bool romanCampVils = false;
-void ROMAN_CAMP_VILS() {
-    romanCampVils = true;
+bool attila1RomanVillagers = false;
+void Attila1RomanVillagers() {
+    attila1RomanVillagers = true;
 }
 
-bool HAS_ROMAN_CAMP_VILS() {
-    return (romanCampVils);
+bool HasAttila1RomanVillagers() {
+    return (attila1RomanVillagers);
 }
 
-bool scythianMangudai = false;
-void SCYTHIAN_MANGUDAI() {
-    scythianMangudai = true;
+bool attila1ScythianMangudai = false;
+void Attila1ScythianMangudai() {
+    attila1ScythianMangudai = true;
 }
 
-bool HAS_SCYTHIAN_MANGUDAI() {
-    return (scythianMangudai);
+bool HasAttila1ScythianMangudai() {
+    return (attila1ScythianMangudai);
 }
 
 //Attila 2
-bool cyanPrisoners = false;
-void DYRRHACHIUM_PRISONERS() {
-    cyanPrisoners = true;
+bool attila2DyrrhachiumPrisoners = false;
+void Attila2DyrrhachiumPrisoners() {
+    attila2DyrrhachiumPrisoners = true;
 }
 
-bool HAS_DYRRHACHIUM_PRISONERS() {
-    return (cyanPrisoners);
+bool HasAttila2DyrrhachiumPrisoners() {
+    return (attila2DyrrhachiumPrisoners);
 }
 
-bool scythianTroop = false;
-void SCYTHIAN_TROOP() {
-    scythianTroop = true;
+bool attila2ScythianTroop = false;
+void Attila2ScythianTroop() {
+    attila2ScythianTroop = true;
 }
 
-bool HAS_SCYTHIAN_TROOP() {
-    return (scythianTroop);
+bool HasAttila2ScythianTroop() {
+    return (attila2ScythianTroop);
 }
 
 // Joan 1
@@ -114,19 +114,109 @@ bool HasJoan6Artillery() {
 }
 
 
+// Genghis 1
+bool genghis1PurpleForce = false;
+void Genghis1PurpleForce() {
+    genghis1PurpleForce = true;
+}
+
+bool HasGenghis1PurpleForce() {
+    return (genghis1PurpleForce);
+}
+
+bool genghis1GreyForce = false;
+void Genghis1GreyForce() {
+    genghis1GreyForce = true;
+}
+
+bool HasGenghis1GreyForce() {
+    return (genghis1GreyForce);
+}
+
+bool genghis1GreenForce = false;
+void Genghis1GreenForce() {
+    genghis1GreenForce = true;
+}
+
+bool HasGenghis1GreenForce() {
+    return (genghis1GreenForce);
+}
+
+bool genghis1CyanForce = false;
+void Genghis1CyanForce() {
+    genghis1CyanForce = true;
+}
+
+bool HasGenghis1CyanForce() {
+    return (genghis1CyanForce);
+}
+
+
+// Genghis 3
+bool genghis3Engineers = false;
+void Genghis3Engineers() {
+    genghis3Engineers = true;
+}
+
+bool HasGenghis3Engineers() {
+    return (genghis3Engineers);
+}
+
+bool genghis3Bombards = false;
+void Genghis3Bombards() {
+    genghis3Bombards = true;
+}
+
+bool HasGenghis3Bombards() {
+    return (genghis3Bombards);
+}
+
+// Genghis 5
+bool genghis5Hermits = false;
+void Genghis5Hermits() {
+    genghis5Hermits = true;
+}
+
+bool HasGenghis5Hermits() {
+    return (genghis5Hermits);
+}
+
+
+// Genghis 6
+bool genghis6SubotaisArmy = false;
+void Genghis6SubotaisArmy() {
+    genghis6SubotaisArmy = true;
+}
+
+bool HasGenghis6SubotaisArmy() {
+    return (genghis6SubotaisArmy);
+}
+
+
+// The Kereyids ride with their two monks, so they are a muster like any other.
+bool genghis1BlueForce = false;
+void Genghis1BlueForce() {
+    genghis1BlueForce = true;
+}
+
+bool HasGenghis1BlueForce() {
+    return (genghis1BlueForce);
+}
+
+
 void GiveMercenary(int itemId = -1) {
     switch(itemId) {
         case 4000: {
-            SCYTHIAN_MANGUDAI();
+            Attila1ScythianMangudai();
         }
         case 4001: {
-            ROMAN_CAMP_VILS();
+            Attila1RomanVillagers();
         }
         case 4002: {
-            DYRRHACHIUM_PRISONERS();
+            Attila2DyrrhachiumPrisoners();
         }
         case 4003: {
-            SCYTHIAN_TROOP();
+            Attila2ScythianTroop();
         }
         case 4004: {
             Joan1Ram();
@@ -151,6 +241,33 @@ void GiveMercenary(int itemId = -1) {
         }
         case 4011: {
             Joan6Artillery();
+        }
+        case 4012: {
+            Genghis1PurpleForce();
+        }
+        case 4013: {
+            Genghis1GreyForce();
+        }
+        case 4014: {
+            Genghis1GreenForce();
+        }
+        case 4015: {
+            Genghis1CyanForce();
+        }
+        case 4016: {
+            Genghis3Engineers();
+        }
+        case 4017: {
+            Genghis3Bombards();
+        }
+        case 4018: {
+            Genghis5Hermits();
+        }
+        case 4019: {
+            Genghis6SubotaisArmy();
+        }
+        case 4020: {
+            Genghis1BlueForce();
         }
     }
 }

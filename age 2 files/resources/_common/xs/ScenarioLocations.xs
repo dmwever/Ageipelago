@@ -6,9 +6,8 @@ int newLocationAddress = 0;
 int filterArray = -1;
 extern int filteredCount = 0;
 
-vector GetLocationById(int id = -1) {
+vector FindLocationById(int id = -1) {
     if (id == -1) {
-        xsChatData("GetLocationById: No Id Set");
         return (cInvalidVector);
     }
 
@@ -22,8 +21,21 @@ vector GetLocationById(int id = -1) {
         }
     }
 
-    xsChatData("Location Not Found: %d", id);
     return (cInvalidVector);
+}
+
+vector GetLocationById(int id = -1) {
+    if (id == -1) {
+        xsChatData("GetLocationById: No Id Set");
+        return (cInvalidVector);
+    }
+
+    vector location = FindLocationById(id);
+    if (location == cInvalidVector) {
+        xsChatData("Location Not Found: %d", id);
+    }
+
+    return (location);
 }
 
 vector AddLocation(int id = -1, bool scenarioComplete = false, bool serverComplete = false) {

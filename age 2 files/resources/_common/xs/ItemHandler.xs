@@ -3,9 +3,9 @@ include "./MercenaryItems.xs";
 include "./ResourceItems.xs";
 include "./Buildsanity.xs";
 include "./Ages.xs";
-include "./Techsanity.xs";
 include "./Unitsanity.xs";
 include "./Filler.xs";
+include "./Techsanity.xs";
 include "./Caveman.xs";
 include "./Professions.xs";
 include "./TrapItems.xs";
@@ -47,6 +47,9 @@ const int AP_TRAP_ITEM_MIN        = 5000;
 const int AP_TRAP_ITEM_MAX        = 5100;
 
 void GiveItem(int itemId = -1) {
+    if (itemId == AP_ITEM_SKIP) {
+        return;
+    }
     if (itemId >= AP_RESOURCE_ITEM_MIN && itemId < AP_RESOURCE_ITEM_MAX) {
         GiveResource(itemId);
         return;
@@ -117,17 +120,4 @@ void GiveStartupUnits() {
     }
     bool closed = xsCloseFile();
     RefreshProfessions();
-}
-
-void GiveStartupItems() {
-    bool opened = xsOpenFile("startup");
-    if (opened == false) {
-        return;
-    }
-    int itemCount = xsGetFileSize() / 4; // byte to int
-    for (i = 0; < itemCount) {
-        int itemId = xsReadInt();
-        GiveItem(itemId);
-    }
-    bool closed = xsCloseFile();
 }

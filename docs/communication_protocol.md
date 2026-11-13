@@ -72,7 +72,7 @@ Two versions are compatible when **major and minor match**; build is free to dif
 covers both checks:
 
 | Check | Compares |
-|---|---|
+| --- | --- |
 | client ↔ seed | `world_version` in `slot_data` against the client's own. `/install` refuses on a mismatch |
 | client ↔ installed files | `WorldMajor` / `WorldMinor` in the packet. A mismatch is reported once and stops the exchange |
 
@@ -90,8 +90,9 @@ with a hardcoded `skip_int(fp, 18)`.
 A scenario can read an arbitrary number of `.xsdat` files from the `$USER\Games\Age of Empires 2 DE\$STEAM_PROFILE\profile` folder using `xsScript`. This allows different files to be used for different purposes on the client side, with each scenario sharing methods for common access.
 
 For example, the client loads into `AP.xsdat` a current ping value and a set of flags telling the
-game which other files to read. In `items.xsdat` the client writes a list of item ids; the game reads
-each one and processes it.
+game which other files to read. In `items.xsdat` the client writes a window of item ids addressed to
+the game's own delivery cursor; the game applies it only if the address matches, then advances the
+cursor.
 
 These filenames are hardcoded on both sides and are **not** seed-tagged.
 
@@ -119,8 +120,22 @@ The client/game handshake must be reestablished upon loading.
 
 Items from the last save must be re-sent from the client. Many items, such as techs, are simply flags that are read by the game, but most filler items will need to be loaded upon client reconnection.
 
-The game cannot persist anything across sessions — there is no save/load API — which is why its
-identity has to be *built in* rather than remembered.
+A save carries the game's XS state. Globals, arrays and the phase a rule is holding all come back
+intact, and `main()` does not run again, so a loaded save resumes where it left off rather than
+reinitialising. Measured in `AoE2_AI_Modder`'s `docs/agent/references/XS_MEASURED_BEHAVIOR.md`,
+2026-09-21; this section said the opposite until 2026-11-11, and the guards written under that
+belief are older than the measurement.
+
+What does not carry is a scenario switch. Each scenario starts a fresh XS context, so nothing one
+scenario learned reaches the next, which is why identity has to be *built in* by `/install` rather
+than remembered and why `CheckedLocationsCount` starts at `0` in every scenario.
+
+A reload therefore leaves the game holding the checked set as it stood when the save was written.
+The client's own set never shrinks, so a save loaded into a set that has grown since reads back as
+a `CheckedLocationsCount` disagreement and the client asks for another read. The game's **scenario
+triggers** come back as they were saved, so a trigger that had already fired is live again and the
+objective behind it is there to be done a second time; `FilterCompletedNotSent` keeps that from
+re-sending the location.
 
 ## Packets
 
@@ -137,14 +152,17 @@ Game -> Client. Written by `AP_Write`, read by `Age2Packet`.
 |3|WorldMajor|int|Major `world_version` of the installed Age2 files|
 |4|SlotId|int|The AP slot this install was set up for, from `SlotData.xs`|
 |5|LatestMessageId|int|The ID of the latest played message, assumes all previously sent messages have been played in order|
-|6-17|ItemId1-ItemId12|int*12|The most recent item packet Ids received by the game|
+|6-17|Unused|int*12|Was the echo ring, retired once the window gained a base. Written as `-1`, and kept only so ScenarioId stays at byte offset 72|
 |18|ScenarioCompleted|bool|Scenario global `completed`, 1 if the scenario has been completed|
 |19|ScenarioId|int|The id of the scenario, used when the player is playing a campaign. **Byte offset 72** — `find_active_campaign` depends on this|
 |20|WorldMinor|int|Minor `world_version`. First of the reserved block; see *Versioning*|
 |21|CompletedMercenaryId|int|A mercenary the game has finished spawning, `-1` when idle. Second of the reserved block. The game holds any others until this one is acknowledged; see *Mercenaries*|
 |22|ConsumedQueueSerial|int|The serial of the `mercenary_queue.xsdat` this game has read, `-1` before it has read one. Third of the reserved block|
-|23-49|Reserved|int*27|Reserved for future use, currently written as `0..26`|
-|50+|Locations (L)|int*L|All locations checked that have not been confirmed by AP client|
+|23|AppliedItemCount|int|How many entries of the client's item stream this scenario's state has consumed. A plain `int`, so the save carries it: a loaded save reports where that save had got to, and the client replays the gap into it. Fourth of the reserved block|
+|24|CheckedLocationsCount|int|How many ids the game took in on its last read of `locations.xsdat`, `0` before it has read one. Reset by every scenario, because each one starts a fresh XS context. The client asks for another read while this disagrees with the checked set it is writing, which is what gets the set into a scenario entered with nothing new to report. Fifth of the reserved block|
+|25|CurrentPacketLocationCount|int|How many location ids follow the header in *this* packet (`L` below). The client reads exactly that many and ignores anything after them, which is what lets a host append its own section to this file (the XS function injector's response section, when its wiring in `AP.xs` is uncommented). Sixth of the reserved block|
+|26-49|Reserved|int*24|Reserved for future use, currently written as `0..23`|
+|50+|Locations (L)|int*L|All locations checked that have not been confirmed by AP client. Exactly `CurrentPacketLocationCount` ids|
 
 `AP_Write` returns without creating the file at all while `AP_SLOT_ID` is `-1`, so the client never
 sees a packet from an install that `/install` has not set up.
@@ -162,16 +180,17 @@ Confirms that the client is still connected, and tells the game which other file
 |3|WorldMajor|int|Major `world_version` of the client|
 |4|WorldMinor|int|Minor `world_version` of the client|
 |5|SlotId|int|The slot the client is connected as|
-|6|SendItems|bool|If 1, the game reads `items.xsdat`|
-|7|FreeItems|bool|If 1, the game reads `free_items.xsdat`|
-|8|FreeLocations|bool|If 1, the game reads `locations.xsdat`|
-|9|SendMercenaries|bool|If 1, the game reads `mercenary_queue.xsdat`. Set while the client's queue serial differs from `ConsumedQueueSerial`, so it clears on acknowledgement rather than on client state. Was `SendUnits`, which was never implemented and hardcoded to 0|
-|10|SendMessages|bool|If 1, the game reads `messages.xsdat`|
-|11|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
-|12|AckMercenaryId|int|Echoes `CompletedMercenaryId` back. The game drops that mercenary from its pending list and may then name the next one|
+|6|SeedHigh|int|High 16 bits of the client's seed tag, or `-1` before it has one|
+|7|SeedLow|int|Low 16 bits of the same|
+|8|SendItems|bool|If 1, the game reads `items.xsdat`|
+|9|FreeLocations|bool|If 1, the game reads `locations.xsdat`. `MarkServerLocations` disables itself after one pass, so this has to be set once per scenario, not once per connect. Held set while `CheckedLocationsCount` disagrees with the number of ids the client is writing, so it clears on acknowledgement rather than on the first ping written -- `ConnectAP` does not enable `ReadAP` until it has approved that first ping, so its flags are never read|
+|10|SendMercenaries|bool|If 1, the game reads `mercenary_queue.xsdat`. Set while the client's queue serial differs from `ConsumedQueueSerial`, so it clears on acknowledgement rather than on client state. Was `SendUnits`, which was never implemented and hardcoded to 0|
+|11|SendMessages|bool|If 1, the game reads `messages.xsdat`|
+|12|ScenarioCompleted|bool|Writes scenario-completion state *back into* the running game, which `AP_Write` then echoes out again|
+|13|AckMercenaryId|int|Echoes `CompletedMercenaryId` back. The game drops that mercenary from its pending list and may then name the next one|
 
-`AP_Read` validates in order — scenario, ping, version, slot — and returns early on the first
-failure, so no dispatch flag is acted on until the identity checks have passed.
+`AP_Read` validates in order — scenario, ping, version, slot, seed — and returns early on the
+first failure, so no dispatch flag is acted on until the identity checks have passed.
 
 ### Mercenaries
 
@@ -200,28 +219,27 @@ Client -> Game
 
 The game reads these items one at a time. Each item here will have a corresponding xsScript waiting for the itemId based on the type of item. If itemId1 is a tech, it will unlock that respective tech for the player that corresponds to that itemId.
 
-Variable length, **at most 12** — the client sends the window of items AP has granted that the game
-has not yet acked, not a fixed twelve.
+A leading `WindowBase` names the cursor the window was written for, followed by the entries
+themselves. The game applies the window only when `WindowBase` equals its own `AppliedItemCount`,
+all of it or none, and then advances that count by what it read. A window addressed to any other
+cursor is a leftover and is ignored, which is what makes re-reading the file harmless.
+
+Entries the client has already paid out — a trap or a filler resource it has a record of
+delivering, or a mercenary the pavilion has spawned — are replaced in place by `AP_ITEM_SKIP`
+(`-2`). The window is positional, so they cannot simply be dropped: every later entry would shift
+and the cursor would stop meaning what both sides think it means. `GiveItem` returns early on the
+sentinel.
+
+Starting resources and town-centre resources come through this window too, and only through it.
+The cursor starts at 0 in every new scenario, so the window replays the whole stream there and pays
+each of them once per scenario run. There used to be a separate `startup.xsdat` for them.
+
+Variable length.
 
 |Name|Type|Purpose|
 |---|---|---|
-|ItemIds (I)|int*I|Ids of up to 12 unacked items|
-
-### `free_items.xsdat`
-
-Client -> Game
-
-The client lists every item id the game echoed back that the client no longer holds in flight. The
-game frees those slots in its local cache, so a new window can be loaded.
-
-Freeing lags the acknowledgement by one pass: an id leaves the in-flight list when `ack_items`
-confirms it, and is therefore listed here on the *next* pass. Ids from a previous session that the
-client never sent are freed the same way. In the steady state, with a window still in flight and
-nothing acked since the last pass, this file is written empty.
-
-|Name|Type|Purpose|
-|---|---|---|
-|ItemIds (I)|int*I|Echoed ids the client no longer has in flight: those acked on the previous pass, plus orphans from an earlier session|
+|WindowBase|int|The `AppliedItemCount` this window starts at|
+|ItemIds (I)|int*I|Item ids, or `AP_ITEM_SKIP` for an entry already paid out|
 
 ### `locations.xsdat`
 
@@ -232,16 +250,6 @@ The game reads a location file that echoes back the locations sent in past packe
 |Name|Type|Purpose|
 |---|---|---|
 |Locations (L)|int*L|Every location the client has checked|
-
-### `startup.xsdat`
-
-Client -> Game. Read by `ItemHandler.xs`.
-
-Resource items to apply at scenario start, re-synced every tick so a reconnect cannot strand them.
-
-|Name|Type|Purpose|
-|---|---|---|
-|ItemIds (I)|int*I|Starting-resource and town-centre-resource item ids|
 
 ### `buildings.xsdat`
 
@@ -329,7 +337,7 @@ extern const int AP_SEED_LOW = 43654;
 |Name|Purpose|
 |---|---|
 |`AP_SLOT_ID`|The AP slot number. `-1` means this install was never set up. `AP_Write` writes it into the packet and `AP_Read` compares it|
-|`AP_SEED_HIGH` / `AP_SEED_LOW`|The 32-bit seed tag as two 16-bit halves. **Diagnostics only** — the packet has no room for a seed, so these exist so the game can name the seed it belongs to|
+|`AP_SEED_HIGH` / `AP_SEED_LOW`|The 32-bit seed tag as two 16-bit halves. The client sends the same two halves in the ping packet and `AP_Read` compares them, which is what catches an install from one seed being played against another — the slot id cannot, since every solo seed is slot 1|
 
 The halves are split because an XS `int` cannot be initialised to a literal above `999_999_999`, and
 is 32-bit signed besides; the full tag fits in neither. Reassemble as `(HIGH << 16) | LOW`.

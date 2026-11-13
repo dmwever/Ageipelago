@@ -1,3 +1,5 @@
+//include "AP_Constants.xs";
+
 int pavilionId = -1;
 int pavilionX = -1;
 int pavilionY = -1;
@@ -77,6 +79,8 @@ void SetupPavilion() {
     xsEffectAmount(cSetUnitAttribute, pavilionId, cInvulnerabilityLevel,
                    PAVILION_INVULNERABILITY, PAVILION_OWNER);
     xsSetUnitProperty(pavilionId, cUnitDeletable, PAVILION_DELETABLE);
+    xsSetUnitProperty(pavilionId, cUnitTargetable, 0.0);
+    xsSetUnitProperty(pavilionId, cUnitAttackable, 0.0);
 }
 
 void SetupVictory() {
@@ -111,7 +115,7 @@ void AnnounceVictory() {
     ShowVictory();
 
     if (pavilionId != -1) {
-        xsSetViewPosition(PAVILION_OWNER, PavilionPoint());
+        xsSetViewPosition(PAVILION_OWNER, PavilionPoint(), 1);
         xsFlashUnit(pavilionId, PAVILION_OWNER);
     }
     xsDisplayInstructions("Click Victory in the APavilion to win, or keep playing for checks.",

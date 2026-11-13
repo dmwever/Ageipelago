@@ -3,12 +3,6 @@ const float PROFESSION_FEMALE_GROUP = 2.0;
 const float PROFESSION_NO_GROUP = 0.0;
 const int PROFESSION_VILLAGER_FEMALE = 293;
 
-bool isProfession(vector unit = cInvalidVector) {
-    return (structGetBool(unit, "cavemanExempt")
-            && structGetInt(unit, "lineId") >= 0
-            && structGetInt(unit, "tier") > 0);
-}
-
 int baseVillager(int lineId = -1) {
     for (j = 0; < unitTableCount) {
         vector unit = getUnit(j);
@@ -34,11 +28,12 @@ void evictProfession(vector unit = cInvalidVector, int baseVillagerId = -1) {
     int found = xsGetPlayerUnitIds(1, structGetInt(unit, "typeId"));
     for (i = 0; < xsArrayGetSize(found)) {
         int unitId = xsArrayGetInt(found, i);
-        if (unitId < 0 || xsDoesUnitExist(unitId) == false) {
+        if (unitId < 0 || xsDoesUnitExist(unitId) == false || IsUnitUntracked(unitId)) {
             continue;
         }
         vector position = xsGetUnitPosition(unitId);
         xsRemoveUnit(unitId);
+        UntrackUnit(unitId);
         int created = xsCreateUnit(baseVillagerId, 1, position, false, true, false);
         unitsTransformed = true;
     }
@@ -66,23 +61,18 @@ void RefreshProfessions() {
     }
 }
 
-void CheckProfessionLocations() {
+void CheckProfessionLocations(int units = -1) {
     if (professionsReady == false) {
         return;
     }
-    for (j = 0; < unitTableCount) {
-        vector unit = getUnit(j);
-        if (isProfession(unit) == false || structGetInt(unit, "owned") > 0) {
+    for (i = 0; < xsArrayGetSize(units)) {
+        int unitId = xsArrayGetInt(units, i);
+        if (unitId < 0 || IsUnitUntracked(unitId)) {
             continue;
         }
-        int locationId = structGetInt(unit, "locationId");
-        if (locationId < 0) {
-            continue;
-        }
-        int owned = countOwned(unit);
-        if (owned > 0) {
-            structSetInt(unit, "owned", owned);
-            AP_Check_Location(locationId);
+        int typeId = xsGetUnitObjectId(unitId);
+        if (isProfessionType(typeId)) {
+            MarkRowOwned(findUnit(typeId));
         }
     }
 }

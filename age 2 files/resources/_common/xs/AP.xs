@@ -6,21 +6,26 @@ include "./MercenaryLedger.xs";
 include "./MercenarySeats.xs";
 include "./MercenarySpawn.xs";
 include "./APavilion.xs";
+include "./VictoryThreats.xs";
+// XS function injector (off by default): recipe in aoe2-xs-injector/docs/agents/hosting.md
+// include "./xsinject.xs";
 
-int itemArray = -1;
+int apArrayProbe = -1;
 
 int clientPing = -1;
 int lastPing = -1;
 int pingRepeatCount = 0;
 
 int completed = 0;
-int scenarioId = 0;
 
 int worldMajor = 0;
 int worldMinor = 3;
 int lastMessageId = -1;
+int appliedItemCount = 0;
 int scenarioItemsRead = 0;
+int checkedLocationsCount = 0;
 int reportedMissingItems = 0;
+int clientElsewhere = 0;
 
 bool AP_INITIALIZED = false;
 
@@ -59,25 +64,30 @@ void AP_Write()
     xsWriteInt(worldMajor);
     xsWriteInt(AP_SLOT_ID);
     xsWriteInt(lastMessageId);
+    // Dead weight, kept so ScenarioId stays at byte offset 72 for find_active_campaign.
     for (i = 0; < 12) {
-        xsWriteInt(xsArrayGetInt(itemArray, i));
+        xsWriteInt(-1);
     }
     xsWriteInt(completed);
     xsWriteInt(scenarioId);
     xsWriteInt(worldMinor);
     xsWriteInt(PendingMercenary());
     xsWriteInt(ConsumedQueueSerial());
-    for (i = 0; < 27) {
+    xsWriteInt(appliedItemCount);
+    xsWriteInt(checkedLocationsCount);
+    // CurrentPacketLocationCount: exactly the ids written below. AddLocation refuses id -1, so
+    // every filtered location is written.
+    int sendingLocations = FilterCompletedNotSent();
+    xsWriteInt(filteredCount);
+    for (i = 0; < 24) {
         xsWriteInt(i);
     }
-    int sendingLocations = FilterCompletedNotSent();
     for (i = 0; < filteredCount) {
         vector location = xsArrayGetVector(sendingLocations, i);
-        int locationId = structGetInt(location, "id");
-        if (locationId != -1) {
-            xsWriteInt(locationId);
-        }
+        xsWriteInt(structGetInt(location, "id"));
     }
+    // XS function injector (off by default): recipe in aoe2-xs-injector/docs/agents/hosting.md
+    // xsInjectWriteSection();
     xsCloseFile();
 }
 
@@ -88,14 +98,12 @@ void AP_Read()
         return;
     }
 
-    // Check Scenario
+    // The client writes one packet, for whichever scenario it is attached to. During a
+    // save/load switch that is not this one -- an expected state, not an install error -- so note
+    // it here and act on it below. The checks in between read fields the client fills from the
+    // install rather than from the scenario, so they are worth running either way.
     int receivedScenarioId = xsReadInt();
-    if (receivedScenarioId != scenarioId) {
-        xsChatData("<RED>Wrong Scenario ID from Client: " + receivedScenarioId);
-        xsChatData("<RED>Expected Scenario Id: " + scenarioId);
-        xsCloseFile();
-        return;
-    }
+    bool addressedHere = (receivedScenarioId == scenarioId);
 
     // Update Ping
     lastPing = clientPing;
@@ -124,13 +132,35 @@ void AP_Read()
         return;
     }
 
+    int check_seedHigh = xsReadInt();
+    int check_seedLow = xsReadInt();
+    if (check_seedHigh == -1 && check_seedLow == -1) {
+        xsCloseFile();
+        return;
+    }
+    if (check_seedHigh != AP_SEED_HIGH || check_seedLow != AP_SEED_LOW) {
+        ReportMismatch("AP Seed",
+            "" + check_seedHigh + "-" + check_seedLow,
+            "" + AP_SEED_HIGH + "-" + AP_SEED_LOW);
+        xsCloseFile();
+        return;
+    }
+
+    // The install checks out and the packet is simply addressed elsewhere. Say so once per
+    // absence, then wait: the client scans for the running scenario and will come back to this one.
+    if (addressedHere == false) {
+        if (clientElsewhere == 0) {
+            clientElsewhere = 1;
+            xsChatData("<YELLOW>The AP client is on another scenario. Waiting for it to switch here.");
+        }
+        xsCloseFile();
+        return;
+    }
+    clientElsewhere = 0;
+
     int items = xsReadInt();
     if (items == 1) {
         xsEnableRule("ReadItems");
-    }
-    int free_items = xsReadInt();
-    if (free_items == 1) {
-        xsEnableRule("FreeItems");
     }
     int free_locations = xsReadInt();
     if (free_locations == 1) {
@@ -189,9 +219,6 @@ bool HasVictory() {
     return (completed == 1);
 }
 
-/* What the looping "AP Ping" trigger used to do. Not highFrequency: AP_Write recreates the whole
-   packet file on every call, and nothing on either side is atomic, so a reader polling a file its
-   writer rewrites 60 times a second is asking to catch a torn read. */
 rule WriteAP
     inactive
     minInterval 1
@@ -206,27 +233,31 @@ rule ReadAP
     maxInterval 4
 {
     AP_Read();
-    if (clientPing > lastPing) {
+    if (clientPing != lastPing) {
         pingRepeatCount = 0;
     }
     else {
         pingRepeatCount++;
     }
 
-    if (pingRepeatCount >= 5) {
+    // A client sitting on another scenario is not disconnected, and it has already said so in
+    // yellow. Only warn when the silence is unexplained.
+    if (pingRepeatCount >= 5 && clientElsewhere == 0) {
         xsChatData("<RED>AP Client disconnected. Cannot send locations or receive items until connection is reestablised.");
     }
 }
 
 void InitAP() {
+    // XS function injector (off by default): recipe in aoe2-xs-injector/docs/agents/hosting.md
+    // xsInjectUseHostWriter();
     if (AP_INITIALIZED == true) {
-        if (xsArrayGetSize(itemArray) == 12) {
+        if (xsArrayGetSize(apArrayProbe) == 1) {
             return;
         }
         xsChatData("<RED>AP session state was lost. Reinitializing.");
     }
 
-    itemArray = xsArrayCreateInt(12, -1, "Item Array");
+    apArrayProbe = xsArrayCreateInt(1, 0, "ap-array-probe");
 
     initializeStructsScript();
     InitLocations();
@@ -238,6 +269,8 @@ void InitAP() {
     InitCaveman();
     InitProfessions();
     InitScenarioLocations();
+    InitVictoryThreats();
+    InitScenarioThreats();
     InitMercenaryLedger();
     InitMercenarySeats();
     InitMercenarySpawn();
@@ -272,7 +305,6 @@ rule ConnectAP
 
     if (startupGranted == 0) {
         xsChatData("<GREEN>Client Connected!");
-        GiveStartupItems();
         GiveStartupBuildings();
         GiveStartupTechs();
         GiveStartupUnits();
@@ -302,51 +334,30 @@ rule ReadItems
         xsDisableSelf();
         return;
     }
-    int itemCount = xsGetFileSize() / 4; // byte to int
-    if (itemCount > 12) {   // itemArray is 12 slots; never index past it
-        itemCount = 12;
+    int fileInts = xsGetFileSize() / 4; // byte to int
+    if (fileInts < 1) {
+        xsCloseFile();
+        xsDisableSelf();
+        return;
     }
+
+    int clientAppliedItems = xsReadInt();
+    if (clientAppliedItems != appliedItemCount) {
+        xsCloseFile();
+        xsDisableSelf();
+        return;
+    }
+
+    int itemCount = fileInts - 1; // less the header
+    // All of it or none: the cursor counts entries, so a partial apply would desync it.
     for (i = 0; < itemCount) {
-        int itemId = xsReadInt();
-        if (xsArrayGetInt(itemArray, i) == -1) {
-            GiveItem(itemId);
-            xsArraySetInt(itemArray, i, itemId);
-        }
+        GiveItem(xsReadInt());
     }
+    appliedItemCount = appliedItemCount + itemCount;
     xsCloseFile();
     xsDisableSelf();
 }
 
-rule FreeItems
-    inactive
-    minInterval 1
-    maxInterval 1
-{
-    bool opened = xsOpenFile("free_items");
-    if (opened == false) {
-        xsDisableSelf();
-        return;
-    }
-    int freeCount = xsGetFileSize() / 4; // byte to int
-    if (freeCount > 12) {
-        freeCount = 12;
-    }
-    int freed = 0;
-    for (i = 0; < freeCount) {
-        int itemId = xsReadInt();
-        if (itemId != -1) {
-            freed = 0;
-            for (j = 0; < 12) {
-                if (freed == 0 && xsArrayGetInt(itemArray, j) == itemId) {
-                    xsArraySetInt(itemArray, j, -1);
-                    freed = 1;
-                }
-            }
-        }
-    }
-    xsCloseFile();
-    xsDisableSelf();
-}
 
 rule MarkServerLocations
     inactive
@@ -365,12 +376,21 @@ rule MarkServerLocations
             continue;
         }
 
-        // Scenario locations start with the scenario's location id. values below the minimum scenario id are safe to include.
         int locationScenarioId = locationId / 10 / 10;
-        if (locationScenarioId < MIN_SCENARIO_ID || locationScenarioId == scenarioId) {
+        if (locationScenarioId < MIN_SCENARIO_ID) {
+            vector location = FindLocationById(locationId);
+            if (location == cInvalidVector) {
+                continue;
+            }
+            structSetBool(location, "serverComplete", true);
+            continue;
+        }
+
+        if (locationScenarioId == scenarioId) {
             SetServerLocationComplete(locationId);
         }
     }
+    checkedLocationsCount = locationCount;
     xsCloseFile();
     xsDisableSelf();
 }

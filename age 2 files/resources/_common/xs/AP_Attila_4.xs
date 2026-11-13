@@ -1,8 +1,5 @@
 include "./AP.xs";
 
-void CavemanExemption() {
-}
-
 void InitScenarioLocations() {
   // Scenario-Specific - Not defeatsanity/relics
   AddLocations(10400, 10407);

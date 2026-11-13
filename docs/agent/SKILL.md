@@ -8,17 +8,24 @@ description: >
   the AP pavilion or APavilion, SlotData.xs, TechData.xs, AP_Check_Location,
   AddLocations, the Attila or Joan scenario scripts, /install, /set_user_folder,
   /mercenaries, /scenarios, seed tags, Age2World, Age2ItemData, Age2ScenarioData,
-  TechPool, LocalStart, rule_builder, or any of the yaml options (techsanity,
-  shuffle_ages, existing_techs, shuffle_buildings, local_start).
+  TechPool, LocalStart, rule_builder, Age2PlayerData, defeat rules, or any of the
+  yaml options (techsanity, shuffle_ages, existing_techs, shuffle_buildings,
+  local_start, market_trade, partner_trade).
   Also use it for questions about how the game and the client communicate, or when
   adding an item, location, scenario, option or packet field to this randomizer.
 ---
 
 # Ageipelago / age2de
 
-Skill revision: **2026-09-29a**
+Skill revision: **2026-11-07a**
 
 A randomizer in two halves that ship separately and must stay in step.
+
+> **Age of Empires II has no copy/paste.** Nothing in the game can be selected or copied, not even
+> the chat. Never ask the user to copy, paste or transcribe chat output. Any spike, probe or
+> diagnostic whose result has to reach you writes it to an `.xsdat` file (`xsCreateFile` …
+> `xsCloseFile`), which you then read off disk. `xsChatData` is only for progress and
+> pass/fail at a glance. See `references/xs-mod.md` → *Getting data out of the game*.
 
 ## Where this lives
 
@@ -47,9 +54,14 @@ is the normal state on a machine where nobody has installed it.
 | The question is about | Open |
 |---|---|
 | an `.xs` file, a rule, a struct, include order, linting, the pavilion, scenario scripts | `references/xs-mod.md` |
+| writing a spike, probe or harness, map coordinates, getting a measurement out of the game | `references/xs-mod.md` |
+| a change only a person can verify by playing — fog, a reveal, a train menu | `references/xs-mod.md` -> *When only a person can see the answer* |
 | items, locations, enums, logic vs rules, regions, the client, handlers, generation, tests | `references/apworld.md` |
-| a packet field, byte offsets, `.xsdat` layout, seed tags, versioning, the item window | `references/protocol.md` |
-| what a yaml option does, on either side | `references/options/index.md`, then the one option's file |
+| a scenario's players, sides, trade access, defeat rules | `references/apworld.md` -> *Players and defeats* |
+| a scenario's resource counts, tiers, map object ids, gather amounts, terrain | `references/apworld.md` -> *Scenario resource scans* |
+| adding a whole campaign, scenario triggers, the AP trigger block, what to ask the user | `references/adding-a-campaign.md` |
+| a packet field, byte offsets, the `.xsdat` **packet** layout, seed tags, versioning, the item window | `references/protocol.md` |
+| what a yaml option does on either side, or a bug that only shows with one on (caveman, techsanity, …) | `references/options/index.md`, then the one option's file |
 | how to write it so it matches the codebase | `references/conventions/index.md` |
 
 Engine-level questions — the exact signature of an `xs*` function, a constant's value, a unit or tech
@@ -63,7 +75,7 @@ skill and its knowledge base. Do not answer them from here.
    shape change needs a minor bump. A test enforces it, but only when `AGEIPELAGO_PATH` is set.
 2. **Never insert a packet field before `ScenarioId`.** It sits at byte offset 72 and
    `find_active_campaign` reaches it with a hardcoded `skip_int(fp, 18)`. New fields come out of the
-   reserved block, which is down to 27 ints.
+   reserved block, which is down to 24 ints.
 3. **`AP_Constants.xs` is the single home for `extern const`.** XS has no include guards, so the same
    constant in two included files is a build break.
 4. **Include order is load-bearing.** `AP.xs` includes `AP_Constants.xs` first and that is what makes
@@ -139,15 +151,22 @@ Each of these touches both halves. Doing only one side is the usual failure.
 ### Adding a scenario
 
 1. `locations/Scenarios.py`: the id is derived as `campaign.value * 100 + chapter`, so both must stay
-   within 1-99. Set `file_stem`, `xsdat_write_name`, `civ` and `vanilla_age`.
+   within 1-99. Set `file_stem`, `xsdat_write_name`, `civ`, `vanilla_age`, `max_age` and
+   `fixed_force`.
 2. Add its locations to `locations/Locations.py`.
-3. Write a `*StartingState` in `logic/` and a `*Rules` in `rules/`.
-4. **Bind both** in `locations/connections/ScenarioDataLogic.py` and `ScenarioDataRules.py`. A missed
+3. Declare its players: an `Age2PlayerData` member in `locations/Players.py` per ally and enemy
+   (slot, side, market and dock access — ask the user for these), and an entry in
+   `locations/connections/ScenarioPlayers.py` (`[]` for a fixed force).
+4. Write a `*StartingState` in `logic/`, overriding `defeat_rules` for every player the victory
+   rules name and every owner of a market or dock that opens once defeated, and a `*Rules` in
+   `rules/` whose victory rules read `scenario_logic.player_logic.defeats(player)`. See *Players and
+   defeats* in `references/apworld.md`.
+5. **Bind both** in `locations/connections/ScenarioDataLogic.py` and `ScenarioDataRules.py`. A missed
    binding leaves `scenario.rules` as `None`, and `Rules.set_rules()` then calls `None(self)` —
    `TypeError: 'NoneType' object is not callable` at generation.
-5. Create `AP_<Campaign>_<n>.xs` from the template in `xs-mod.md`: the stub overrides, `main()`,
+6. Create `AP_<Campaign>_<n>.xs` from the template in `xs-mod.md`: the stub overrides, `main()`,
    the wrappers, and `SetPavilionLayout()`.
-6. Give `SetPavilionLayout()` the pavilion's tile and facing. Spawn and muster are derived from
+7. Give `SetPavilionLayout()` the pavilion's tile and facing. Spawn and muster are derived from
    them, two and six tiles out along the facing, so there is nothing else to author and no
    tooling to run — `APavilion.xs` creates the building at run time.
 
@@ -172,6 +191,34 @@ AGEIPELAGO_PATH=/path/to/Ageipelago python -m pytest worlds/age2de/test
 # XS lint, from the xs folder. Needs v0.2.30 or later for Update 185872.
 ./xs-check.exe -I . -- AP_Attila_1.xs
 ```
+
+### Fuzzing the apworld
+
+[Archipelago-fuzzer](https://github.com/Eijebong/Archipelago-fuzzer) generates random YAMLs and
+fills them, many at once. A copy of its `fuzz.py` lives in the Archipelago checkout at
+`worlds/age2de/fuzz/fuzz.py`, git-ignored next to the committed meta `age2de.yaml`; copy a new
+release over it to update. Run it from that folder:
+
+```
+PYTHONHASHSEED=0 PYTHONPATH=../../.. python fuzz.py -r 1000 -j 18 -g age2de -n 1-3 -m age2de.yaml -t 90
+```
+
+- `-g` takes the apworld **module** name (`age2de`), not the display name. `-t 90`, not the
+  default 15: the largest configurations take 20-50s to fill.
+- `-m` is a meta file. An option named there is fixed to that value. `fuzz_constraints` adjust
+  what was rolled: `if_selected` + `must_include` / `must_exclude`, `if_value` + `then` /
+  `then_include` / `then_exclude`, `if_any_selected` + `requires_any`, `mutually_exclusive`,
+  `ensure_any`, and the numeric caps (`max_count_of`, `max_remaining_from`, `sum_cap`). Put
+  throwaway metas in `_*.yaml`, which the folder's `.gitignore` covers.
+- `--hook module:Class` runs code around each generation (`setup_main`, `setup_worker`,
+  `before_generate(args)`, `after_generate(multiworld, output_dir)`, `finalize`). Keep throwaway
+  hooks in the ignored `bench/` folder. The vendored copy rejects a hook class that *does*
+  subclass `fuzz.BaseHook` (its check is inverted), so write a plain class with those methods.
+- `--skip-output` skips writing the multiworld, which is all a fill test needs.
+- Failures land in `fuzz_output/error/age2de/<n>/` with the YAMLs and a log carrying `Seed:`.
+- **Pairing runs**: two runs only roll the same YAMLs with `PYTHONHASHSEED=0` and a hook that seeds
+  `random` in `setup_main` and sets `args.seed` in `before_generate`. Otherwise fuzz rates vary by
+  several points between identical runs, so treat a difference under about 3 points as noise.
 
 There is no Python tooling left in this repo — no `Scripts/`, no `Data/`. The pavilion is created
 by `APavilion.xs` at run time, so nothing authors triggers any more and there is nothing to keep

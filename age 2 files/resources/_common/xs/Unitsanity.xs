@@ -3,25 +3,85 @@ include "./UnitData.xs";
 int unitArray = -1;
 extern int unitTableCount = 0;   /* not unitCount: MercenarySeats.xs has a parameter by that name */
 
-extern int unitsOwned = -1;
+const int UNTRACKED_UNIT_CAPACITY = 256;
 
 int receivedItems = -1;
 
-int variantLookupIds = -1;
-int variantLookupTypes = -1;
-int variantLookupCount = 0;
+int typeRowIndex = -1;
+int canonicalType = -1;
+int professionTypes = -1;
+
+int unitScan = -1;
+int lastUnitScan = -1;
+int lastUnitCount = 0;
+int newUnits = -1;
+
+int untrackedUnitIds = -1;
+int untrackedUnitCount = 0;
+
+bool IsUnitUntracked(int unitId = -1) {
+    for (i = 0; < untrackedUnitCount) {
+        if (xsArrayGetInt(untrackedUnitIds, i) == unitId) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
+void UntrackUnit(int unitId = -1) {
+    if (untrackedUnitIds < 0 || unitId < 0 || IsUnitUntracked(unitId)) {
+        return;
+    }
+    if (untrackedUnitCount >= UNTRACKED_UNIT_CAPACITY) {
+        xsChatData("<RED>Unitsanity: untracked-unit list is full, so unit " + unitId
+                   + " may still send a check.");
+        return;
+    }
+    xsArraySetInt(untrackedUnitIds, untrackedUnitCount, unitId);
+    untrackedUnitCount = untrackedUnitCount + 1;
+}
+
+bool isUnitListed(int units = -1, int unitId = -1) {
+    int low = 0;
+    int high = xsArrayGetSize(units) - 1;
+    while (low <= high) {
+        int middle = (low + high) / 2;
+        int listed = xsArrayGetInt(units, middle);
+        if (listed == unitId) {
+            return (true);
+        }
+        if (listed < unitId) {
+            low = middle + 1;
+        } else {
+            high = middle - 1;
+        }
+    }
+    return (false);
+}
+
+void pruneUntrackedUnits(int units = -1) {
+    int i = 0;
+    while (i < untrackedUnitCount) {
+        if (isUnitListed(units, xsArrayGetInt(untrackedUnitIds, i))) {
+            i = i + 1;
+        } else {
+            untrackedUnitCount = untrackedUnitCount - 1;
+            xsArraySetInt(untrackedUnitIds, i, xsArrayGetInt(untrackedUnitIds, untrackedUnitCount));
+            xsArraySetInt(untrackedUnitIds, untrackedUnitCount, -1);
+        }
+    }
+}
+
 
 vector getUnit(int i = -1) {
     return (xsArrayGetVector(unitArray, i));
 }
 
 int findUnit(int typeId = -1) {
-    for (i = 0; < unitTableCount) {
-        if (structGetInt(getUnit(i), "typeId") == typeId) {
-            return (i);
-        }
+    if (typeId < 0 || typeId >= TYPE_INDEX_CAPACITY) {
+        return (-1);
     }
-    return (-1);
+    return (xsArrayGetInt(typeRowIndex, typeId));
 }
 
 int idList(vector unit = cInvalidVector, string attrName = "") {
@@ -75,6 +135,12 @@ void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
     setIdList(unit, "variantIds",
               xsArrayCreateInt(UNIT_VARIANT_CAPACITY, -1, "us-variants-" + unitTableCount));
     xsArraySetVector(unitArray, unitTableCount, unit);
+    if (typeId < TYPE_INDEX_CAPACITY) {
+        xsArraySetInt(typeRowIndex, typeId, unitTableCount);
+        if (cavemanExempt == 1 && lineId >= 0 && tier > 0) {
+            xsArraySetInt(professionTypes, typeId, 1);
+        }
+    }
     unitTableCount = unitTableCount + 1;
 }
 
@@ -103,34 +169,27 @@ void addUnitVariant(int typeId = -1, int variantId = -1) {
         return;
     }
     appendId(idList(getUnit(index), "variantIds"), UNIT_VARIANT_CAPACITY, variantId);
-    if (variantLookupCount >= UNIT_CAPACITY) {
-        return;
+    if (variantId >= 0 && variantId < TYPE_INDEX_CAPACITY) {
+        xsArraySetInt(canonicalType, variantId, typeId);
     }
-    xsArraySetInt(variantLookupIds, variantLookupCount, variantId);
-    xsArraySetInt(variantLookupTypes, variantLookupCount, typeId);
-    variantLookupCount = variantLookupCount + 1;
+}
+
+bool isProfessionType(int typeId = -1) {
+    if (typeId < 0 || typeId >= TYPE_INDEX_CAPACITY) {
+        return (false);
+    }
+    return (xsArrayGetInt(professionTypes, typeId) == 1);
 }
 
 int canonicalTypeOf(int typeId = -1) {
-    for (i = 0; < variantLookupCount) {
-        if (xsArrayGetInt(variantLookupIds, i) == typeId) {
-            return (xsArrayGetInt(variantLookupTypes, i));
-        }
+    if (typeId < 0 || typeId >= TYPE_INDEX_CAPACITY) {
+        return (typeId);
     }
-    return (typeId);
-}
-
-bool ageReached(int age = 0) {
-    if (age == FEUDAL_AGE) {
-        return (xsGetTechState(FEUDAL_AGE_TECH, 1) == cTechStateDone);
+    int canonical = xsArrayGetInt(canonicalType, typeId);
+    if (canonical < 0) {
+        return (typeId);
     }
-    if (age == CASTLE_AGE) {
-        return (xsGetTechState(CASTLE_AGE_TECH, 1) == cTechStateDone);
-    }
-    if (age == IMPERIAL_AGE) {
-        return (xsGetTechState(IMPERIAL_AGE_TECH, 1) == cTechStateDone);
-    }
-    return (true);
+    return (canonical);
 }
 
 void setObjectDisable(int objectId = -1, float disableFlag = 1.0, bool enable = false) {
@@ -142,8 +201,8 @@ void setObjectDisable(int objectId = -1, float disableFlag = 1.0, bool enable = 
 
 void setUnitDisable(vector unit = cInvalidVector, float disableFlag = 1.0) {
     bool enable = false;
-    if (disableFlag == 0.0 && ageReached(structGetInt(unit, "age"))
-        && structGetBool(unit, "trainable")) {
+    if (disableFlag == 0.0 && structGetInt(unit, "tier") == 0
+        && ageReached(structGetInt(unit, "age")) && structGetBool(unit, "trainable")) {
         enable = true;
     }
     setObjectDisable(structGetInt(unit, "typeId"), disableFlag, enable);
@@ -165,32 +224,48 @@ void setUnitHidden(vector unit = cInvalidVector, bool hidden = true) {
     structSetBool(unit, "locked", hidden);
 }
 
-int countOwned(vector unit = cInvalidVector) {
-    int total = xsGetObjectCount(1, structGetInt(unit, "typeId"));
-    int variants = idList(unit, "variantIds");
-    for (i = 0; < UNIT_VARIANT_CAPACITY) {
-        if (xsArrayGetInt(variants, i) < 0) {
-            break;
-        }
-        total = total + xsGetObjectCount(1, xsArrayGetInt(variants, i));
+void MarkRowOwned(int index = -1) {
+    if (index < 0) {
+        return;
     }
-    return (total);
+    vector unit = getUnit(index);
+    if (structGetInt(unit, "owned") > 0) {
+        return;
+    }
+    int locationId = structGetInt(unit, "locationId");
+    if (locationId < 0) {
+        return;
+    }
+    structSetInt(unit, "owned", 1);
+    AP_Check_Location(locationId);
 }
 
-void checkOwnedUnits() {
-    for (j = 0; < unitTableCount) {
-        vector unit = getUnit(j);
-        if (structGetInt(unit, "owned") > 0) {
+bool MarkOwnedByType(int typeId = -1) {
+    bool found = false;
+    int index = findUnit(typeId);
+    if (index >= 0) {
+        MarkRowOwned(index);
+        found = true;
+    }
+    int canonical = canonicalTypeOf(typeId);
+    if (canonical != typeId) {
+        int canonicalIndex = findUnit(canonical);
+        if (canonicalIndex >= 0) {
+            MarkRowOwned(canonicalIndex);
+            found = true;
+        }
+    }
+    return (found);
+}
+
+void checkOwnedUnits(int units = -1) {
+    for (i = 0; < xsArrayGetSize(units)) {
+        int unitId = xsArrayGetInt(units, i);
+        if (unitId < 0 || IsUnitUntracked(unitId)) {
             continue;
         }
-        int locationId = structGetInt(unit, "locationId");
-        if (locationId < 0) {
-            continue;
-        }
-        int owned = countOwned(unit);
-        if (owned > 0) {
-            structSetInt(unit, "owned", owned);
-            AP_Check_Location(locationId);
+        if (MarkOwnedByType(xsGetUnitCopyId(unitId)) == false) {
+            MarkOwnedByType(xsGetUnitObjectId(unitId));
         }
     }
 }
@@ -225,7 +300,11 @@ void refreshUnitLocks() {
         }
         if (hasAllItems(unit)) {
             structSetBool(unit, "hasItems", true);
-            setUnitHidden(unit, false);
+            if (isProfession(unit)) {
+                structSetBool(unit, "locked", false);
+            } else {
+                setUnitHidden(unit, false);
+            }
             cavemanTargetsStale = true;
             unitsDirty = true;
         }
@@ -260,9 +339,14 @@ void InitUnitsanityStructs() {
     defineStructAttribute("Unit", "variantIds", TYPE_INT_ARRAY);
 
     unitArray = xsArrayCreateVector(UNIT_CAPACITY, cInvalidVector, "us-units");
-    variantLookupIds = xsArrayCreateInt(UNIT_CAPACITY, -1, "us-variant-ids");
-    variantLookupTypes = xsArrayCreateInt(UNIT_CAPACITY, -1, "us-variant-types");
+    typeRowIndex = xsArrayCreateInt(TYPE_INDEX_CAPACITY, -1, "us-type-rows");
+    canonicalType = xsArrayCreateInt(TYPE_INDEX_CAPACITY, -1, "us-canonical");
+    professionTypes = xsArrayCreateInt(TYPE_INDEX_CAPACITY, 0, "us-professions");
     receivedItems = xsArrayCreateBool(UNIT_ITEM_SPAN, false, "us-received");
+    unitScan = xsArrayCreateInt(1, -1, "us-scan-a");
+    lastUnitScan = xsArrayCreateInt(1, -1, "us-scan-b");
+    newUnits = xsArrayCreateInt(1, -1, "us-new");
+    untrackedUnitIds = xsArrayCreateInt(UNTRACKED_UNIT_CAPACITY, -1, "us-untracked");
 }
 
 void InitUnitsanity() {
@@ -295,44 +379,104 @@ void InitUnitsanity() {
     xsEnableRule("UnitsanityChecks");
 }
 
-int testArray = -1;
-
 int PROFESSION_SWEEP_SECONDS = 2;
 int lastProfessionSweep = -1;
+float unitsResearchCount = -1.0;
+
+int collectNewUnits(int units = -1) {
+    int newCount = 0;
+    int j = 0;
+    for (i = 0; < xsArrayGetSize(units)) {
+        int unitId = xsArrayGetInt(units, i);
+        while (j < lastUnitCount && xsArrayGetInt(lastUnitScan, j) < unitId) {
+            j = j + 1;
+        }
+        if (j < lastUnitCount && xsArrayGetInt(lastUnitScan, j) == unitId) {
+            continue;
+        }
+        if (newCount >= xsArrayGetSize(newUnits)) {
+            xsArrayResizeInt(newUnits, newCount * 2);
+        }
+        xsArraySetInt(newUnits, newCount, unitId);
+        newCount = newCount + 1;
+    }
+    if (newCount == 0) {
+        return (-1);
+    }
+    xsArrayResizeInt(newUnits, newCount);
+    return (newUnits);
+}
+
+bool anyUnitWithLockedProfession(int units = -1) {
+    if (professionsReady == false) {
+        return (false);
+    }
+    for (i = 0; < xsArrayGetSize(units)) {
+        int unitId = xsArrayGetInt(units, i);
+        if (unitId < 0) {
+            continue;
+        }
+        if (IsUnitUntracked(unitId)) {
+            continue;
+        }
+        int typeId = xsGetUnitObjectId(unitId);
+        if (isProfessionType(typeId) && structGetBool(getUnit(findUnit(typeId)), "locked")) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
+void swapUnitScans(int units = -1) {
+    unitScan = lastUnitScan;
+    lastUnitScan = units;
+    lastUnitCount = xsArrayGetSize(units);
+}
 
 rule UnitsanityChecks
     inactive
-    minInterval 1
-    maxInterval 1
+    highFrequency
     group Unitsanity
 {
     if (unitsanityReady == false || startupGranted == 0) {
         return;
     }
 
-    int units = xsGetPlayerUnitIds(1, -1, testArray);
+    int units = xsGetPlayerUnitIds(1, -1, unitScan);
+    if (units < 0) {
+        return;
+    }
+    unitScan = units;
+    pruneUntrackedUnits(units);
 
-    int owned = xsArrayGetSize(units);
-    if (owned != unitsOwned) {
-        unitsOwned = owned;
+    float researched = xsPlayerAttribute(1, cAttributeResearchCount);
+    if (researched > unitsResearchCount) {
+        unitsResearchCount = researched;
         unitsDirty = true;
-        return;
-    }
-    if (unitsDirty == false) {
-        if (xsGetGameTime() - lastProfessionSweep >= PROFESSION_SWEEP_SECONDS) {
-            lastProfessionSweep = xsGetGameTime();
-            CheckProfessionLocations();
-        }
-        return;
     }
 
-    unitsTransformed = false;
-    ApplyCaveman(units);
-    EvictProfessions();
-    if (unitsTransformed) {
-        return;
+    int passUnits = units;
+    if (unitsDirty == false) {
+        passUnits = collectNewUnits(units);
+    }
+
+    if (passUnits >= 0) {
+        unitsTransformed = false;
+        ApplyCaveman(passUnits);
+        if (anyUnitWithLockedProfession(passUnits)) {
+            EvictProfessions();
+        }
+        if (unitsTransformed) {
+            return;
+        }
+        checkOwnedUnits(passUnits);
     }
 
     unitsDirty = false;
-    checkOwnedUnits();
+    swapUnitScans(units);
+
+    if (xsGetGameTime() - lastProfessionSweep >= PROFESSION_SWEEP_SECONDS) {
+        lastProfessionSweep = xsGetGameTime();
+        CheckProfessionLocations(units);
+    }
 }
