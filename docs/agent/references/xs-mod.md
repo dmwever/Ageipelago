@@ -41,6 +41,7 @@ them. There is no CI and no test suite in this repo.
 | `Ages.xs` | 70 | age shuffle |
 | `MercenaryLedger.xs` | 55 | the pending completed-mercenary queue |
 | `AP_Headers.xs` | 55 | the nine `mutable` stubs, each of which warns when it runs |
+| `VictoryThreats.xs` | 405 | Wonder and relic countdowns that custom victory switched off; a scenario opts in from `InitScenarioThreats()` |
 | `APavilion.xs` | 172 | creates the pavilion, hardens it, owns the victory flow and colour cycle |
 | `SlotData.xs` | 9 | per-seed identity and options, written by `/install` |
 | `TechData.xs` | 6 | per-seed tech table, written by `/install` |
@@ -160,6 +161,7 @@ with the pavilion points.
 | `GiveScenarioItems()` | each of the 12 scenario files |
 | `SetScenarioAge()` | each of the 12 scenario files |
 | `SetPavilionLayout()` | each of the 12 scenario files |
+| `InitScenarioThreats()` | `AP_Genghis_3.xs` and `AP_Attila_6.xs` only; silent by design, since most scenarios have no threat |
 
 **Every stub announces itself in red when it runs.** A stub still holding the floor means the real
 definition never arrived — a scenario forgot an override, or an include moved and a library one is
@@ -410,6 +412,37 @@ What the linter cannot catch here: a misspelled struct field-name string, a miss
 function body, a `switch` with no `default`, a mistyped rule name in `xsEnableRule`. See
 `XS_MEASURED_BEHAVIOR.md` in the `aoe2-modding` KB.
 
+## Map coordinates
+
+**Every position in this mod is `xsVectorSet(x, y, 0.0)`** — the map axes are x and y, and the
+third slot is unused. `APavilion.xs:38` (`PavilionOffsetPoint`) and `TrapItems.xs:414`
+(`RaidCorner`) are the two call sites to copy. Read one back with `xsVectorGetX` and
+`xsVectorGetY`.
+
+Writing `xsVectorSet(x, 0.0, y)` instead is accepted silently and puts the unit on map row 0, so
+there is no error to notice — see the `[M]` entries on map positions and on `xsCreateUnit` in
+`XS_MEASURED_BEHAVIOR.md` in the `aoe2-modding` KB, which also covers why a successful
+`xsCreateUnit` tells you nothing about the terrain under it.
+
+## When only a person can see the answer
+
+Fog, a reveal's shape, whether a building offers a unit, where a patch of light sits — none of it
+is readable from script. The maintainer boots the game, looks, and tells you. That makes their
+**boot** the scarcest thing in the loop, and two rules follow.
+
+**One change per boot.** Ship a single change and wait for the reading. Five changes in one boot
+came back broken in #84 with no way to attribute it, and the revert took out a fix that was never
+implicated — the session then spent three more boots re-finding it.
+
+**Their observation outranks your model.** When what they report disagrees with your arithmetic,
+your arithmetic is wrong. In #84 the report was "one tile too much, on the north-east and
+south-east only"; that asymmetry *was* the diagnosis, and it was answered three times with a
+symmetric-bleed model before it was believed. A detail that your model says is impossible is the
+most informative thing in the message — chase it first.
+
+If a geometry resists two boots, stop proposing fixes and ask them for the rule. They can see it;
+you cannot.
+
 ## Getting data out of the game
 
 **Age of Empires II has no copy/paste.** Nothing on screen can be selected or copied — not the chat
@@ -421,10 +454,12 @@ than nothing because a single mistyped digit is indistinguishable from a real me
 **The way to receive data is the file API.** `xsCreateFile(false)`, then any number of
 `xsWriteInt` / `xsWriteFloat` / `xsWriteString` / `xsWriteVector`, then `xsCloseFile()`.
 
-- `xsCreateFile` names the file after the scenario being played and writes it to the profile folder:
-  `<user folder>/profile/<ScenarioName>.xsdat`. Running `XsTesting.aoe2scenario` produces
-  `profile/XsTesting.xsdat`. The live path on this machine is
-  `C:/Users/dmwev/Games/Age of Empires 2 DE/<steamid>/profile/`.
+- `xsCreateFile` writes into the profile folder - on this machine
+  `C:/Users/dmwev/Games/Age of Empires 2 DE/<steamid>/profile/`. The file is named after the
+  scenario (`<scenario>.xsdat`) or is `default0.xsdat` / `default1.xsdat`, never after the
+  script: `XsTesting.aoe2scenario`, whose script is `Test.xs`, wrote `default1.xsdat`. Look
+  for exactly those three names, not the newest file by mtime, because the AP client writes
+  its own `.xsdat` files into the same folder.
 - Pass `true` to append instead of truncating.
 - **Data is not durable until `xsCloseFile()`.** A spike that writes and never closes leaves nothing.
 - Ints and floats are 4 bytes, little-endian — the same encoding `XsdatFile.py` uses on the Python
@@ -456,9 +491,10 @@ precisely because chat is a dead end for machine-readable output. See `protocol.
 - **Struct fields are runtime strings, case-sensitive, and fail to `-1` silently.** A past bug was
   exactly this: `"CastlesBuilt"` versus `"castlesBuilt"`, fixed in `31eecd4`. Grep every string
   occurrence when renaming a field.
-- **`MarkServerLocations` contains the only `continue` in project XS.** Whether `continue` skips a
-  `for` loop's increment is unresolved; if it does, that loop never terminates. First suspect if the
-  rule ever hangs.
+- **`continue` is safe in a `for` loop and is used throughout.** It does not skip the implicit
+  increment. This was an open question in the KB while `MarkServerLocations` held the only
+  `continue` in project XS; `Unitsanity.xs`, `Caveman.xs` and `Professions.xs` now take the branch
+  on most iterations of every sweep. Settled in `XS_MEASURED_BEHAVIOR.md` section 4.
 - **`UnlockBuilding(index)` does not bounds-check.** Item ids 200-299 map to indices 0-99 but only
   0-34 are populated, so an id of 235 or higher would read an unset slot and write with id -1. Latent
   only: the apworld emits 200-234.

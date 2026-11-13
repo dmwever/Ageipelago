@@ -1,8 +1,5 @@
 include "./AP.xs";
 
-void CavemanExemption() {
-}
-
 void InitScenarioLocations() {
   // Scenario-Specific - Not defeatsanity/relics
   AddLocations(10300, 10315);
@@ -14,6 +11,7 @@ void GiveScenarioItems() {
 
 void SetScenarioAge() {
   SetVanillaAge(CASTLE_AGE);
+  SetMaxAge(CASTLE_AGE);
 }
 
 void main() {

@@ -16,8 +16,8 @@ over `.xsdat` files. The game-side mod is a separate repo — see `xs-mod.md` an
 | `archipelago.json` | manifest: game name, `minimum_ap_version`, `world_version`, authors |
 | `items/Items.py` | the payload dataclasses **and** the `Age2ItemData` table |
 | `items/Events.py` | 10-line stub, imported by nothing. Reserved for scenario-completion and victory events |
-| `locations/` | `Locations.py` (scenario objectives), `Ages.py`, `Buildings.py`, `Techs.py`, `Campaigns.py`, `Scenarios.py`, `Civilizations.py`, `Units.py`, `UnitLines.py`, `UnitLocations.py` |
-| `locations/connections/` | `LocationMapping.py`, the civ matrices, the two late-binding modules, and the four unit binders (`UnitLineUnits`, `UnitBuildings`, `UnitTechs`, `UnitVariants`) |
+| `locations/` | `Locations.py` (scenario objectives), `Ages.py`, `Buildings.py`, `Techs.py`, `Campaigns.py`, `Scenarios.py`, `Players.py`, `Civilizations.py`, `Units.py`, `UnitLines.py`, `UnitLocations.py` |
+| `locations/connections/` | `LocationMapping.py`, the civ matrices, the two late-binding modules, `ScenarioPlayers.py`, and the four unit binders (`UnitLineUnits`, `UnitBuildings`, `UnitTechs`, `UnitVariants`) |
 | `logic/` | classes that *produce* rules. Per-scenario starting states in `attila/`, `joan/` |
 | `rules/` | classes that *attach* rules to locations and entrances |
 | `regions/` | `UnitRegions.py`. The rest of region building is still inline in `create_regions` |
@@ -71,7 +71,9 @@ places locations for what the pool says exists.
 2. One region per scenario, chained: Menu → scenario 1 → scenario 2 … per campaign, over
    `pool.scenarios.of(campaign)`. Locations come from `REGION_TO_LOCATIONS`, filtered by
    `pool.scenarios.includes_location`. Each scenario with a victory location also gets a hidden
-   event location granting `"<scenario>: Unlock Next Scenario"`.
+   event location granting `"<scenario>: Unlock Next Scenario"`. At `partner_trade:
+   allies_and_enemies` only, each player whose market or dock opens once defeated gets a hidden
+   `"<scenario>: Can Defeat <player>"` event too — see *Players and defeats*.
 3. A `"Can Build"` hub off Menu, with no entrance rule.
 4. One building location in the hub per `pool.buildings.locations`.
 5. One age location per `pool.ages.locations` — empty when `shuffle_ages` is off. `pool.ages.shuffled`
@@ -133,15 +135,23 @@ the `"Can Build"` exits at construction. Then `Rules.set_rules()` in fixed order
 1. `completion_condition[player] = lambda state: state.has("Victory", player)` — set directly, outside
    the rule_builder machinery. This is the real seed gate.
 2. The `"Victory"` event location's rule ← `logic.has_goal()`.
-3. Construct each scenario's `ScenarioRules` subclass, then call each one's `set_rules()`.
+3. Construct each scenario's `ScenarioRules` subclass, then call each one's `set_rules()` and
+   `set_defeat_event_rules()` (a no-op when the scenario has no defeat events).
 4. `AgeRules` (no-op unless `shuffle_ages`), `BuildingRules`, `TechRules` (no-op if techsanity is off).
 
 `TechRules` skips the `set_rule` call when a tech's rule resolves to bare `True_`, which is equivalent
 to leaving it unset.
 
-`AgeRules.py` also defines `TwoBuildingsRequirement(NestedRule["Age2World"])`, with its own
-`Resolved._evaluate` and an `explain_json` override. It is the only hand-written `rule_builder`
-`NestedRule` in the codebase — copy it rather than inventing a second pattern.
+Hand-written `rule_builder` rules live in `logic/custom_logic/`. Copy one of these rather than
+inventing a new pattern:
+
+- `AgeUpRequirement` (`NestedRule`): two of an age's climb buildings, or the Castle that counts for
+  both. It also carries which buildings those are, so `/explain` can name them.
+- `ScenarioQuestion` and its subclasses (`ScenarioCanBuild`, `ScenarioCanResearch`,
+  `ScenarioCanTrain`, `ScenarioHasReached`, `ScenarioHasEasyResource`): one
+  question about one scenario, answered once per seed in `Logic.scenario_answers` and shared by
+  every rule that asks it. Each explains itself in one line instead of dumping its subtree.
+- `HasResourceAmount`, `SufficientRawResources`: pile and raw-resource sums.
 
 ### `logic/` versus `rules/`
 
@@ -158,9 +168,17 @@ def can_build_building(self, building: Age2BuildingData) -> Rule:
 ```
 
 Each scenario has a `*StartingState` dataclass subclass (`logic/attila/attila_1.py` …) declaring
-`is_unlocked`, `has_vils`, `has_base`, `age_playable`, `starts_with_building`, `has_water_access`,
-`fixed_force`, every field with its own `default_factory`. It is instantiated inside the matching
-`*Rules.__init__` and wrapped in a `ScenarioLogic`.
+`is_unlocked`, `has_vils`, `age_playable`, `starts_with_building`, `has_water_access`,
+every field with its own `default_factory`. There is no base field: a standing Town Center
+(`starts_with_building[TOWN_CENTER]`) is what grants a base. A scenario's last age (`max_age`)
+and whether it is a fixed force (`fixed_force`) are not rules, so they sit on its
+`Age2ScenarioData` row, where the pools can read them before any logic exists. It is instantiated
+inside the matching `*Rules.__init__` and wrapped in a `ScenarioLogic`.
+
+**`obtains_unit` is not only what the subclass writes.** `ScenarioLogic.__init__` calls
+`default_mercenary_grants`, which adds every `Mercenary` item's units for the scenario. Grep the
+items, not the assignments, before claiming a scenario grants no unit. Under caveman those grants
+need a gate - see *Scenario rules bypass that gate* in `options/caveman.md`.
 
 **A new `ScenarioRules` subclass must set `self.scenario_logic` itself.** The base class only declares
 it as an annotation, and `ScenarioRules.set_rules()` calls `self.scenario_logic.is_unlocked()`. All 12
@@ -169,6 +187,90 @@ at rule time.
 
 **A location with no explicit `set_rule` is deliberate**, not an omission: it means being in the
 scenario is the whole requirement, and the scenario's entrance rule already gates it.
+
+### Paying for things
+
+Every priced location (a tech, a unit, a building, an age) pays with **easy sources only**:
+`economy.can_pay(costs)` is `can_sustain` over the resources it costs - one
+`ScenarioHasEasyResource` per resource - and `True_` for a free one. Paying out of the starting
+pile used to put dozens of priced locations into logic at once, each a restart to do "in logic".
+A budget order replaced that for a while (sample, per-scenario order, running totals); it was
+removed in October 2026 after a paired 500-seed fuzz showed it admitted about one location per
+world and changed neither victory spheres nor fill.
+
+- **Structural versus paid.** Each kind has a structural rule that never pays
+  (`can_research_structurally`, `can_train_structurally`, `ages.can_reach_structurally`,
+  `units.can_field_structurally`, `has_building`) and a paid one built on it
+  (`techs.can_research`, `ages.can_reach`, `units.can_field`). Anything the easy sources read must
+  stay structural - `has_reached`, `ScenarioCan*` questions, `can_protect_boats` - or an easy
+  source would ask for itself.
+- **Ages.** `ages.can_pay_for(age)` is `can_pay(age.cost)` above the scenario's
+  `ages.start_age` (the Dark Age when every scenario starts there), `True_` at or below it or where
+  `age_playable` hands the age over, and `False_` for a fixed force. `ages.can_reach(age)` adds it
+  to the structural climb; the age location itself asks `can_research & can_pay` in `age_logic`.
+- **Armies.** `units.can_field(line, age)` pays for each tier's own age (`can_pay_for(unit.age)`),
+  so Monks fielded "at Imperial" pay for the Castle Age, not the Imperial. `can_field_role` and
+  `can_counter` use it; `can_protect_boats` uses `can_field_structurally`, because the fishing
+  tiers feed the easy sources.
+- **The base** is the one thing the starting items pay for: `has_base()` is `can_have_base` &
+  `Has(Starting Villager Food)` & (a Town Center standing | a starting base |
+  `Has(Starting Town Center Wood)` & `Has(Starting Town Center Stone)`). Never an easy source - the
+  easy sources ask for a base themselves.
+- **The pile still counts** where a source needs seeding: Fishing Ship wood, ally trade's seed
+  gold and wood, and LocalStart's base check read `resources.has_amount` (`HasResourceAmount` over
+  `contributors()`). Starting-resource items stay progression for that reason. Relics seed the
+  Monk's gold with `can_mine_some()`.
+- **Early items** that keep a seed from stalling: the House when economy buildings are shuffled,
+  and the Builder profession when professions are shuffled (without it nobody can build).
+
+### Roles and counters
+
+- `locations/connections/UnitRoles.py` (`ROLE_TO_LINES`): siege is never `military`, and the
+  one-shot rafts (`SUICIDE_RAFT_LINES`: Demolition and Incendiary) are never `navy`.
+- `locations/connections/UnitCounters.py` (`countered_by`): a ship never counters a land unit -
+  an import-time assert holds it. Land units on the shore may counter ships.
+- `locations/connections/TechCounters.py` (`counter_techs`): a counter that answers some targets
+  only once a tech is researched - Monks and Missionaries against siege need Redemption.
+  `can_counter` adds `techs.has_researched(tech)` for those pairs.
+
+### Players and defeats
+
+ADR 0001 (`docs/adr/0001-defeat-rules-live-in-per-player-logic.md`) is the why. Every other
+player in a connected scenario that victory or trade cares about is a **`Player` record**, and "can
+P1 defeat this player" is asked of the record, never of a local `can_beat_*` variable.
+
+- **Records.** `Age2PlayerData` (`locations/Players.py`), one member per ally and enemy, ids
+  `scenario.id * 10 + slot` (Attila 1's P3 is 1013). Columns: `player_name` (readable, used in
+  rule labels and event names), `slot` (P2-P8; P1 is the person playing and is never a record),
+  `side` (`Side.ALLY` or `Side.ENEMY`, fixed for the whole scenario), and a `TradeAccess` for its `market` and its `dock`. Neutral and ignored slots get no member at all;
+  `Side.NEUTRAL` exists but nothing uses it.
+- **Routing.** `locations/connections/ScenarioPlayers.py` maps each scenario to its records
+  (`SCENARIO_TO_PLAYERS`) and copies them onto `Age2ScenarioData.players` as an import side effect.
+  Every scenario needs an entry, an empty list for a fixed force. Nothing asserts at import;
+  `test_player_records.py::test_every_scenario_is_routed` is the check.
+- **Trade access** is judged usability, not whether the building exists: `CLOSED`, `OPEN` (an
+  ally's, or an undefended enemy's such as Thessalonica's dock), `ONCE_DEFEATED` or `GUARDED`
+  (once defeated, or guarded; the guard rule is the scenario's `trade_guard_rules`). Never correct an access value from a scenario scan.
+- **Gates.** `ScenarioPlayerLogic` (`logic/scenarios/`, reached as `scenario_logic.player_logic`) turns
+  each record into a gate on its market or dock: `OPEN` is `True_()`, `ONCE_DEFEATED` is
+  `has_defeated(player)`, `CLOSED` drops out. `can_reach_partner(building)` ORs the gates of the
+  partners `partner_trade` admits.
+- **Defeat rules.** A `*StartingState` overrides `defeat_rules(scenario_logic)` and returns
+  `{Age2PlayerData: Rule}`. The base returns `{}`. Only players victory or trade asks about need an
+  entry, but every player with a `ONCE_DEFEATED` building must have one
+  (`test_every_defended_trade_partner_has_a_rule`). A rule may be `True_()` for a city that offers
+  no resistance; two interchangeable players may share one rule object.
+- **`defeats(player)`** is the one reader. It builds the dict once per scenario and wraps each rule
+  under the label `"<scenario> can defeat <player_name>"`, so `/explain` shows it as one line. Victory and objective rules in `rules/` call it
+  (`defeats = self.scenario_logic.player_logic.defeats`). A player with no entry is a `KeyError`.
+- **Trade never reads `defeats` inline.** A defeat asks for an army, the army asks `can_pay`,
+  `can_pay` asks the easy sources, and easy gold and wood ask trade: inline, that is a
+  `RecursionError` at `set_rules`. Instead `has_defeated(player)` is
+  `Has("<scenario>: Can Defeat <player>")`, an event `create_regions` adds only at
+  `allies_and_enemies`, whose rule `ScenarioRules.set_defeat_event_rules` sets to `defeats(player)`.
+  The sweep settles the cycle. "Can Defeat", because "Defeat Metz" and the like are real
+  locations. `test_defeat_rules.py::TestDefeatAndTradeTerminate` builds every defeat and trade rule
+  to guard this.
 
 ## Data tables
 
@@ -384,7 +486,7 @@ Two halves. `Age2Context` (in `ApClient.py`) faces the Archipelago server; `Age2
 callbacks — `on_location_received`, `on_scenario_completion`, `on_goal`. The fourth,
 `fetch_locations_collected`, is declared but called by nothing.
 
-`status_loop` runs every 0.5s (2s when idle), in this order per pass: write `startup.xsdat`, sync each
+`status_loop` runs every 0.5s (2s when idle), in this order per pass: sync each
 unlocked scenario's own item file, write `locations.xsdat`, `buildings.xsdat`, `techs.xsdat`,
 `messages.xsdat`; find the active campaign or scenario by peeking the leading active byte of each
 candidate `.xsdat`; read the scenario packet; classify it; handle location updates, item acks and
@@ -438,8 +540,9 @@ Nearly every file-write path is wrapped in `except Exception as ex: print(ex)`. 
   `tech_behavior` and `local_start` decide how a rule is written rather than what
   exists, and `test_pools.py` fails if a pool ever reads one. The pool takes the world, so it draws
   on the same seeded `random` and cannot drift from the multiworld.
-  - `TechPool` decides whether a tech is a location: techsanity on, some included civ can research
-    it, it matches the mode filter, uniques are shuffled if it is unique, and it is reachable given
+  - `TechPool` decides whether a tech is a location: techsanity on, some included scenario can
+    research it (its civ has it, the scenario's `excluded_techs` leaves it, the scenario reaches its
+    age, and it is not a fixed force), it matches the mode filter, uniques are shuffled if it is unique, and it is reachable given
     the earliest age. `host_building` places a shared tech under the first building that names it,
     and `shuffled` is the locations in that order.
   - `UnitPool` holds unit content — `line_locations`, the include predicates, the grants. It does
@@ -453,6 +556,100 @@ Nearly every file-write path is wrapped in `except Exception as ex: print(ex)`. 
 - **`LocalStart.py`** — best-effort. Picks a start scenario deterministically, greedily solves a
   minimal item set against the target rule, and places it with `fill_restrictive`. Every failure path
   logs a warning and continues with a smaller or empty set; it never fails generation.
+
+## Scenario resource scans
+
+`locations/connections/ScenarioResources.py` declares, per scenario and per `Tier`, how much of each
+raw resource the map holds. Every number there is a count of **objects on the map**, so it is
+checkable — and all eighteen scenarios now reconcile exactly, bar `AP_GENGHIS_3`'s fish.
+
+### Per-object amounts — read them, never recall them
+
+From `empires2_x2_p1.dat`, table `unit_attributes` (the resource-storage list; attribute type 17 is
+the fish-food store). Build a queryable copy with `kit dat sql <dat> out.db`.
+
+| Unit | Id | Food |
+|---|---|---|
+| `SHORE_FISH` | 69 | 200 |
+| `FISH_PERCH` | 53 | 200 |
+| `FISH_DORADO` / `SALMON` / `TUNA` / `SNAPPER` | 455-458 | 225 |
+| `FISH5` | 459 | 225 |
+| `GREAT_FISH_MARLIN` | **450** | **350** |
+| `DEER` | 65 | 140 |
+| `WILD_BOAR` | 48 | 340 |
+| `IRON_BOAR` | 810 | **700** |
+| `SHEEP` / `GOAT` | 594 / 1060 | 100 |
+| `FORAGE_BUSH` | 59 | 125 |
+| `GOLD_MINE` | 66 | 800 gold |
+| `STONE_MINE` | 102 | 350 stone |
+
+Two of these have burned us. The marlin is **350, not 225**, and it is id **450** — `genie_registry.json`
+has no name for 459, so a name-keyed filter silently drops it. Both Joan 2 and Genghis 4 contain
+`FISH5`. Filter by id against this table, never by matching names.
+
+### Counting conventions
+
+- **Count objects, not sprites.** Scenarios contain gatherables at *identical* coordinates — Attila 3
+  (one shore fish), Joan 4 (one stone, two bush), Joan 6 (two shore fish), Genghis 5 (one shore
+  fish). All four declared totals count the stacked duplicate, so a scan that dedupes by position is
+  wrong. Genghis 5 was the one scenario that had deduped, and it was a bug.
+- `FIXED_FORCE` scenarios (`AP_JOAN_1`, `AP_JOAN_5`, `AP_GENGHIS_1`) declare all zeroes by design and
+  are excluded from the cross-check, even where the map holds objects.
+
+### shore_fish_count versus deep_fish_count
+
+The split is **positional, not by species**: it asks whether a fisherman on land can reach the fish,
+because the two feed different gates — `tier_gates("shoreline")` admits
+`can_hold_a_shoreline() | has_navy()`, while `tier_gates("afloat")` needs `has_navy()`. A `SHORE_FISH`
+stranded in open water counts as deep; a salmon against a beach counts as shore.
+
+**It is not mechanically derivable — do not try.** Measured against the eleven scenarios whose fish
+totals are sound: a pure species rule reproduces 3, a pure distance-to-land threshold peaks at 5 (at
+~2.15 tiles), and species-with-adjacency-promotion peaks at 5. The deviations run in *both*
+directions and are small — Joan 4 is off by exactly +25, which is one 225-fish promoted to shore and
+one 200-fish demoted in the same map. The values were assigned by eye per map. Treat the **totals**
+as authoritative and the shore/deep allocation as a judgement call to be confirmed with the user.
+
+For reference when judging one, **the working radius is ~1.6 tiles**. Shore fish cluster at 1.0
+(orthogonally adjacent) through ~1.6 (diagonal, plus placement jitter off half-tile centres), so a
+1.0 cut discards about a third of them. Genghis 3 pins the upper end: its `OPEN` shore of 2275
+decomposes as 8x200 + 3x225, and those three 225s are snappers sitting at exactly 1.58 from land.
+
+### Reading terrain
+
+`kit scen terrain <file> --tiles` returns all 20,736 tiles as `{x, y, terrain_id, elevation}`;
+`kit dat terrains <dat>` names them. Navigable water is a much longer list than it looks — at
+minimum `{1, 4, 15, 22, 23, 26, 28, 54, 57, 58, 59, 90, 93-99, 114-116, 130}`. Beaches (2, 37, 51-53,
+79-82, 107-109, 91), ice (35, 127) and swamp (111) are walkable **land**. A short water set silently
+classifies deep fish as shore-adjacent.
+
+Unit coordinates are floats where a tile centre is `.5`; a unit on a whole number straddles four
+tiles. Measure to tile centres (`hypot(fx-(i+0.5), fy-(j+0.5))`), not to truncated indices.
+
+**Cliffs are not in the object data and not in the terrain id** — they are their own object class. A
+resource can be unreachable from your side with nothing in the scan to show it. Genghis 5's two gold
+at (128,97) read as open ground by every geometric test and are in fact cliff-locked to Blue. Tier
+assignments near cliffs must be confirmed against the map by eye.
+
+### Tiering
+
+`BASE` / `OPEN` / `ALLY` / `ENEMY` are judgement, not geometry, but two heuristics have held up:
+
+- Decompose the map into clusters and check them against the declared per-tier values. A tier that
+  matches a cluster exactly is almost certainly right, and it reveals the original scanner's rule —
+  which then settles the ambiguous clusters. This is how Genghis 4, 5 and 6 were closed.
+- Walls and object footprints beat raw distance. "Inside an enemy's wall perimeter" is a better
+  `ENEMY` test than "near their town centre", and a resource outside every wall is usually `OPEN`
+  even when an enemy is close.
+- **Flood-fill the landmasses** where a map has islands. Label connected non-water components, then
+  ask which players own objects on each. Genghis 3 turns on this: its `OPEN` tier is Blue's island
+  (a 1687-tile component owned by Blue alone) plus the mainland north of the Great Wall, and three
+  shore fish that look like Blue's by proximity are in fact on the 19,481-tile main continent that
+  Green occupies. Classifying by landmass reproduced that scenario's `BASE` shore (800) and `OPEN`
+  shore (2275) exactly, which is what identified the two genuinely missing figures.
+
+`must_steal_base` gates the `ENEMY` tier. Genghis 4 needs it for real: its BASE holds 1750 stone
+against a demand of 2000, and every other quarry on the map is on Persian ground.
 
 ## Tests
 
@@ -482,7 +679,11 @@ Other tests worth knowing: `test_item_delivery.py` drives a `FakeGame` through t
   and keep `ItemHandler.xs`'s band comment in step.
 - **Adding a scenario**: define it in `Scenarios.py` (id is derived, so campaign and chapter must stay
   within 1-99), add its locations, write a `*StartingState` and a `*Rules`, and bind **both** in
-  `ScenarioDataLogic.py` and `ScenarioDataRules.py`.
+  `ScenarioDataLogic.py` and `ScenarioDataRules.py`. Then declare its players: a member in
+  `Age2PlayerData` for each ally and enemy (slot, side, market and dock access), an
+  entry in `ScenarioPlayers.py` (empty for a fixed force), and a `defeat_rules` override covering
+  every opponent the victory rules name and every `ONCE_DEFEATED` building's owner. Victory rules
+  then read `scenario_logic.player_logic.defeats(player)`. See *Players and defeats*.
 - **Version discipline**: `archipelago.json`'s `world_version` is the single source of truth. Any
   slot_data shape change needs a minor bump, and `AP.xs` must declare the same major and minor.
 - **File naming is load-bearing.** Everything in `client/` depends on `Identity`'s exact output shape;

@@ -1,8 +1,11 @@
 const int CAVEMAN_LEDGER_CAPACITY = 400;
-const int CAVEMAN_IMMUNE_CAPACITY = 64;
+const int CAVEMAN_IMMUNE_CAPACITY = 256;
 const int CAVEMAN_EXEMPT_CAPACITY = 32;
 const int CAVEMAN_MILITIA = 74;
 const int CAVEMAN_REMOVED = 0;
+const int CAVEMAN_REAP_SECONDS = 2;
+
+int lastCavemanReap = -1;
 
 int cavemanUnitIds = -1;
 int originalUnitTypes = -1;
@@ -16,11 +19,29 @@ int cavemanExemptCount = 0;
 
 int cavemanTargets = -1;
 
+void reapImmuneUnits() {
+    int i = 0;
+    while (i < cavemanImmuneCount) {
+        if (xsDoesUnitExist(xsArrayGetInt(cavemanImmuneUnits, i))) {
+            i = i + 1;
+        } else {
+            xsArraySetInt(cavemanImmuneUnits, i,
+                          xsArrayGetInt(cavemanImmuneUnits, cavemanImmuneCount - 1));
+            cavemanImmuneCount = cavemanImmuneCount - 1;
+        }
+    }
+}
+
 void MarkUnitCavemanImmune(int unitId = -1) {
     if (unitId < 0 || cavemanImmuneUnits < 0) {
         return;
     }
     if (cavemanImmuneCount >= CAVEMAN_IMMUNE_CAPACITY) {
+        reapImmuneUnits();
+    }
+    if (cavemanImmuneCount >= CAVEMAN_IMMUNE_CAPACITY) {
+        xsChatData("<RED>Caveman: immune list is full, so unit " + unitId
+                   + " is not protected.");
         return;
     }
     xsArraySetInt(cavemanImmuneUnits, cavemanImmuneCount, unitId);
@@ -166,6 +187,7 @@ int cavemanTarget(int originalTypeId = -1) {
 void transformUnit(int unitId = -1, int toTypeId = -1, int originalTypeId = -1) {
     vector position = xsGetUnitPosition(unitId);
     xsRemoveUnit(unitId);
+    UntrackUnit(unitId);
     rememberOriginalType(unitId, CAVEMAN_REMOVED);
     int created = xsCreateUnit(toTypeId, 1, position, false, true, false);
     if (created < 0) {
@@ -193,10 +215,14 @@ void ApplyCaveman(int units = -1) {
     if (cavemanTargetsStale) {
         forgetCavemanTargets();
     }
-    removeDeadCavemen();
+    if (xsGetGameTime() - lastCavemanReap >= CAVEMAN_REAP_SECONDS) {
+        lastCavemanReap = xsGetGameTime();
+        removeDeadCavemen();
+    }
     for (i = 0; < xsArrayGetSize(units)) {
         int unitId = xsArrayGetInt(units, i);
-        if (unitId < 0 || xsDoesUnitExist(unitId) == false || isUnitCavemanImmune(unitId)) {
+        if (unitId < 0 || xsDoesUnitExist(unitId) == false || IsUnitUntracked(unitId)
+                || isUnitCavemanImmune(unitId)) {
             continue;
         }
         int currentTypeId = canonicalTypeOf(xsGetUnitObjectId(unitId));
@@ -229,6 +255,7 @@ void InitCaveman() {
     cavemanExemptTypes = xsArrayCreateInt(CAVEMAN_EXEMPT_CAPACITY, -1, "cm-exempt");
     cavemanTargets = xsArrayCreateInt(UNIT_CAPACITY, -1, "cm-targets");
 
+    ExemptUnitTypeFromCaveman(TRAP_FLEMISH_MILITIA);
     CavemanExemption();
     cavemanReady = true;
 }

@@ -14,6 +14,12 @@ bool ageReached(int age = 0) {
     return (true);
 }
 
+bool isProfession(vector unit = cInvalidVector) {
+    return (structGetBool(unit, "cavemanExempt")
+            && structGetInt(unit, "lineId") >= 0
+            && structGetInt(unit, "tier") > 0);
+}
+
 mutable void AP_Check_Location(int locationId = -1) {
     xsChatData("<RED>AP_Check_Location is still the stub, so location " + locationId
                + " goes nowhere. AP.xs did not define it.");
@@ -22,7 +28,7 @@ mutable void AP_Check_Location(int locationId = -1) {
 mutable void ApplyCaveman(int units = -1) {
 }
 
-mutable void CheckProfessionLocations() {
+mutable void CheckProfessionLocations(int units = -1) {
     xsChatData("<RED>CheckProfessionLocations is still the stub, so a villager changing task"
                + " sends no check. Professions.xs did not define it.");
 }
@@ -30,12 +36,17 @@ mutable void CheckProfessionLocations() {
 mutable void EvictProfessions() {
 }
 
-mutable void CavemanExemption() {
+mutable void ExemptUnitTypeFromCaveman(int typeId = -1) {
+    xsChatData("<RED>ExemptUnitTypeFromCaveman is still the stub, so unit type " + typeId
+               + " is being left cavemanifiable. Caveman.xs did not define it.");
 }
 
 mutable void InitScenarioLocations() {
     xsChatData("<RED>This scenario does not define InitScenarioLocations, so it registers no"
                + " locations and can never send a check.");
+}
+
+mutable void InitScenarioThreats() {
 }
 
 mutable void GiveScenarioItems() {

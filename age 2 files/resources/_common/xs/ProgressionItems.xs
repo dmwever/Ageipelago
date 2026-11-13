@@ -7,53 +7,78 @@ void TOWN_CENTER_STONE() {
     xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 100.0, 1);
 }
 
+void StartingVillagerFood() {
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 150.0, 1);
+}
+
+void LumberCampWood() {
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 100.0, 1);
+}
+
+void MuleCartResources() {
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 80.0, 1);
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 20.0, 1);
+}
+
+void DockWood() {
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 150.0, 1);
+}
+
+void MarketWood() {
+    xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 175.0, 1);
+}
+
+void FeudalAgeFood() {
+    xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 500.0, 1);
+}
+
 // Scenario-specific items
 
 //Attila 1
-bool bledasCamp = false;
-void ATTILA_1_BLEDAS_CAMP() {
-    bledasCamp = true;
+bool attila1BledasCamp = false;
+void Attila1BledasCamp() {
+    attila1BledasCamp = true;
 }
 
-bool HAS_BLEDAS_CAMP() {
-    return (bledasCamp);
+bool HasAttila1BledasCamp() {
+    return (attila1BledasCamp);
 }
 
-bool attilasCamp = false;
-void ATTILA_1_ATTILAS_CAMP() {
-    attilasCamp = true;
+bool attila1AttilasCamp = false;
+void Attila1AttilasCamp() {
+    attila1AttilasCamp = true;
 }
 
-bool HAS_ATTILAS_CAMP() {
-    return (attilasCamp);
+bool HasAttila1AttilasCamp() {
+    return (attila1AttilasCamp);
 }
 
 //Attila 2
 bool attila2Villagers = false;
-void ATTILA_2_VILLAGERS_TRIGGER() {
+void Attila2Villagers() {
     attila2Villagers = true;
 }
 
-bool HAS_ATTILA_2_VILLAGERS() {
+bool HasAttila2Villagers() {
     return (attila2Villagers);
 }
 
 //Attila 3
 bool attila3RedGold = false;
-void ATTILA_3_RED_GOLD() {
+void Attila3RedGold() {
     attila3RedGold = true;
 }
 
-bool HAS_ATTILA_3_RED_GOLD() {
+bool HasAttila3RedGold() {
     return (attila3RedGold);
 }
 
 bool attila3GreenGold = false;
-void ATTILA_3_GREEN_GOLD() {
+void Attila3GreenGold() {
     attila3GreenGold = true;
 }
 
-bool HAS_ATTILA_3_GREEN_GOLD() {
+bool HasAttila3GreenGold() {
     return (attila3GreenGold);
 }
 
@@ -216,6 +241,57 @@ bool HasJoan6Army() {
     return (joan6Army);
 }
 
+
+// Genghis 2
+bool genghis2TayichiudBase = false;
+void Genghis2TayichiudBase() {
+    genghis2TayichiudBase = true;
+}
+
+bool HasGenghis2TayichiudBase() {
+    return (genghis2TayichiudBase);
+}
+
+
+// Attila 5
+bool attila5Deathmatch = false;
+void Attila5Deathmatch() {
+    attila5Deathmatch = true;
+    if (scenarioId == 105) {
+        xsEffectAmount(cModResource, cAttributeFood, cAttributeAdd, 7000.0, 1);
+        xsEffectAmount(cModResource, cAttributeWood, cAttributeAdd, 1000.0, 1);
+        xsEffectAmount(cModResource, cAttributeStone, cAttributeAdd, 500.0, 1);
+        xsEffectAmount(cModResource, cAttributeGold, cAttributeAdd, 7250.0, 1);
+    }
+}
+
+bool HasAttila5Deathmatch() {
+    return (attila5Deathmatch);
+}
+
+
+// Genghis 3
+bool genghis3Transport = false;
+void Genghis3Transport() {
+    genghis3Transport = true;
+}
+
+bool HasGenghis3Transport() {
+    return (genghis3Transport);
+}
+
+
+// Genghis 4
+bool genghis4KipchakCamp = false;
+void Genghis4KipchakCamp() {
+    genghis4KipchakCamp = true;
+}
+
+bool HasGenghis4KipchakCamp() {
+    return (genghis4KipchakCamp);
+}
+
+
 void GiveProgressionItem(int itemId = -1) {
     switch(itemId) {
         case 1000: {
@@ -225,19 +301,19 @@ void GiveProgressionItem(int itemId = -1) {
             TOWN_CENTER_STONE();
         }
         case 1002: {
-            ATTILA_1_BLEDAS_CAMP();
+            Attila1BledasCamp();
         }
         case 1003: {
-            ATTILA_1_ATTILAS_CAMP();
+            Attila1AttilasCamp();
         }
         case 1004: {
-            ATTILA_2_VILLAGERS_TRIGGER();
+            Attila2Villagers();
         }
         case 1005: {
-            ATTILA_3_RED_GOLD();
+            Attila3RedGold();
         }
         case 1006: {
-            ATTILA_3_GREEN_GOLD();
+            Attila3GreenGold();
         }
         case 1007: {
             Joan1Transports();
@@ -289,6 +365,36 @@ void GiveProgressionItem(int itemId = -1) {
         }
         case 1023: {
             Joan6Army();
+        }
+        case 1024: {
+            StartingVillagerFood();
+        }
+        case 1026: {
+            Genghis2TayichiudBase();
+        }
+        case 1027: {
+            Attila5Deathmatch();
+        }
+        case 1028: {
+            Genghis3Transport();
+        }
+        case 1031: {
+            Genghis4KipchakCamp();
+        }
+        case 1032: {
+            LumberCampWood();
+        }
+        case 1033: {
+            MuleCartResources();
+        }
+        case 1034: {
+            DockWood();
+        }
+        case 1035: {
+            MarketWood();
+        }
+        case 1036: {
+            FeudalAgeFood();
         }
     }
 }

@@ -3,7 +3,7 @@ int seatLastSpawn = -1;    // game time in seconds of the last placement
 int spawnAreaScan = -1;    // reused by every ClearSpawnArea scan; see InitMercenarySpawn
 int musterTask = -1;       // one slot, reused for every xsTaskUnits call
 int pendingMuster = -1;    // soldier placed this pass, tasked on the next one
-int spawnFailWarned = -1;  // one report per seat; the loop retries every tick
+int spawnFailWarned = -1;
 
 void InitMercenarySpawn() {
     seatSpawned = xsArrayCreateInt(MERCENARY_SEAT_COUNT, 0, "ap-seat-spawned");

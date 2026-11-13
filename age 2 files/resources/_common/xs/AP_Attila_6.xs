@@ -1,11 +1,15 @@
 include "./AP.xs";
 
-void CavemanExemption() {
-}
-
 void InitScenarioLocations() {
   // Scenario-Specific - Not defeatsanity/relics
   AddLocations(10600, 10611);
+}
+
+void InitScenarioThreats() {
+  EnableWonderThreat(2);
+  EnableWonderThreat(3);
+  EnableWonderThreat(4);
+  EnableWonderThreat(5);
 }
 
 void GiveScenarioItems() {

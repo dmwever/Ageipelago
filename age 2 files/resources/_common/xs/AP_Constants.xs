@@ -35,8 +35,9 @@ extern const int AP_UNIT_ITEM_OFFSET = 300;
 extern const int UNIT_ITEM_SPAN = 500;   /* 300-799: lines, upgrades, building units, professions */
 
 extern const int UNIT_CAPACITY = 400;
-extern const int UNIT_ITEM_CAPACITY = 3;
+extern const int UNIT_ITEM_CAPACITY = 5;
 extern const int UNIT_VARIANT_CAPACITY = 16;
+extern const int TYPE_INDEX_CAPACITY = 4000;
 extern const int TECH_SHADOW = 1181;
 
 extern const int FILLER_CAPACITY = 128;
@@ -58,6 +59,17 @@ extern const int ATTR_KILLS = 20;
 extern const int ATTR_EXPLORATION = 22;
 extern const int ATTR_CONVERSIONS = 41;
 extern const int ATTR_RAZINGS = 43;
+
+extern const int HEAVY_WARSHIPS_TECH = 35;
+extern const int GALLEON_TECH = 911;
+extern const int CARRACK_TECH = 904;
+extern const int FAST_FIRE_SHIP_TECH = 246;
+extern const int GALLEON = 442;
+extern const int CARRACK = 2628;
+extern const int FAST_FIRE_SHIP = 532;
+extern const int GALLEON_EFFECT = 170;
+extern const int CARRACK_EFFECT = 911;
+extern const int FAST_FIRE_SHIP_EFFECT = 235;
 
 /* Techsanity */
 
@@ -251,3 +263,34 @@ extern const int TRAP_FLEMISH_MILITIA = 1699;
 
 // One sweep never collects more than this many units. Well above any campaign army.
 extern const int TRAP_SCAN_CAPACITY = 512;
+
+// Sent in place of an entry the window has to count but must not deliver, because it has
+// already been paid out. -1 is taken: it marks an empty slot elsewhere in the protocol.
+extern const int AP_ITEM_SKIP = -2;
+
+/* Victory threats */
+
+extern const int THREATENED_PLAYER = 1;
+extern const int THREAT_SIDE_MINI = 80;
+extern const int THREAT_YEARS_MINI = 100;
+extern const int THREAT_SIDE_MEDIUM = 168;
+extern const int THREAT_YEARS_MEDIUM = 200;
+extern const int THREAT_SIDE_NORMAL = 200;
+extern const int THREAT_YEARS_NORMAL = 300;
+extern const int THREAT_SIDE_LARGE = 220;
+extern const int THREAT_YEARS_LARGE = 350;
+extern const int THREAT_SIDE_MASSIVE = 276;
+extern const int THREAT_YEARS_MASSIVE = 400;
+extern const int THREAT_SIDE_INCREDIBLE = 360;
+extern const int THREAT_YEARS_INCREDIBLE = 450;
+extern const int THREAT_YEARS_LUDICROUS = 500;
+extern const float THREAT_MODIFIER_PER_YEAR = 10.0;
+extern const int THREAT_REVEAL_RADIUS = 8;
+extern const int THREAT_RELIC_REVEAL_RADIUS = 3;
+extern const int THREAT_ANNOUNCE_SECONDS = 10;
+extern const int THREAT_WONDER_CAPACITY = 8;
+extern const int THREAT_RELIC_REVEAL_CAPACITY = 16;
+extern const int THREAT_FOUNDATION_LOS = 1;
+extern const int THREAT_FOUNDATION_ROWS = 5;
+extern const int THREAT_FOUNDATION_CAPACITY = 25;
+extern const int MAP_REVEALER = 837;
