@@ -41,6 +41,7 @@ void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
     structSetBool(tech, "hasItem", false);
     structSetBool(tech, "researched", false);
     structSetBool(tech, "effectDone", false);
+    structSetBool(tech, "hasStatusLine", false);
     structSetInt(tech, "prerequisiteId", prerequisiteId);
     structSetInt(tech, "tooltipId", tooltipId);
 
@@ -60,6 +61,35 @@ bool hasNoEffect(vector tech = cInvalidVector) {
         return (false);
     }
     return (structGetInt(tech, "effectId") < 0);
+}
+
+void RefreshTechStatusLine(vector location = cInvalidVector) {
+    if (location == cInvalidVector) {
+        return;
+    }
+    int offset = structGetInt(location, "id") - TECH_ITEM_OFFSET;
+    if (offset < 0 || offset >= TECH_CAPACITY) {
+        return;
+    }
+    vector tech = xsArrayGetVector(techByItem, offset);
+    if (tech == cInvalidVector) {
+        return;
+    }
+    int tooltipId = structGetInt(tech, "tooltipId");
+    if (tooltipId < 0) {
+        return;
+    }
+    if (ShouldDecorateLocation(location) == false) {
+        if (structGetBool(tech, "hasStatusLine")) {
+            xsSetTechDescription(structGetInt(tech, "id"), 1, xsGetString(tooltipId));
+            structSetBool(tech, "hasStatusLine", false);
+        }
+        return;
+    }
+    bool isActive = structGetBool(tech, "effectDone") || hasNoEffect(tech);
+    xsSetTechDescription(structGetInt(tech, "id"), 1,
+        EffectStatusText(location, tooltipId, structGetBool(tech, "hasItem"), isActive));
+    structSetBool(tech, "hasStatusLine", true);
 }
 
 bool civCanResearch(vector tech = cInvalidVector) {
@@ -181,6 +211,7 @@ void onTechResearched(vector tech = cInvalidVector) {
     AP_Check_Location(structGetInt(tech, "itemId"));
     unitsDirty = true;
     tryApplyEffect(tech);
+    RefreshTechStatusLine(FindLocationById(structGetInt(tech, "itemId")));
 }
 
 bool TechItemReceived(int itemId = -1) {
@@ -214,6 +245,7 @@ void UnlockTech(int itemOffset = -1, bool atStartup = false) {
         discountTech(tech);
     }
     tryApplyEffect(tech, atStartup);
+    RefreshTechStatusLine(FindLocationById(structGetInt(tech, "itemId")));
 }
 
 void initTech(vector tech = cInvalidVector) {
@@ -277,6 +309,7 @@ void InitTechsanityStructs() {
     defineStructAttribute("Tech", "hasItem", TYPE_BOOL);
     defineStructAttribute("Tech", "researched", TYPE_BOOL);
     defineStructAttribute("Tech", "effectDone", TYPE_BOOL);
+    defineStructAttribute("Tech", "hasStatusLine", TYPE_BOOL);
     defineStructAttribute("Tech", "prerequisiteId", TYPE_INT);
     defineStructAttribute("Tech", "tooltipId", TYPE_INT);
 

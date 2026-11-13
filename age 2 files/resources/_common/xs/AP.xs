@@ -1,6 +1,8 @@
 include "./AP_Constants.xs";
+include "./AP_Headers.xs";
 include "./SlotData.xs";
 include "./AP_Globals.xs";
+include "./Descriptions.xs";
 include "./ItemHandler.xs";
 include "./MercenaryLedger.xs";
 include "./MercenarySeats.xs";
@@ -187,6 +189,11 @@ void AP_Check_Location(int locationId = -1)
     SetScenarioLocationComplete(locationId);
 }
 
+void RefreshLocationDescription(vector location = cInvalidVector)
+{
+    RefreshTechStatusLine(location);
+}
+
 void SetScenarioId(int id = 0) {
     scenarioId = id;
 }
@@ -275,6 +282,7 @@ void InitAP() {
     InitMercenarySpawn();
     InitTraps();
     InitPavilion();
+    RefreshDescriptions();
     xsEnableRule("MercenarySpawnLoop");
     xsEnableRule("WriteAP");
     
@@ -318,6 +326,9 @@ rule ConnectAP
         }
         return;
     }
+
+    LoadClassification();
+    RefreshDescriptions();
 
     xsEnableRule("ReadAP");
     xsDisableSelf();
@@ -376,18 +387,23 @@ rule MarkServerLocations
         }
 
         int locationScenarioId = locationId / 10 / 10;
+        vector location = cInvalidVector;
         if (locationScenarioId < MIN_SCENARIO_ID) {
-            vector location = FindLocationById(locationId);
-            if (location == cInvalidVector) {
-                continue;
+            location = FindLocationById(locationId);
+        }
+        else {
+            if (locationScenarioId == scenarioId) {
+                location = GetLocationById(locationId);
             }
-            structSetBool(location, "serverComplete", true);
+        }
+        if (location == cInvalidVector) {
             continue;
         }
-
-        if (locationScenarioId == scenarioId) {
-            SetServerLocationComplete(locationId);
+        if (IsServerLocationComplete(locationId)) {
+            continue;
         }
+        SetServerLocationComplete(locationId);
+        RefreshLocationDescription(location);
     }
     checkedLocationsCount = locationCount;
     xsCloseFile();

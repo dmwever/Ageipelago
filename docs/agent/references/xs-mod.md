@@ -38,9 +38,10 @@ them. There is no CI and no test suite in this repo.
 | `AP_Constants.xs` | 186 | **every** shared `extern const` |
 | `MercenarySpawn.xs` | 116 | area clearing, the per-soldier loop, the muster task |
 | `ItemHandler.xs` | 98 | `GiveItem` band dispatcher, startup-file readers |
+| `Descriptions.xs` | 85 | in-game status lines and the scouted classification table |
 | `Ages.xs` | 70 | age shuffle |
 | `MercenaryLedger.xs` | 55 | the pending completed-mercenary queue |
-| `AP_Headers.xs` | 55 | the nine `mutable` stubs, each of which warns when it runs |
+| `AP_Headers.xs` | 114 | the `mutable` stubs; the ones that must be overridden warn when they run |
 | `VictoryThreats.xs` | 405 | Wonder and relic countdowns that custom victory switched off; a scenario opts in from `InitScenarioThreats()` |
 | `APavilion.xs` | 172 | creates the pavilion, hardens it, owns the victory flow and colour cycle |
 | `SlotData.xs` | 9 | per-seed identity and options, written by `/install` |
@@ -58,15 +59,17 @@ attribute range, building ids, ages, and the mercenary seat constants.
 AP_<Campaign>_<N>.xs   (12 entry points, one main() each)
 └── AP.xs
     ├── AP_Constants.xs          every shared extern const
+    ├── AP_Headers.xs            ← must follow AP_Constants.xs: ageReached() reads the age constants
+    │   ├── structs.xs
+    │   └── ScenarioLocations.xs
     ├── SlotData.xs              AP_SLOT_ID, AP_SEED_*, AP_TS_*, AP_SHUFFLE_AGES
+    ├── AP_Globals.xs
+    ├── Descriptions.xs          ← needs the ledger above it and Techsanity.xs below it
     ├── ItemHandler.xs
     │   ├── ProgressionItems.xs
     │   ├── MercenaryItems.xs
     │   ├── ResourceItems.xs
     │   ├── Buildsanity.xs
-    │   │   └── AP_Headers.xs
-    │   │       ├── structs.xs
-    │   │       └── ScenarioLocations.xs
     │   ├── Ages.xs              ← contains no include statements at all
     │   └── Techsanity.xs
     │       └── TechData.xs
@@ -76,11 +79,15 @@ AP_<Campaign>_<N>.xs   (12 entry points, one main() each)
     └── APavilion.xs
 ```
 
-**Include order is still load-bearing, and there are still no include guards.** `AP.xs` now includes
-`AP_Constants.xs` first, which is what makes the constants reachable everywhere downstream —
-`Ages.xs`, `Techsanity.xs` and the mercenary files all use constants they never include. That is far
-less fragile than it was, but reordering `AP.xs`'s first three includes still breaks the build, and
-adding an include to a file that already receives a symbol duplicates every definition in it.
+**Include order is still load-bearing, and there are still no include guards.** `AP.xs` includes
+`AP_Constants.xs` first, then `AP_Headers.xs`, and that pair is what makes the constants, the structs,
+the location ledger and the `mutable` stubs reachable everywhere downstream — `Ages.xs`,
+`Buildsanity.xs`, `Techsanity.xs` and the mercenary files all use symbols they never include. That is
+far less fragile than it was, but reordering `AP.xs`'s head still breaks the build: `AP_Headers.xs`
+above `AP_Constants.xs` loses the age constants `ageReached()` needs and the class constant
+`ScenarioLocations.xs` defaults with, and `Descriptions.xs` has to sit below the ledger and above
+`ItemHandler.xs`, which is where `Techsanity.xs` reads it. Adding an include to a file that already
+receives a symbol duplicates every definition in it.
 
 ## Entry points
 
@@ -327,7 +334,9 @@ the item, a `HasX()` getter, dispatched from one `switch`. `ResourceItems.xs` gr
 The five one-shot readers are armed by `AP_Read` when the client raises the matching flag in
 `AP.xsdat`, and disarm themselves whether or not the file opened. `ConnectAP` is the canonical
 bootstrap: poll until the client answers, grant startup items once, wait for the scenario's own item
-file, then enable `ReadAP` and disable itself.
+file, read `classification.xsdat` and write the status lines, then enable `ReadAP` and disable itself.
+No ping flag carries the classification file, and it is read exactly once: a scout reply that has not
+landed by then leaves the lines uncoloured for the scenario, which is the designed fallback.
 
 ## The AP pavilion
 

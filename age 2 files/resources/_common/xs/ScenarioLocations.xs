@@ -1,7 +1,7 @@
 const int LOCATION_CAPACITY = 1024;
 
-vector locationList = cInvalidVector;
-int newLocationAddress = 0;
+extern vector locationList = cInvalidVector;
+extern int newLocationAddress = 0;
 
 int filterArray = -1;
 extern int filteredCount = 0;
@@ -60,6 +60,7 @@ vector AddLocation(int id = -1, bool scenarioComplete = false, bool serverComple
     structSetInt(location, "id", id);
     structSetBool(location, "scenarioComplete", scenarioComplete);
     structSetBool(location, "serverComplete", serverComplete);
+    structSetInt(location, "classification", LOCATION_CLASS_UNSCOUTED);
 
     xsArraySetVector(locations, newLocationAddress, location);
     newLocationAddress++;
@@ -89,6 +90,7 @@ void InitLocations() {
     defineStructAttribute("Location", "id", TYPE_INT);
     defineStructAttribute("Location", "scenarioComplete", TYPE_BOOL);
     defineStructAttribute("Location", "serverComplete", TYPE_BOOL);
+    defineStructAttribute("Location", "classification", TYPE_INT);
 
     defineStruct("LocationList");
     defineStructAttribute("LocationList", "locations", TYPE_STRUCT_ARRAY);

@@ -1,5 +1,3 @@
-include "AP_Headers.xs";
-
 vector buildsanity = cInvalidVector;
 
 vector getBuildingByName(int arrayId = -1, string name = "") {

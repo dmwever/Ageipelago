@@ -274,3 +274,10 @@ extern const int THREAT_FOUNDATION_LOS = 1;
 extern const int THREAT_FOUNDATION_ROWS = 5;
 extern const int THREAT_FOUNDATION_CAPACITY = 25;
 extern const int MAP_REVEALER = 837;
+
+extern const int CLASSIFICATION_ENTRY_BYTES = 8;
+
+extern const int LOCATION_CLASS_UNSCOUTED = 0;
+extern const int LOCATION_CLASS_PROGRESSION = 1;
+extern const int LOCATION_CLASS_USEFUL = 2;
+extern const int LOCATION_CLASS_FILLER = 3;
