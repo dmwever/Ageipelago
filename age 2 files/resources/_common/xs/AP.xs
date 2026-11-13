@@ -191,7 +191,25 @@ void AP_Check_Location(int locationId = -1)
 
 void RefreshLocationDescription(vector location = cInvalidVector)
 {
-    RefreshTechStatusLine(location);
+    if (location == cInvalidVector) {
+        return;
+    }
+    int locationId = structGetInt(location, "id");
+    if (locationId >= AP_AGE_ITEM_MIN && locationId < AP_AGE_ITEM_MAX) {
+        RefreshAgeStatusLine(location);
+        return;
+    }
+    if (locationId >= AP_BUILDING_ITEM_OFFSET && locationId < AP_BUILDING_ITEM_MAX) {
+        RefreshBuildingStatusLine(location);
+        return;
+    }
+    if (locationId >= AP_UNIT_ITEM_OFFSET && locationId < AP_PROGRESSION_ITEM_MIN) {
+        RefreshUnitStatusLine(location);
+        return;
+    }
+    if (locationId >= TECH_ITEM_OFFSET && locationId < AP_TECH_ITEM_MAX) {
+        RefreshTechStatusLine(location);
+    }
 }
 
 void SetScenarioId(int id = 0) {

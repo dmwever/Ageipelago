@@ -22,6 +22,19 @@ int ageTechFor(int age = -1) {
     return (-1);
 }
 
+int ageTooltipFor(int age = -1) {
+    if (age == FEUDAL_AGE) {
+        return (FEUDAL_AGE_TOOLTIP);
+    }
+    if (age == CASTLE_AGE) {
+        return (CASTLE_AGE_TOOLTIP);
+    }
+    if (age == IMPERIAL_AGE) {
+        return (IMPERIAL_AGE_TOOLTIP);
+    }
+    return (-1);
+}
+
 bool ageRegistered(int age = -1) {
     if (age == FEUDAL_AGE) {
         return (feudalRegistered);
@@ -112,6 +125,22 @@ void UnlockAge(int itemId = -1) {
     }
 }
 
+void RefreshAgeStatusLine(vector location = cInvalidVector) {
+    if (location == cInvalidVector) {
+        return;
+    }
+    int age = structGetInt(location, "id");
+    if (ageRegistered(age) == false) {
+        return;
+    }
+    int tooltipId = ageTooltipFor(age);
+    if (ShouldDecorateLocation(location) == false) {
+        xsSetTechDescription(ageTechFor(age), 1, xsGetString(tooltipId));
+        return;
+    }
+    xsSetTechDescription(ageTechFor(age), 1, CheckedStatusText(location, tooltipId));
+}
+
 void InitAges() {
     feudalRegistered = false;
     castleRegistered = false;
@@ -148,7 +177,13 @@ rule ShuffleAgesUpdate
     for (age = FEUDAL_AGE; <= IMPERIAL_AGE) {
         if (xsGetTechState(ageTechFor(age), 1) == cTechStateDone) {
             if (ageRegistered(age)) {
+                vector location = FindLocationById(age);
+                bool newlyChecked = location != cInvalidVector
+                                 && structGetBool(location, "scenarioComplete") == false;
                 AP_Check_Location(age);
+                if (newlyChecked) {
+                    RefreshAgeStatusLine(location);
+                }
             }
             if (age == FEUDAL_AGE && has_castle) {
                 UnlockAge(CASTLE_AGE);

@@ -51,6 +51,7 @@ vector createLocationLock(string buildingName = "", int buildingId = -1, float c
     structSetInt(building, "locationId", locationId);
     structSetInt(building, "age", age);
     structSetInt(building, "tooltipId", tooltipId);
+    structSetBool(building, "hasStatusLine", false);
     xsEffectAmount(cSetAttribute, buildingId, cDisabledFlag, 1.0, 1);
 
     vector location = AddLocation(locationId);
@@ -66,6 +67,7 @@ void InitBuildsanityStructs() {
     defineStructAttribute("Building", "locationId", TYPE_INT);
     defineStructAttribute("Building", "age", TYPE_INT);
     defineStructAttribute("Building", "tooltipId", TYPE_INT);
+    defineStructAttribute("Building", "hasStatusLine", TYPE_BOOL);
 
     defineStruct("Buildsanity");
     defineStructAttribute("Buildsanity", "buildings", TYPE_STRUCT_ARRAY);
@@ -268,6 +270,39 @@ void updateCosts(int buildings = -1) {
     }
 }
 
+void RefreshBuildingStatusLine(vector location = cInvalidVector) {
+    if (location == cInvalidVector) {
+        return;
+    }
+    int buildings = structGetInt(buildsanity, "buildings");
+    if (buildings < 0) {
+        return;
+    }
+    int locationId = structGetInt(location, "id");
+    int index = locationId - AP_BUILDING_ITEM_OFFSET;
+    if (index < 0 || index >= xsArrayGetSize(buildings)) {
+        return;
+    }
+    vector building = xsArrayGetVector(buildings, index);
+    if (building == cInvalidVector || structGetInt(building, "locationId") != locationId) {
+        return;
+    }
+    int tooltipId = structGetInt(building, "tooltipId");
+    if (tooltipId < 0) {
+        return;
+    }
+    int buildingId = structGetInt(building, "id");
+    if (ShouldDecorateLocation(location) == false) {
+        if (structGetBool(building, "hasStatusLine")) {
+            xsSetObjectDescription(1, buildingId, xsGetString(tooltipId));
+            structSetBool(building, "hasStatusLine", false);
+        }
+        return;
+    }
+    xsSetObjectDescription(1, buildingId, CheckedStatusText(location, tooltipId));
+    structSetBool(building, "hasStatusLine", true);
+}
+
 rule BuildsanityChecks
     inactive
     group Buildsanity
@@ -285,12 +320,14 @@ rule BuildsanityChecks
     if (castlesBuilt > structGetFloat(buildsanity, "castlesBuilt")) {
         structSetFloat(buildsanity, "castlesBuilt", castlesBuilt);
         AP_Check_Location(218);
+        RefreshBuildingStatusLine(FindLocationById(218));
         return;
     }
 
     if (wondersBuilt > structGetFloat(buildsanity, "wondersBuilt")) {
         structSetFloat(buildsanity, "wondersBuilt", wondersBuilt);
         AP_Check_Location(200);
+        RefreshBuildingStatusLine(FindLocationById(200));
         return;
     }
     
@@ -307,6 +344,7 @@ rule BuildsanityChecks
         vector building = xsArrayGetVector(buildingsAtCost, i);
         if (Built(buildings, structGetString(building, "name"))) {
             AP_Check_Location(structGetInt(building, "locationId"));
+            RefreshBuildingStatusLine(FindLocationById(structGetInt(building, "locationId")));
         }
     }
 

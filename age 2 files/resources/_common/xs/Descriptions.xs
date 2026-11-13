@@ -51,6 +51,10 @@ string effectSegment(bool unlocked = false, bool isActive = false) {
     return ("<RED>Awaiting Item<DEFAULT>");
 }
 
+string CheckedStatusText(vector location = cInvalidVector, int tooltipId = -1) {
+    return (checkedSegment(location) + "\n" + xsGetString(tooltipId));
+}
+
 string EffectStatusText(vector location = cInvalidVector, int tooltipId = -1,
                         bool unlocked = false, bool isActive = false) {
     return (checkedSegment(location) + " - " + effectSegment(unlocked, isActive)

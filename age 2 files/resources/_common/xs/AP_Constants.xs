@@ -13,6 +13,10 @@ extern const int FEUDAL_AGE_TECH = 101;
 extern const int CASTLE_AGE_TECH = 102;
 extern const int IMPERIAL_AGE_TECH = 103;
 
+extern const int FEUDAL_AGE_TOOLTIP = 28101;
+extern const int CASTLE_AGE_TOOLTIP = 28102;
+extern const int IMPERIAL_AGE_TOOLTIP = 28103;
+
 extern const float STATE_DISABLE = 0.0;
 extern const float STATE_ENABLE = 2.0;
 extern const float STATE_DONE = 3.0;
@@ -25,6 +29,26 @@ extern const int TECH_ATTR_COST_LAST = 3;
 /* Binding a tech to this strips its effect, leaving the research action and nothing else. */
 
 extern const int NOOP_EFFECT = 0;
+
+extern const int AP_RESOURCE_ITEM_MIN    = 1;
+extern const int AP_RESOURCE_ITEM_MAX    = 25;
+
+extern const int AP_AGE_ITEM_MIN         = 25;
+extern const int AP_AGE_ITEM_MAX         = 30;
+
+extern const int AP_BUILDING_ITEM_OFFSET = 200;
+extern const int AP_BUILDING_ITEM_MAX    = 300;
+
+extern const int AP_PROGRESSION_ITEM_MIN = 1000;
+extern const int AP_PROGRESSION_ITEM_MAX = 3000;
+
+extern const int AP_TECH_ITEM_MAX        = 4000;
+
+extern const int AP_MERC_ITEM_MIN        = 4000;
+extern const int AP_MERC_ITEM_MAX        = 5000;
+
+extern const int AP_TRAP_ITEM_MIN        = 5000;
+extern const int AP_TRAP_ITEM_MAX        = 5100;
 
 /* Techs */
 
