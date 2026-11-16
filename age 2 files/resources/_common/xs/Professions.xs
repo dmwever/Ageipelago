@@ -52,6 +52,8 @@ void RefreshProfessions() {
         if (baseVillagerId < 0) {
             continue;
         }
+        vector villager = getUnit(findUnit(baseVillagerId));
+        writeUnitStatusLine(villager, FindLocationById(structGetInt(villager, "locationId")));
         if (hasAllItems(unit)) {
             setVillagerSwapGroup(structGetInt(unit, "typeId"), getVillagerSwapGroup(baseVillagerId));
             continue;

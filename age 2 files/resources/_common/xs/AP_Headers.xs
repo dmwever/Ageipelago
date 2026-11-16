@@ -20,6 +20,10 @@ bool isProfession(vector unit = cInvalidVector) {
             && structGetInt(unit, "tier") > 0);
 }
 
+mutable string professionIcon(int itemId = -1, string held = "", string missing = "") {
+    return ("");
+}
+
 mutable void AP_Check_Location(int locationId = -1) {
     xsChatData("<RED>AP_Check_Location is still the stub, so location " + locationId
                + " goes nowhere. AP.xs did not define it.");

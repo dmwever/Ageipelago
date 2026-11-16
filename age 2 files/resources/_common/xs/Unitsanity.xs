@@ -227,6 +227,21 @@ void setUnitHidden(vector unit = cInvalidVector, bool hidden = true) {
     structSetBool(unit, "locked", hidden);
 }
 
+bool hasItem(int itemId = -1) {
+    int offset = itemId - AP_UNIT_ITEM_OFFSET;
+    if (offset < 0 || offset >= UNIT_ITEM_SPAN) {
+        return (false);
+    }
+    return (xsArrayGetBool(receivedItems, offset));
+}
+
+string professionIcon(int itemId = -1, string held = "", string missing = "") {
+    if (hasItem(itemId)) {
+        return ("<" + held + ">");
+    }
+    return ("<" + missing + ">");
+}
+
 void writeUnitStatusLine(vector unit = cInvalidVector, vector location = cInvalidVector) {
     int tooltipId = structGetInt(unit, "tooltipId");
     if (tooltipId < 0) {
@@ -244,7 +259,12 @@ void writeUnitStatusLine(vector unit = cInvalidVector, vector location = cInvali
         }
         return;
     }
-    xsSetObjectDescription(1, typeId, CheckedStatusText(location, tooltipId));
+    string banner = "";
+    if (structGetBool(unit, "cavemanExempt") && structGetInt(unit, "lineId") >= 0
+        && structGetInt(unit, "tier") == 0) {
+        banner = ProfessionRow();
+    }
+    xsSetObjectDescription(1, typeId, CheckedStatusText(location, tooltipId) + banner);
     structSetBool(unit, "hasStatusLine", true);
 }
 
@@ -310,14 +330,6 @@ void checkOwnedUnits(int units = -1) {
             MarkOwnedByType(xsGetUnitObjectId(unitId));
         }
     }
-}
-
-bool hasItem(int itemId = -1) {
-    int offset = itemId - AP_UNIT_ITEM_OFFSET;
-    if (offset < 0 || offset >= UNIT_ITEM_SPAN) {
-        return (false);
-    }
-    return (xsArrayGetBool(receivedItems, offset));
 }
 
 bool hasAllItems(vector unit = cInvalidVector) {
