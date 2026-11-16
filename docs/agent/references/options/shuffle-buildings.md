@@ -2,13 +2,14 @@
 
 ## What the player sets
 
-`ShuffleBuildings(OptionSet)`, display name "Shuffle Buildings". `valid_keys` is the eight
-`BuildingOption` tags — `Base`, `Economy`, `Tech`, `Military`, `Castle`, `Defense`, `Unique`,
+`ShuffleBuildings(OptionSet)`, display name "Shuffle Buildings". `valid_keys` is the nine
+`BuildingOption` tags — `All`, `Base`, `Economy`, `Tech`, `Military`, `Castle`, `Defense`, `Unique`,
 `Wonder` — and nothing else, because it is what the WebHost options page draws as checkboxes.
 Building item names (`NAME_TO_BUILDING`) are accepted too, by an overridden `verify_keys`. Default is
 `{Economy, Tech, Military}`, so Town Center, House and Castle are not shuffled by default.
 
 > Determines which buildings to shuffle.
+>     All: Shuffle every building in every category below.
 >     Base: Shuffle the town center and houses. Local Start's Base places these in your own world.
 >     Economy: Shuffle the market, resource buildings and farms. Includes dock.
 >     Tech: Shuffle the blacksmith and university.
@@ -35,9 +36,10 @@ The class overrides `__eq__` so it compares equal to a plain `OptionSet`, `Optio
 `BuildingPool._is_shuffled`, for each `Age2BuildingData`, in order:
 
 1. Skip it if no civ in the seed builds it — this wins over everything, including a named key.
-2. Shuffle it if its item name was given as a key. A name outranks the `Unique` gate.
-3. Skip a unique building unless `Unique` is selected.
-4. Shuffle it if any of its own tags (excluding `unique`) was selected — a union.
+2. Shuffle it if `All` is selected. No building carries the `All` tag; it short-circuits the rest.
+3. Shuffle it if its item name was given as a key. A name outranks the `Unique` gate.
+4. Skip a unique building unless `Unique` is selected.
+5. Shuffle it if any of its own tags (excluding `unique`) was selected — a union.
 
 Selected buildings are `pool.buildings.shuffled`, which drives `BuildingRules` and whether the item
 is pooled or precollected. A shuffled House is also an `early_items` entry (`__init__.py`).
