@@ -7,8 +7,6 @@ include "./MercenarySeats.xs";
 include "./MercenarySpawn.xs";
 include "./APavilion.xs";
 include "./VictoryThreats.xs";
-// XS function injector (off by default): recipe in aoe2-xs-injector/docs/agents/hosting.md
-// include "./xsinject.xs";
 
 int apArrayProbe = -1;
 
@@ -86,8 +84,6 @@ void AP_Write()
         vector location = xsArrayGetVector(sendingLocations, i);
         xsWriteInt(structGetInt(location, "id"));
     }
-    // XS function injector (off by default): recipe in aoe2-xs-injector/docs/agents/hosting.md
-    // xsInjectWriteSection();
     xsCloseFile();
 }
 
@@ -248,8 +244,6 @@ rule ReadAP
 }
 
 void InitAP() {
-    // XS function injector (off by default): recipe in aoe2-xs-injector/docs/agents/hosting.md
-    // xsInjectUseHostWriter();
     if (AP_INITIALIZED == true) {
         if (xsArrayGetSize(apArrayProbe) == 1) {
             return;
