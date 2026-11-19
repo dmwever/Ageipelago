@@ -251,6 +251,24 @@ The game reads a location file that echoes back the locations sent in past packe
 |---|---|---|
 |Locations (L)|int*L|Every location the client has checked|
 
+### `classification.xsdat`
+
+Client -> Game. Read once by `ConnectAP` in `AP.xs`, into the `Location` ledger.
+
+Written once at connect from the `LocationScouts` reply, and cleared on disconnect. A mid-session
+flush leaves it alone: it carries no per-scenario state and nothing else would rewrite it. A
+location the reply does not name is absent from the file rather than written with a default, so the
+file is also the record of which locations this seed has at all. The item itself is never named,
+and a trap wears one of the three ordinary classes, derived from the seed tag and the location id.
+
+Pairs, ordered by location id, until the end of the file.
+
+|Name|Type|Purpose|
+|---|---|---|
+|LocationId|int|The location|
+|Classification|int|1 progression, 2 useful, 3 filler|
+|...|...|Repeated to the end of the file|
+
 ### `buildings.xsdat`
 
 Client -> Game. Read by `ItemHandler.xs`.

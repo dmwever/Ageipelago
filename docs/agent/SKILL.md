@@ -17,7 +17,7 @@ description: >
 
 # Ageipelago / age2de
 
-Skill revision: **2026-11-07a**
+Skill revision: **2026-11-13a**
 
 A randomizer in two halves that ship separately and must stay in step.
 
@@ -63,6 +63,7 @@ is the normal state on a machine where nobody has installed it.
 | a packet field, byte offsets, the `.xsdat` **packet** layout, seed tags, versioning, the item window | `references/protocol.md` |
 | what a yaml option does on either side, or a bug that only shows with one on (caveman, techsanity, …) | `references/options/index.md`, then the one option's file |
 | how to write it so it matches the codebase | `references/conventions/index.md` |
+| calling XS functions live in a running Ageipelago match (the XS function injector, wiring commented out in `AP.xs`) | the `xs-injector` skill; recipe in `aoe2-xs-injector/docs/agents/hosting.md` |
 
 Engine-level questions — the exact signature of an `xs*` function, a constant's value, a unit or tech
 id, how the tech state machine behaves — are **not** in this skill. They belong to the `aoe2-modding`
@@ -190,6 +191,10 @@ AGEIPELAGO_PATH=/path/to/Ageipelago python -m pytest worlds/age2de/test
 
 # XS lint, from the xs folder. Needs v0.2.30 or later for Update 185872.
 ./xs-check.exe -I . -- AP_Attila_1.xs
+
+# Do the baked tooltip ids still name their own objects? Reads the game's strings file, not the
+# dat, so it takes seconds. That file is also the oracle for any "what is string id N" question.
+python -m worlds.age2de.tools.recapture_string_ids --verify
 ```
 
 ### Fuzzing the apworld

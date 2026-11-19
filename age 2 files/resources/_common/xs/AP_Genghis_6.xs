@@ -31,6 +31,10 @@ void SubotaiArrives() {
   AP_Check_Location(30601);
 }
 
+bool SubotaiArrivesChecked() {
+  return (IsCheckedOnServer(30601));
+}
+
 void SetPavilionLayout() {
     SetPavilionPlacement(104, 3, PAVILION_FACE_SE);
 }

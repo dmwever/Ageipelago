@@ -91,6 +91,7 @@ All client → game, all in the profile folder, all fixed names (no seed tag).
 | `items.xsdat` | up to 12 unacked item ids | `ReadItems` |
 | `free_items.xsdat` | echoed ids the client no longer has in flight | `FreeItems` |
 | `locations.xsdat` | every location the client has checked | `MarkServerLocations` |
+| `classification.xsdat` | a location id and its class, paired, ordered by id | `ConnectAP`, once |
 | `buildings.xsdat` | item ids of every unlocked building | `ItemHandler.xs` |
 | `techs.xsdat` | item ids of every unlocked technology | `ItemHandler.xs` |
 | `messages.xsdat` | count, then id + length-prefixed text per message | `ReadMessages` |

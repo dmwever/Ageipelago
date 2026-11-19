@@ -78,10 +78,11 @@ Dropping `-I` gives an `UnresolvedInclude` plus a cascade of `NameError`s, which
 breakage; dropping only the `--` prints usage, because `-I` is variadic and eats the filename. See the
 Linting section of `xs-mod.md` for the full table.
 
-**Lint the twelve scenario entry points, not the library files.** Only an entry point pulls the whole
+**Lint the scenario entry points, not the library files.** Only an entry point pulls the whole
 include chain; `ItemHandler.xs` alone reports 139 `NameError`s for constants that `AP.xs` includes one
-level up. A clean entry point reports **0 errors and 3 warnings**, identical across all twelve, and
-the warnings are all `DiscardedFn` from ignored return values.
+level up. A clean entry point reports **0 errors**, identical across all eighteen. The warnings are a
+pre-existing baseline of `DiscardedFn` and `FirstOprArith` sites rather than a fixed number — measure
+HEAD and compare, because any count written here dates.
 
 `// xsc-ignore: <Rule>` is the escape hatch — smallest possible scope, always with a reason.
 

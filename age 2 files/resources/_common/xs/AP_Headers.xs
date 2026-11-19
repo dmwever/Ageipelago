@@ -20,12 +20,19 @@ bool isProfession(vector unit = cInvalidVector) {
             && structGetInt(unit, "tier") > 0);
 }
 
+mutable string professionIcon(int itemId = -1, string held = "", string missing = "") {
+    return ("");
+}
+
 mutable void AP_Check_Location(int locationId = -1) {
     xsChatData("<RED>AP_Check_Location is still the stub, so location " + locationId
                + " goes nowhere. AP.xs did not define it.");
 }
 
 mutable void ApplyCaveman(int units = -1) {
+}
+
+mutable void RefreshLocationDescription(vector location = cInvalidVector) {
 }
 
 mutable void CheckProfessionLocations(int units = -1) {
@@ -60,13 +67,14 @@ mutable void SetScenarioAge() {
 
 mutable void addTech(int itemId = -1, int id = -1, int effectId = -1, int civ = -1,
                      int isUpgrade = 0, int isUnique = 0, int age = 0, int isLocation = 1,
-                     int prerequisiteId = -1) {
+                     int prerequisiteId = -1, int tooltipId = -1) {
     xsChatData("<RED>addTech is still the stub, so tech " + id + " is being discarded."
                + " Techsanity.xs did not define it.");
 }
 
 mutable void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
-             int tier = 0, int upgradeItemId = -1, int cavemanExempt = 0) {
+             int tier = 0, int upgradeItemId = -1, int cavemanExempt = 0,
+             int tooltipId = -1) {
     xsChatData("<RED>addUnit is still the stub, so unit location " + locationId + " is being discarded."
                + " Unitsanity.xs did not define it.");
 }

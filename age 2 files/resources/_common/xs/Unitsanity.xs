@@ -110,7 +110,8 @@ void appendId(int list = -1, int capacity = 0, int value = -1) {
 }
 
 void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
-             int tier = 0, int upgradeItemId = -1, int cavemanExempt = 0) {
+             int tier = 0, int upgradeItemId = -1, int cavemanExempt = 0,
+             int tooltipId = -1) {
     if (unitTableCount >= UNIT_CAPACITY || typeId < 1) {
         return;
     }
@@ -125,11 +126,13 @@ void addUnit(int locationId = -1, int typeId = -1, int lineId = -1, int age = 0,
     structSetInt(unit, "age", age);
     structSetInt(unit, "tier", tier);
     structSetInt(unit, "upgradeItemId", upgradeItemId);
+    structSetInt(unit, "tooltipId", tooltipId);
     structSetBool(unit, "cavemanExempt", cavemanExempt == 1);
     structSetBool(unit, "trainable", true);
     structSetInt(unit, "owned", 0);
     structSetBool(unit, "hasItems", false);
     structSetBool(unit, "locked", false);
+    structSetBool(unit, "hasStatusLine", false);
     setIdList(unit, "itemIds",
               xsArrayCreateInt(UNIT_ITEM_CAPACITY, -1, "us-items-" + unitTableCount));
     setIdList(unit, "variantIds",
@@ -224,6 +227,64 @@ void setUnitHidden(vector unit = cInvalidVector, bool hidden = true) {
     structSetBool(unit, "locked", hidden);
 }
 
+bool hasItem(int itemId = -1) {
+    int offset = itemId - AP_UNIT_ITEM_OFFSET;
+    if (offset < 0 || offset >= UNIT_ITEM_SPAN) {
+        return (false);
+    }
+    return (xsArrayGetBool(receivedItems, offset));
+}
+
+string professionIcon(int itemId = -1, string held = "", string missing = "") {
+    if (hasItem(itemId)) {
+        return (materialIcon(held));
+    }
+    return (materialIcon(missing));
+}
+
+void writeUnitStatusLine(vector unit = cInvalidVector, vector location = cInvalidVector) {
+    int tooltipId = structGetInt(unit, "tooltipId");
+    if (tooltipId < 0) {
+        return;
+    }
+    string vanilla = xsGetString(tooltipId);
+    if (vanilla == "") {
+        return;
+    }
+    int typeId = structGetInt(unit, "typeId");
+    if (ShouldDecorateLocation(location) == false) {
+        if (structGetBool(unit, "hasStatusLine")) {
+            xsSetObjectDescription(1, typeId, vanilla);
+            structSetBool(unit, "hasStatusLine", false);
+        }
+        return;
+    }
+    string banner = "";
+    if (structGetBool(unit, "cavemanExempt") && structGetInt(unit, "lineId") >= 0
+        && structGetInt(unit, "tier") == 0) {
+        banner = ProfessionRow();
+    }
+    xsSetObjectDescription(1, typeId, CheckedStatusText(location, tooltipId) + banner);
+    structSetBool(unit, "hasStatusLine", true);
+}
+
+void RefreshUnitStatusLine(vector location = cInvalidVector) {
+    if (unitsanityReady == false || location == cInvalidVector) {
+        return;
+    }
+    int locationId = structGetInt(location, "id");
+    vector resolved = FindLocationById(locationId);
+    if (resolved == cInvalidVector) {
+        return;
+    }
+    for (j = 0; < unitTableCount) {
+        vector unit = getUnit(j);
+        if (structGetInt(unit, "locationId") == locationId) {
+            writeUnitStatusLine(unit, resolved);
+        }
+    }
+}
+
 void MarkRowOwned(int index = -1) {
     if (index < 0) {
         return;
@@ -238,6 +299,7 @@ void MarkRowOwned(int index = -1) {
     }
     structSetInt(unit, "owned", 1);
     AP_Check_Location(locationId);
+    RefreshUnitStatusLine(FindLocationById(locationId));
 }
 
 bool MarkOwnedByType(int typeId = -1) {
@@ -268,14 +330,6 @@ void checkOwnedUnits(int units = -1) {
             MarkOwnedByType(xsGetUnitObjectId(unitId));
         }
     }
-}
-
-bool hasItem(int itemId = -1) {
-    int offset = itemId - AP_UNIT_ITEM_OFFSET;
-    if (offset < 0 || offset >= UNIT_ITEM_SPAN) {
-        return (false);
-    }
-    return (xsArrayGetBool(receivedItems, offset));
 }
 
 bool hasAllItems(vector unit = cInvalidVector) {
@@ -330,11 +384,13 @@ void InitUnitsanityStructs() {
     defineStructAttribute("Unit", "age", TYPE_INT);
     defineStructAttribute("Unit", "tier", TYPE_INT);
     defineStructAttribute("Unit", "upgradeItemId", TYPE_INT);
+    defineStructAttribute("Unit", "tooltipId", TYPE_INT);
     defineStructAttribute("Unit", "cavemanExempt", TYPE_BOOL);
     defineStructAttribute("Unit", "trainable", TYPE_BOOL);
     defineStructAttribute("Unit", "owned", TYPE_INT);
     defineStructAttribute("Unit", "hasItems", TYPE_BOOL);
     defineStructAttribute("Unit", "locked", TYPE_BOOL);
+    defineStructAttribute("Unit", "hasStatusLine", TYPE_BOOL);
     defineStructAttribute("Unit", "itemIds", TYPE_INT_ARRAY);
     defineStructAttribute("Unit", "variantIds", TYPE_INT_ARRAY);
 

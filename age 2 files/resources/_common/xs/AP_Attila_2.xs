@@ -29,24 +29,48 @@ void RedTC() {
   AP_Check_Location(10201);
 }
 
+bool RedTCChecked() {
+  return (IsCheckedOnServer(10201));
+}
+
 void GreenLumber() {
   AP_Check_Location(10202);
+}
+
+bool GreenLumberChecked() {
+  return (IsCheckedOnServer(10202));
 }
 
 void PurpleVils() {
   AP_Check_Location(10203);
 }
 
+bool PurpleVilsChecked() {
+  return (IsCheckedOnServer(10203));
+}
+
 void GreyMining() {
   AP_Check_Location(10204);
+}
+
+bool GreyMiningChecked() {
+  return (IsCheckedOnServer(10204));
 }
 
 void CyanTCCastle() {
   AP_Check_Location(10205);
 }
 
+bool CyanTCCastleChecked() {
+  return (IsCheckedOnServer(10205));
+}
+
 void ScythianVils() {
   AP_Check_Location(10206);
+}
+
+bool ScythianVilsChecked() {
+  return (IsCheckedOnServer(10206));
 }
 
 void BuildTC() {

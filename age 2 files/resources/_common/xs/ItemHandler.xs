@@ -9,42 +9,6 @@ include "./Caveman.xs";
 include "./Professions.xs";
 include "./TrapItems.xs";
 
-/*        0        Victory
- *        1 -   24 Resources
- *       25 -   29 Ages
- *       30 -  199 Civs
- *      200 -  299 Buildings
- *      300 -  499 Unit lines
- *      500 -  599 Unit upgrades
- *      600 -  699 Building units
- *      700 -  799 Villager professions
- *     1000 - 2999 Scenario progression
- *     3000 - 3499 Progressive scenarios
- *     3500 - 3599 Campaign unlocks
- *     3600 - 3999 Techs
- *     4000 - 4999 Mercenaries
- *     5000 - 5099 Traps
- */
-const int AP_RESOURCE_ITEM_MIN    = 1;
-const int AP_RESOURCE_ITEM_MAX    = 25;
-
-const int AP_AGE_ITEM_MIN         = 25;
-const int AP_AGE_ITEM_MAX         = 30;
-
-const int AP_BUILDING_ITEM_OFFSET = 200;
-const int AP_BUILDING_ITEM_MAX    = 300;
-
-const int AP_PROGRESSION_ITEM_MIN = 1000;
-const int AP_PROGRESSION_ITEM_MAX = 3000;
-
-const int AP_TECH_ITEM_MAX        = 4000;
-
-const int AP_MERC_ITEM_MIN        = 4000;
-const int AP_MERC_ITEM_MAX        = 5000;
-
-const int AP_TRAP_ITEM_MIN        = 5000;
-const int AP_TRAP_ITEM_MAX        = 5100;
-
 void GiveItem(int itemId = -1) {
     if (itemId == AP_ITEM_SKIP) {
         return;

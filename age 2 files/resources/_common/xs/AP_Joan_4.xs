@@ -28,20 +28,40 @@ void DefeatEnglishGuards() {
   AP_Check_Location(20401);
 }
 
+bool DefeatEnglishGuardsChecked() {
+  return (IsCheckedOnServer(20401));
+}
+
 void ReachBase() {
   AP_Check_Location(20402);
+}
+
+bool ReachBaseChecked() {
+  return (IsCheckedOnServer(20402));
 }
 
 void DestroyTroyesTC() {
   AP_Check_Location(20403);
 }
 
+bool DestroyTroyesTCChecked() {
+  return (IsCheckedOnServer(20403));
+}
+
 void DestroyChalonsTC() {
   AP_Check_Location(20404);
 }
 
+bool DestroyChalonsTCChecked() {
+  return (IsCheckedOnServer(20404));
+}
+
 void DestroyRheimsTC() {
   AP_Check_Location(20405);
+}
+
+bool DestroyRheimsTCChecked() {
+  return (IsCheckedOnServer(20405));
 }
 
 void SetPavilionLayout() {

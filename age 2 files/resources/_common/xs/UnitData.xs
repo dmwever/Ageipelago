@@ -5,6 +5,10 @@ void LoadUnitTable() {
     return;
 }
 
+string ProfessionRow() {
+    return ("");
+}
+
 void CavemanExemption() {
     return;
 }
