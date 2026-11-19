@@ -191,8 +191,16 @@ in addition, you will be able to spawn in those mangudai one time into _any_ sce
 ### New Feature: Ageipelago UI Mod
 
 - A local mod ships alongside the game files, carrying the names and pictures for the mercenary
-  buttons. Enable it in the Mod Centre under Local.
+  buttons and the villager profession icons. Enable it in the Mod Centre under Local.
 - Without it the buttons still work but come up blank and with no names.
+- Every technology, unit, building and age advance that is a location in your seed now has a status
+  line at the top of its description. The vanilla text stays underneath.
+- Technologies also notify if a technology is active, mising its item, or _must research_.
+- An unchecked location is coloured by the class of the item waiting there: progression purple,
+  useful blue, filler aqua. The item is never named, and traps wear one of those three colours.
+- Anything that is not a location in your seed has no status line.
+- The Villager's description shows the profession icons, each in colour once its profession item has
+  arrived and greyscale until then.
 
 ### Bugfix: Victory Threats
 
