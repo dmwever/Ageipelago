@@ -32,16 +32,32 @@ void DefeatMetz() {
   AP_Check_Location(10402);
 }
 
+bool DefeatMetzChecked() {
+  return (IsCheckedOnServer(10402));
+}
+
 void DefeatOrleans() {
   AP_Check_Location(10403);
+}
+
+bool DefeatOrleansChecked() {
+  return (IsCheckedOnServer(10403));
 }
 
 void DefeatRomanArmy() {
   AP_Check_Location(10404);
 }
 
+bool DefeatRomanArmyChecked() {
+  return (IsCheckedOnServer(10404));
+}
+
 void TributeBurgundyAll() {
   AP_Check_Location(10405);
+}
+
+bool TributeBurgundyAllChecked() {
+  return (IsCheckedOnServer(10405));
 }
 
 void CastleBurgundyAll() {

@@ -28,28 +28,56 @@ void CaptureGermanFlag() {
   AP_Check_Location(30501);
 }
 
+bool CaptureGermanFlagChecked() {
+  return (IsCheckedOnServer(30501));
+}
+
 void CapturePolishFlag() {
   AP_Check_Location(30502);
+}
+
+bool CapturePolishFlagChecked() {
+  return (IsCheckedOnServer(30502));
 }
 
 void CaptureBohemianFlag() {
   AP_Check_Location(30503);
 }
 
+bool CaptureBohemianFlagChecked() {
+  return (IsCheckedOnServer(30503));
+}
+
 void BuildOneCastle() {
   AP_Check_Location(30504);
+}
+
+bool BuildOneCastleChecked() {
+  return (IsCheckedOnServer(30504));
 }
 
 void BuildTwoCastles() {
   AP_Check_Location(30505);
 }
 
+bool BuildTwoCastlesChecked() {
+  return (IsCheckedOnServer(30505));
+}
+
 void BuildThreeCastles() {
   AP_Check_Location(30506);
 }
 
+bool BuildThreeCastlesChecked() {
+  return (IsCheckedOnServer(30506));
+}
+
 void RescueTheHermit() {
   AP_Check_Location(30507);
+}
+
+bool RescueTheHermitChecked() {
+  return (IsCheckedOnServer(30507));
 }
 
 void SetPavilionLayout() {

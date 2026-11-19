@@ -29,16 +29,32 @@ void RecruitOneTribe() {
   AP_Check_Location(30101);
 }
 
+bool RecruitOneTribeChecked() {
+  return (IsCheckedOnServer(30101));
+}
+
 void RecruitTwoTribes() {
   AP_Check_Location(30102);
+}
+
+bool RecruitTwoTribesChecked() {
+  return (IsCheckedOnServer(30102));
 }
 
 void RecruitThreeTribes() {
   AP_Check_Location(30103);
 }
 
+bool RecruitThreeTribesChecked() {
+  return (IsCheckedOnServer(30103));
+}
+
 void AnyRelic() {
   AP_Check_Location(30104);
+}
+
+bool AnyRelicChecked() {
+  return (IsCheckedOnServer(30104));
 }
 
 // Branching - all: each tribe in its own right. The Tayichi'uds and the Naiman
@@ -47,20 +63,40 @@ void RecruitBlue() {
   AP_Check_Location(30105);
 }
 
+bool RecruitBlueChecked() {
+  return (IsCheckedOnServer(30105));
+}
+
 void RecruitPurple() {
   AP_Check_Location(30106);
+}
+
+bool RecruitPurpleChecked() {
+  return (IsCheckedOnServer(30106));
 }
 
 void RecruitGrey() {
   AP_Check_Location(30107);
 }
 
+bool RecruitGreyChecked() {
+  return (IsCheckedOnServer(30107));
+}
+
 void RecruitGreen() {
   AP_Check_Location(30108);
 }
 
+bool RecruitGreenChecked() {
+  return (IsCheckedOnServer(30108));
+}
+
 void RecruitCyan() {
   AP_Check_Location(30109);
+}
+
+bool RecruitCyanChecked() {
+  return (IsCheckedOnServer(30109));
 }
 
 // Branching - all: each relic where it lies
@@ -68,12 +104,24 @@ void RedMonasteryRelic() {
   AP_Check_Location(30110);
 }
 
+bool RedMonasteryRelicChecked() {
+  return (IsCheckedOnServer(30110));
+}
+
 void WolfRelic() {
   AP_Check_Location(30111);
 }
 
+bool WolfRelicChecked() {
+  return (IsCheckedOnServer(30111));
+}
+
 void PalisadedRelic() {
   AP_Check_Location(30112);
+}
+
+bool PalisadedRelicChecked() {
+  return (IsCheckedOnServer(30112));
 }
 
 // The ten flocks, named for what they stand beside. Three lie in Kereyid (blue)
@@ -82,40 +130,80 @@ void FlockByBlue1() {
   AP_Check_Location(30113);
 }
 
+bool FlockByBlue1Checked() {
+  return (IsCheckedOnServer(30113));
+}
+
 void FlockByBlue2() {
   AP_Check_Location(30114);
+}
+
+bool FlockByBlue2Checked() {
+  return (IsCheckedOnServer(30114));
 }
 
 void FlockByBlue3() {
   AP_Check_Location(30115);
 }
 
+bool FlockByBlue3Checked() {
+  return (IsCheckedOnServer(30115));
+}
+
 void KaraKhitaiHerd() {
   AP_Check_Location(30116);
+}
+
+bool KaraKhitaiHerdChecked() {
+  return (IsCheckedOnServer(30116));
 }
 
 void FlockByGrey() {
   AP_Check_Location(30117);
 }
 
+bool FlockByGreyChecked() {
+  return (IsCheckedOnServer(30117));
+}
+
 void OpenSteppeFlock() {
   AP_Check_Location(30118);
+}
+
+bool OpenSteppeFlockChecked() {
+  return (IsCheckedOnServer(30118));
 }
 
 void FlockByRedMonastery() {
   AP_Check_Location(30119);
 }
 
+bool FlockByRedMonasteryChecked() {
+  return (IsCheckedOnServer(30119));
+}
+
 void FlockByGreen() {
   AP_Check_Location(30120);
+}
+
+bool FlockByGreenChecked() {
+  return (IsCheckedOnServer(30120));
 }
 
 void SoutheastFlock() {
   AP_Check_Location(30121);
 }
 
+bool SoutheastFlockChecked() {
+  return (IsCheckedOnServer(30121));
+}
+
 void FlockByPurple() {
   AP_Check_Location(30122);
+}
+
+bool FlockByPurpleChecked() {
+  return (IsCheckedOnServer(30122));
 }
 
 void SetPavilionLayout() {

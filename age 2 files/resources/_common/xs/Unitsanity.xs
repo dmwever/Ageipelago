@@ -237,9 +237,9 @@ bool hasItem(int itemId = -1) {
 
 string professionIcon(int itemId = -1, string held = "", string missing = "") {
     if (hasItem(itemId)) {
-        return ("<" + held + ">");
+        return (materialIcon(held));
     }
-    return ("<" + missing + ">");
+    return (materialIcon(missing));
 }
 
 void writeUnitStatusLine(vector unit = cInvalidVector, vector location = cInvalidVector) {

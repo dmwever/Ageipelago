@@ -28,16 +28,32 @@ void LaHire() {
   AP_Check_Location(20601);
 }
 
+bool LaHireChecked() {
+  return (IsCheckedOnServer(20601));
+}
+
 void FrenchArmy() {
   AP_Check_Location(20602);
+}
+
+bool FrenchArmyChecked() {
+  return (IsCheckedOnServer(20602));
 }
 
 void FrenchArtillery() {
   AP_Check_Location(20603);
 }
 
+bool FrenchArtilleryChecked() {
+  return (IsCheckedOnServer(20603));
+}
+
 void BurgundianTown() {
   AP_Check_Location(20604);
+}
+
+bool BurgundianTownChecked() {
+  return (IsCheckedOnServer(20604));
 }
 
 void SetPavilionLayout() {

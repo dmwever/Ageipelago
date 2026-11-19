@@ -28,8 +28,16 @@ void MakeKushlukFlee() {
   AP_Check_Location(30201);
 }
 
+bool MakeKushlukFleeChecked() {
+  return (IsCheckedOnServer(30201));
+}
+
 void TakeTayichiudVillage() {
   AP_Check_Location(30202);
+}
+
+bool TakeTayichiudVillageChecked() {
+  return (IsCheckedOnServer(30202));
 }
 
 void SetPavilionLayout() {

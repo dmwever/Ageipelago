@@ -35,16 +35,32 @@ void DefeatPatavium() {
   AP_Check_Location(10601);
 }
 
+bool DefeatPataviumChecked() {
+  return (IsCheckedOnServer(10601));
+}
+
 void DefeatMediolanum() {
   AP_Check_Location(10602);
+}
+
+bool DefeatMediolanumChecked() {
+  return (IsCheckedOnServer(10602));
 }
 
 void DefeatAquileia() {
   AP_Check_Location(10603);
 }
 
+bool DefeatAquileiaChecked() {
+  return (IsCheckedOnServer(10603));
+}
+
 void DefeatVerona() {
   AP_Check_Location(10604);
+}
+
+bool DefeatVeronaChecked() {
+  return (IsCheckedOnServer(10604));
 }
 
 void DefeatTheItalians() {
@@ -59,20 +75,40 @@ void DestroyPurpleWonder() {
   AP_Check_Location(10607);
 }
 
+bool DestroyPurpleWonderChecked() {
+  return (IsCheckedOnServer(10607));
+}
+
 void DestroyGreenWonder() {
   AP_Check_Location(10608);
+}
+
+bool DestroyGreenWonderChecked() {
+  return (IsCheckedOnServer(10608));
 }
 
 void DestroyRedWonder() {
   AP_Check_Location(10609);
 }
 
+bool DestroyRedWonderChecked() {
+  return (IsCheckedOnServer(10609));
+}
+
 void DestroyOrangeWonder() {
   AP_Check_Location(10610);
 }
 
+bool DestroyOrangeWonderChecked() {
+  return (IsCheckedOnServer(10610));
+}
+
 void DestroyPurpleWonder2() {
   AP_Check_Location(10611);
+}
+
+bool DestroyPurpleWonder2Checked() {
+  return (IsCheckedOnServer(10611));
 }
 
 void SetPavilionLayout() {

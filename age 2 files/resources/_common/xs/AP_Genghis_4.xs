@@ -28,16 +28,32 @@ void DefeatRussians() {
   AP_Check_Location(30401);
 }
 
+bool DefeatRussiansChecked() {
+  return (IsCheckedOnServer(30401));
+}
+
 void DefeatKhwarazm() {
   AP_Check_Location(30402);
+}
+
+bool DefeatKhwarazmChecked() {
+  return (IsCheckedOnServer(30402));
 }
 
 void KipchaksSurrender() {
   AP_Check_Location(30403);
 }
 
+bool KipchaksSurrenderChecked() {
+  return (IsCheckedOnServer(30403));
+}
+
 void AssassinateTheShah() {
   AP_Check_Location(30404);
+}
+
+bool AssassinateTheShahChecked() {
+  return (IsCheckedOnServer(30404));
 }
 
 void SetPavilionLayout() {

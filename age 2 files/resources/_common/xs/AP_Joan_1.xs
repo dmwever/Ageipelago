@@ -28,44 +28,88 @@ void GetSwordsmen() {
   AP_Check_Location(20101);
 }
 
+bool GetSwordsmenChecked() {
+  return (IsCheckedOnServer(20101));
+}
+
 void GetCrossbowmen() {
   AP_Check_Location(20102);
+}
+
+bool GetCrossbowmenChecked() {
+  return (IsCheckedOnServer(20102));
 }
 
 void FindVenison() {
   AP_Check_Location(20103);
 }
 
+bool FindVenisonChecked() {
+  return (IsCheckedOnServer(20103));
+}
+
 void FindRam() {
   AP_Check_Location(20104);
+}
+
+bool FindRamChecked() {
+  return (IsCheckedOnServer(20104));
 }
 
 void FindDock() {
   AP_Check_Location(20105);
 }
 
+bool FindDockChecked() {
+  return (IsCheckedOnServer(20105));
+}
+
 void FindRecruits() {
   AP_Check_Location(20106);
+}
+
+bool FindRecruitsChecked() {
+  return (IsCheckedOnServer(20106));
 }
 
 void SouthHighwaymen() {
   AP_Check_Location(20107);
 }
 
+bool SouthHighwaymenChecked() {
+  return (IsCheckedOnServer(20107));
+}
+
 void EastHighwaymen() {
   AP_Check_Location(20108);
+}
+
+bool EastHighwaymenChecked() {
+  return (IsCheckedOnServer(20108));
 }
 
 void RiverHighwaymen() {
   AP_Check_Location(20109);
 }
 
+bool RiverHighwaymenChecked() {
+  return (IsCheckedOnServer(20109));
+}
+
 void RiverBurgundians() {
   AP_Check_Location(20110);
 }
 
+bool RiverBurgundiansChecked() {
+  return (IsCheckedOnServer(20110));
+}
+
 void BreakIntoBurgundy() {
   AP_Check_Location(20111);
+}
+
+bool BreakIntoBurgundyChecked() {
+  return (IsCheckedOnServer(20111));
 }
 
 void SetPavilionLayout() {

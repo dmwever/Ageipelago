@@ -159,3 +159,14 @@ bool IsServerLocationComplete(int locationId = -1) {
 
     return (structGetBool(location, "serverComplete"));
 }
+
+// Asked every tick by the OR'd Script Call condition on each AP location trigger, so it never
+// chats: an id that is not a registered location is simply not checked.
+bool IsCheckedOnServer(int locationId = -1) {
+    vector location = FindLocationById(locationId);
+    if (location == cInvalidVector) {
+        return (false);
+    }
+
+    return (structGetBool(location, "serverComplete"));
+}

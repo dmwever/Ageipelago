@@ -1,11 +1,15 @@
 bool classificationLoaded = false;
 
+string materialIcon(string material = "") {
+    return ("<MATERIAL=" + material + ",1>");
+}
+
 string checkedMark() {
-    return ("<CheckBoxChecked>");
+    return (materialIcon("CheckBoxChecked"));
 }
 
 string uncheckedMark() {
-    return ("<CheckBoxUnchecked>");
+    return (materialIcon("CheckBoxUnchecked"));
 }
 
 string classificationTag(int locationClass = 0) {

@@ -28,12 +28,24 @@ void DefeatRomans() {
   AP_Check_Location(10501);
 }
 
+bool DefeatRomansChecked() {
+  return (IsCheckedOnServer(10501));
+}
+
 void DefeatVisigoths() {
   AP_Check_Location(10502);
 }
 
+bool DefeatVisigothsChecked() {
+  return (IsCheckedOnServer(10502));
+}
+
 void DefeatAlans() {
   AP_Check_Location(10503);
+}
+
+bool DefeatAlansChecked() {
+  return (IsCheckedOnServer(10503));
 }
 
 void SetPavilionLayout() {
