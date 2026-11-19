@@ -6,7 +6,7 @@ Do this once per seed, in this order.
 
 1. **Install the Ageipelago files** into your Age of Empires II: DE user folder — the one at
    `C:\Users\<you>\Games\Age of Empires 2 DE\<a long string of numbers>\`. You should end up with a
-   `resources\_common\` containing `campaign`, `scenario` and `xs` folders alongside the `profile`
+   `resources\_common\` containing `scenario` and `xs` folders alongside the `profile`
    folder that is already there, and a `mods\local\Ageipelago` folder beside them.
 2. **Enable the Ageipelago mod** in the game's Mod Centre, under Local. It carries the names and
    pictures for the mercenary buttons in the pavilion. Without it those buttons still work but
@@ -18,19 +18,20 @@ Do this once per seed, in this order.
 5. **`/install`** — this sets your install up for *this* seed. It prints each file it wrote and
    finishes with `Installed slot <n>, seed tag <tag>.`
 6. **Play the campaign named with your own name and seed tag**, e.g.
-   `AP Joan of Arc_<name>_b435aa86`. The plain `AP Joan of Arc` (the `AP Joan of Arc Template`
-   file) is the untagged source and will not talk to the client.
+   `AP Joan of Arc_<name>_b435aa86`. `/install` builds it from the shipped `AP_*` scenarios; opening
+   one of those directly will not talk to the client.
 
-`/install` only writes the campaigns your yaml enabled, and it never touches the untagged originals
-or the `scenario` folder — so re-running it is safe, and installing a second seed leaves the first
-one's files in place.
+`/install` only writes the campaigns your yaml enabled, and it only reads the shipped `AP_*`
+scenarios, never changes them — so re-running it is safe, and installing a second seed leaves the
+first one's files in place.
+
 ### Things the client may tell you
 
 | Message | What it means |
 |---|---|
 | `Set your Age2 user folder first with /set_user_folder.` | Step 4 has not been done |
 | `Connect to your multiworld first, so the install knows your seed and slot.` | `/install` needs your slot number and seed name, which only arrive once connected |
-| `Could not find AP Joan of Arc Template.aoe2campaign in ...` | Step 1 is missing or the folder from step 4 is wrong |
+| `Could not find AP_Joan_1.aoe2scenario, ... in ...` | Step 1 is missing or the folder from step 4 is wrong |
 | `This seed was generated with Age2 X but this client is Y.` followed by `Nothing was written.` | Your apworld and the seed disagree. Update the apworld or regenerate the seed; nothing was changed |
 | `This slot has no campaigns to install.` | Your yaml enabled no campaigns |
 | `Your name "<name>" contains characters that cannot be used in a file name.` | Harmless. Your campaigns are installed under the cleaned-up name the message gives, so look for that one in the campaign list |
@@ -41,7 +42,7 @@ one's files in place.
 | Message | What it means |
 |---|---|
 | `Waiting for Client Connection` | Normal. The scenario is up and looking for the client |
-| `This install has no Archipelago slot. Connect the client and run /install.` | You are playing the untagged source campaign, or step 5 was never done |
+| `This install has no Archipelago slot. Connect the client and run /install.` | You opened a shipped `AP_*` scenario directly instead of your tagged campaign, or step 5 was never done |
 | `Unexpected Age2 version from Client` | The installed files and the client are different versions. Reinstall |
 | `These scenarios belong to a different seed or player slot.` | You are playing another seed's campaign. Launch the one matching your tag |
 | `AP Client disconnected.` | The client stopped pinging. Locations and items will not move until it is back |
