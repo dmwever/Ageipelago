@@ -111,7 +111,7 @@ void OfferSeat(int seat = -1, int mercenaryId = -1, int unitCount = 0, int nameS
 
     xsEffectAmount(cModifyTech, tech, cAttrSetState, STATE_DISABLE, 1);
     xsEffectAmount(cModifyTech, tech, cAttrSetTime, 1.0 * unitCount, 1);
-    xsEffectAmount(cModifyTech, tech, cAttrSetName, 1.0 * nameStringId, 1);
+    xsEffectAmount(cModifyTech, tech, cAttrSetDescription, 1.0 * nameStringId, 1);
     xsEffectAmount(cModifyTech, tech, cAttrSetIcon, 1.0 * iconId, 1);
     xsEffectAmount(cModifyTech, tech, cAttrSetState, STATE_ENABLE, 1);
 
