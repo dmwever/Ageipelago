@@ -92,9 +92,8 @@ void SetupVictory() {
                    1.0 * PAVILION_VICTORY_ICON, PAVILION_OWNER);
     xsEffectAmount(cModifyTech, PAVILION_VICTORY_TECH, cAttrSetState,
                    STATE_DISABLE, PAVILION_OWNER);
-    xsSetTechName(PAVILION_VICTORY_TECH, PAVILION_OWNER, "Declare Victory");
     xsSetTechDescription(PAVILION_VICTORY_TECH, PAVILION_OWNER,
-                         "End the scenario now, or keep playing for more checks.");
+                         "Declare Victory\nEnd the scenario now, or keep playing for more checks.");
 }
 
 void ShowVictory() {
