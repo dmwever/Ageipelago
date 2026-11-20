@@ -195,8 +195,10 @@ first failure, so no dispatch flag is acted on until the identity checks have pa
 **Refusal.** While the running scenario is Missing or Campaign Locked, the client binds to nothing
 and writes `AP.xsdat` as a single int, the scenario id negated (`-203` for Joan 3), from
 `refuse_scenario`. `ConnectAP` reads that first int before connecting and shows
-"Scenario not Unlocked" once instead of the waiting line. When the unlock arrives, the client
-binds and writes the full packet above. A positive first int always means the full layout.
+"Scenario not Unlocked" once instead of the waiting line, then defeats the player
+`LOCKED_SCENARIO_DEFEAT_SECONDS` (7) game-seconds later. Once refused, the scenario no longer
+connects, even if the unlock arrives in that window. A positive first int always means the full
+layout.
 
 ### Mercenaries
 

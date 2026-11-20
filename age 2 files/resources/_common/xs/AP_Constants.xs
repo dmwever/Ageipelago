@@ -272,6 +272,10 @@ extern const int TRAP_SCAN_CAPACITY = 512;
 // already been paid out. -1 is taken: it marks an empty slot elsewhere in the protocol.
 extern const int AP_ITEM_SKIP = -2;
 
+// How long a scenario the client refused as not unlocked shows "Scenario not Unlocked" before
+// ConnectAP defeats the player.
+extern const int LOCKED_SCENARIO_DEFEAT_SECONDS = 7;
+
 /* Victory threats */
 
 extern const int THREATENED_PLAYER = 1;

@@ -28,7 +28,7 @@ int scenarioItemsRead = 0;
 int checkedLocationsCount = 0;
 int reportedMissingItems = 0;
 int clientElsewhere = 0;
-int scenarioRefused = 0;
+int refusedAt = -1; // game time the client refused this scenario as not unlocked; -1 if not
 
 bool AP_INITIALIZED = false;
 
@@ -320,21 +320,22 @@ rule ConnectAP
         xsChatData("<RED>This install has no Archipelago slot. Connect the client and run /install.");
         return;
     }
+    if (refusedAt >= 0) {
+        if (xsGetGameTime() - refusedAt >= LOCKED_SCENARIO_DEFEAT_SECONDS) {
+            xsDeclareVictory(1, false);
+            xsDisableSelf();
+        }
+        return;
+    }
     int clientScenarioId = ClientScenarioId();
     if (startupGranted == 0) {
-        // The client refuses a scenario that is not unlocked by writing its id negated. Say so
-        // once and wait quietly: the unlock arriving makes the client write the real packet.
-        // A real id is positive, so a missing file (0) is never read as a refusal.
         if (scenarioId > 0) {
             if (clientScenarioId == 0 - scenarioId) {
-                if (scenarioRefused == 0) {
-                    scenarioRefused = 1;
-                    xsChatData("<RED>Scenario not Unlocked");
-                }
+                refusedAt = xsGetGameTime();
+                xsChatData("<RED>Scenario not Unlocked");
                 return;
             }
         }
-        scenarioRefused = 0;
         xsChatData("<YELLOW>Waiting for Client Connection");
     }
     if (clientScenarioId != scenarioId) {
