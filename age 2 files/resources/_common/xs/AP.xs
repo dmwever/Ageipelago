@@ -28,21 +28,20 @@ int scenarioItemsRead = 0;
 int checkedLocationsCount = 0;
 int reportedMissingItems = 0;
 int clientElsewhere = 0;
+int refusedAt = -1; // game time the client refused this scenario as not unlocked; -1 if not
 
 bool AP_INITIALIZED = false;
 
-bool CheckScenario() {
+// The scenario id the client wrote first in AP.xsdat, or 0 with no file. The client writes this
+// scenario's id negated while it refuses it as not unlocked.
+int ClientScenarioId() {
     bool opened = xsOpenFile("AP");
     if (opened == false) {
-        return (false);
+        return (0);
     }
     int receivedScenarioId = xsReadInt();
-    if (receivedScenarioId != scenarioId) {
-        xsCloseFile();
-        return (false);
-    }
     xsCloseFile();
-    return (true);
+    return (receivedScenarioId);
 }
 
 void ReportMismatch(string field = "", string received = "", string expected = "") {
@@ -321,10 +320,25 @@ rule ConnectAP
         xsChatData("<RED>This install has no Archipelago slot. Connect the client and run /install.");
         return;
     }
+    if (refusedAt >= 0) {
+        if (xsGetGameTime() - refusedAt >= LOCKED_SCENARIO_DEFEAT_SECONDS) {
+            xsDeclareVictory(1, false);
+            xsDisableSelf();
+        }
+        return;
+    }
+    int clientScenarioId = ClientScenarioId();
     if (startupGranted == 0) {
+        if (scenarioId > 0) {
+            if (clientScenarioId == 0 - scenarioId) {
+                refusedAt = xsGetGameTime();
+                xsChatData("<RED>Scenario not Unlocked");
+                return;
+            }
+        }
         xsChatData("<YELLOW>Waiting for Client Connection");
     }
-    if (CheckScenario() == false) {
+    if (clientScenarioId != scenarioId) {
         return;
     }
 
