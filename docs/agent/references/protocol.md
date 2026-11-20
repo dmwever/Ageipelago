@@ -79,6 +79,10 @@ the game which other files to read.
 `AP_Read` validates in order — scenario, ping, version, slot — and returns on the first failure, so no
 dispatch flag is acted on until identity checks pass. An unchanged ping also returns early.
 
+A **negative** ScenarioId is a refusal: the client writes `-scenarioId` as the file's only int while
+that scenario is Missing or Campaign Locked (`refuse_scenario`), and `ConnectAP` shows
+"Scenario not Unlocked" once instead of waiting. Positive ids keep the full layout.
+
 Each flag arms a one-shot rule (`ReadItems`, `FreeItems`, `MarkServerLocations`, `ReadMercenaries`,
 `ReadMessages`) that disables itself on every exit path, including a failed open.
 

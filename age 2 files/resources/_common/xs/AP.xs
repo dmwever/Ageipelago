@@ -28,21 +28,20 @@ int scenarioItemsRead = 0;
 int checkedLocationsCount = 0;
 int reportedMissingItems = 0;
 int clientElsewhere = 0;
+int scenarioRefused = 0;
 
 bool AP_INITIALIZED = false;
 
-bool CheckScenario() {
+// The scenario id the client wrote first in AP.xsdat, or 0 with no file. The client writes this
+// scenario's id negated while it refuses it as not unlocked.
+int ClientScenarioId() {
     bool opened = xsOpenFile("AP");
     if (opened == false) {
-        return (false);
+        return (0);
     }
     int receivedScenarioId = xsReadInt();
-    if (receivedScenarioId != scenarioId) {
-        xsCloseFile();
-        return (false);
-    }
     xsCloseFile();
-    return (true);
+    return (receivedScenarioId);
 }
 
 void ReportMismatch(string field = "", string received = "", string expected = "") {
@@ -321,10 +320,24 @@ rule ConnectAP
         xsChatData("<RED>This install has no Archipelago slot. Connect the client and run /install.");
         return;
     }
+    int clientScenarioId = ClientScenarioId();
     if (startupGranted == 0) {
+        // The client refuses a scenario that is not unlocked by writing its id negated. Say so
+        // once and wait quietly: the unlock arriving makes the client write the real packet.
+        // A real id is positive, so a missing file (0) is never read as a refusal.
+        if (scenarioId > 0) {
+            if (clientScenarioId == 0 - scenarioId) {
+                if (scenarioRefused == 0) {
+                    scenarioRefused = 1;
+                    xsChatData("<RED>Scenario not Unlocked");
+                }
+                return;
+            }
+        }
+        scenarioRefused = 0;
         xsChatData("<YELLOW>Waiting for Client Connection");
     }
-    if (CheckScenario() == false) {
+    if (clientScenarioId != scenarioId) {
         return;
     }
 

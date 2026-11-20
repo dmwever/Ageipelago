@@ -192,6 +192,12 @@ Confirms that the client is still connected, and tells the game which other file
 `AP_Read` validates in order — scenario, ping, version, slot, seed — and returns early on the
 first failure, so no dispatch flag is acted on until the identity checks have passed.
 
+**Refusal.** While the running scenario is Missing or Campaign Locked, the client binds to nothing
+and writes `AP.xsdat` as a single int, the scenario id negated (`-203` for Joan 3), from
+`refuse_scenario`. `ConnectAP` reads that first int before connecting and shows
+"Scenario not Unlocked" once instead of the waiting line. When the unlock arrives, the client
+binds and writes the full packet above. A positive first int always means the full layout.
+
 ### Mercenaries
 
 A mercenary is spent the moment the game finishes spawning it, and that has to survive a reconnect,
