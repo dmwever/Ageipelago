@@ -24,6 +24,19 @@ int ageTechFor(int age = -1) {
     return (-1);
 }
 
+int ageBuildingsTechFor(int age = -1) {
+    if (age == FEUDAL_AGE) {
+        return (FEUDAL_AGE_BUILDINGS_TECH);
+    }
+    if (age == CASTLE_AGE) {
+        return (CASTLE_AGE_BUILDINGS_TECH);
+    }
+    if (age == IMPERIAL_AGE) {
+        return (IMPERIAL_AGE_BUILDINGS_TECH);
+    }
+    return (-1);
+}
+
 int ageTooltipFor(int age = -1) {
     if (age == FEUDAL_AGE) {
         return (FEUDAL_AGE_TOOLTIP);
@@ -115,7 +128,11 @@ void UnlockAge(int itemId = -1) {
         return;
     }
     if (ageReached(itemId - 1)) {
-        xsEffectAmount(cModifyTech, id, cAttrSetState, STATE_ENABLE, 1);
+        float state = STATE_NOT_READY;
+        if (xsGetTechState(ageBuildingsTechFor(itemId), 1) == cTechStateDone) {
+            state = STATE_ENABLE;
+        }
+        xsEffectAmount(cModifyTech, id, cAttrSetState, state, 1);
     }
     else {
         if (itemId == CASTLE_AGE) {

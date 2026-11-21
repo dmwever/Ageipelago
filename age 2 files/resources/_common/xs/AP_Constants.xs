@@ -13,11 +13,19 @@ extern const int FEUDAL_AGE_TECH = 101;
 extern const int CASTLE_AGE_TECH = 102;
 extern const int IMPERIAL_AGE_TECH = 103;
 
+/* Hidden techs that go Done once two qualifying buildings stand; each age tech requires its own.
+   Not the gate unit ids 659 and 661 further down, which share the numbers. */
+
+extern const int FEUDAL_AGE_BUILDINGS_TECH = 659;
+extern const int CASTLE_AGE_BUILDINGS_TECH = 660;
+extern const int IMPERIAL_AGE_BUILDINGS_TECH = 661;
+
 extern const int FEUDAL_AGE_TOOLTIP = 28101;
 extern const int CASTLE_AGE_TOOLTIP = 28102;
 extern const int IMPERIAL_AGE_TOOLTIP = 28103;
 
 extern const float STATE_DISABLE = 0.0;
+extern const float STATE_NOT_READY = 1.0;
 extern const float STATE_ENABLE = 2.0;
 extern const float STATE_DONE = 3.0;
 
