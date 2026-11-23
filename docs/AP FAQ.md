@@ -25,6 +25,28 @@ Do this once per seed, in this order.
 scenarios, never changes them — so re-running it is safe, and installing a second seed leaves the
 first one's files in place.
 
+### Updating to a newer version
+
+The game files and the apworld ship together and must come from the same release. Mixing them
+fails in odd ways, because versions in the same series can share a version number and nothing
+catches the mismatch.
+
+1. **Delete the old apworld.** Remove every `age2de.apworld` from Archipelago's `custom_worlds`
+   folder, including renamed copies such as `age2de (1).apworld`. Do not just add the new one
+   beside the old: Archipelago may keep loading the old one.
+2. **Add the new apworld** to `custom_worlds`.
+3. **Close the Archipelago launcher and every client completely**, then reopen them. A running
+   launcher keeps the apworld it loaded at start-up.
+4. **Install the new Ageipelago files** over the old ones, as in step 1 of Setup.
+5. **Connect and run `/install` again.** It rewrites the per-seed files using the new apworld.
+
+### Troubleshooting
+
+| Symptom | What to do |
+|---|---|
+| The game shows an XS error such as `ProfessionRow is not a valid operator` when a scenario starts | The game files and the apworld that ran `/install` are from different releases. Follow *Updating to a newer version* from the top |
+| The error is still there after updating | An old apworld is still being loaded. Check `custom_worlds` for any other `age2de` apworld, and `lib\worlds` for an `age2de` folder, remove it, restart the launcher and run `/install` again |
+
 ### Things the client may tell you
 
 | Message | What it means |

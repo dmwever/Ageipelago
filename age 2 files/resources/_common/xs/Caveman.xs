@@ -199,6 +199,7 @@ void transformUnit(int unitId = -1, int toTypeId = -1, int originalTypeId = -1) 
     } else {
         rememberOriginalType(created, originalTypeId);
     }
+    OnUnitReplaced(unitId, created);
 }
 
 void forgetCavemanTargets() {

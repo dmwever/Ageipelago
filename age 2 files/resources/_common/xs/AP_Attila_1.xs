@@ -1,5 +1,12 @@
 include "./AP.xs";
 
+extern const int ATTILA1_MANGUDAI_UNIT = 11;
+extern const int ATTILA1_MANGUDAI_WAVE_SIZE = 18;
+extern const int ATTILA1_MANGUDAI_SPAWN_X = 6;
+extern const int ATTILA1_MANGUDAI_SPAWN_Y = 38;
+extern const int ATTILA1_MANGUDAI_TARGET_X = 37;
+extern const int ATTILA1_MANGUDAI_TARGET_Y = 61;
+
 void InitScenarioLocations() {
   // Scenario-Specific - Not defeatsanity/relics
   AddLocations(10100, 10116);
@@ -14,8 +21,20 @@ void SetScenarioAge() {
   SetMaxAge(CASTLE_AGE);
 }
 
+int mangudaiWave = -1;
+int mangudaiWaveQueuedAt = -1;
+int mangudaiWaveCount = 0;
+int mangudaiTask = -1;
+
+void InitMangudaiWave() {
+    mangudaiWave = xsArrayCreateInt(ATTILA1_MANGUDAI_WAVE_SIZE, -1, "att1-mangudai-wave");
+    mangudaiWaveQueuedAt = xsArrayCreateInt(ATTILA1_MANGUDAI_WAVE_SIZE, -1, "att1-mangudai-queued");
+    mangudaiTask = xsArrayCreateInt(1, -1, "att1-mangudai-task");
+}
+
 void main() {
   SetScenarioId(101);
+  InitMangudaiWave();
   InitAP();
 }
 
@@ -155,4 +174,82 @@ bool DefeatFirstPlayerChecked() {
 
 void SetPavilionLayout() {
     SetPavilionPlacement(106, 5, PAVILION_FACE_SE);
+}
+
+void QueueMangudaiMove(int slot = -1, int unitId = -1) {
+    xsArraySetInt(mangudaiWave, slot, unitId);
+    xsArraySetInt(mangudaiWaveQueuedAt, slot, xsGetGameTime());
+    xsEnableRule("MangudaiWaveMoves");
+}
+
+void StartMangudaiWave() {
+    for (slot = 0; < ATTILA1_MANGUDAI_WAVE_SIZE) {
+        xsArraySetInt(mangudaiWave, slot, -1);
+        xsArraySetInt(mangudaiWaveQueuedAt, slot, -1);
+    }
+    mangudaiWaveCount = 0;
+}
+
+bool MangudaiWaveFull() {
+    return (mangudaiWaveCount >= ATTILA1_MANGUDAI_WAVE_SIZE);
+}
+
+void SpawnMangudai() {
+    if (MangudaiWaveFull()) {
+        return;
+    }
+    vector spawn = xsVectorSet(1.0 * ATTILA1_MANGUDAI_SPAWN_X, 1.0 * ATTILA1_MANGUDAI_SPAWN_Y, 0.0);
+    int created = xsCreateUnit(ATTILA1_MANGUDAI_UNIT, 1, spawn, false, true, false);
+    if (created < 0) {
+        return;
+    }
+    QueueMangudaiMove(mangudaiWaveCount, created);
+    mangudaiWaveCount++;
+}
+
+bool MangudaiWaveGone() {
+    if (MangudaiWaveFull() == false) {
+        return (false);
+    }
+    for (slot = 0; < ATTILA1_MANGUDAI_WAVE_SIZE) {
+        int unitId = xsArrayGetInt(mangudaiWave, slot);
+        if (unitId >= 0 && xsDoesUnitExist(unitId) && xsGetUnitOwner(unitId) == 1) {
+            return (false);
+        }
+    }
+    return (true);
+}
+
+void OnUnitReplaced(int oldId = -1, int newId = -1) {
+    for (slot = 0; < mangudaiWaveCount) {
+        if (xsArrayGetInt(mangudaiWave, slot) == oldId) {
+            QueueMangudaiMove(slot, newId);
+            return;
+        }
+    }
+}
+
+rule MangudaiWaveMoves
+    inactive
+    minInterval 1
+    maxInterval 1
+{
+    bool waiting = false;
+    vector target = xsVectorSet(1.0 * ATTILA1_MANGUDAI_TARGET_X, 1.0 * ATTILA1_MANGUDAI_TARGET_Y, 0.0);
+    for (slot = 0; < mangudaiWaveCount) {
+        int queuedAt = xsArrayGetInt(mangudaiWaveQueuedAt, slot);
+        if (queuedAt < 0) {
+            continue;
+        }
+        if (queuedAt >= xsGetGameTime()) {
+            waiting = true;
+            continue;
+        }
+        xsArraySetInt(mangudaiTask, 0, xsArrayGetInt(mangudaiWave, slot));
+        xsTaskUnits(mangudaiTask, cActionTypeMove, target);
+        xsArraySetInt(mangudaiWaveQueuedAt, slot, -1);
+    }
+    if (waiting == false) {
+        xsDisableSelf();
+    }
 }

@@ -32,6 +32,9 @@ mutable void AP_Check_Location(int locationId = -1) {
 mutable void ApplyCaveman(int units = -1) {
 }
 
+mutable void OnUnitReplaced(int oldId = -1, int newId = -1) {
+}
+
 mutable void RefreshLocationDescription(vector location = cInvalidVector) {
 }
 
