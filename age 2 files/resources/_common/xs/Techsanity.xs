@@ -186,7 +186,8 @@ void tryApplyEffect(vector tech = cInvalidVector, bool atStartup = false) {
     if (deferEffect(tech)) {
         return;
     }
-    if (isHeavyWarships(tech) == false && IsUpgradeRowLocked(structGetInt(tech, "itemId"))) {
+    if (structGetBool(tech, "isUpgrade") && isHeavyWarships(tech) == false
+     && IsUpgradeRowLocked(structGetInt(tech, "itemId"))) {
         return;
     }
     applyViaShadow(tech);
