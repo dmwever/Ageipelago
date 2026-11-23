@@ -361,8 +361,27 @@ void refreshUnitLocks() {
             }
             cavemanTargetsStale = true;
             unitsDirty = true;
+            TryActivateUpgrade(structGetInt(unit, "upgradeItemId"));
         }
     }
+}
+
+bool IsUpgradeRowLocked(int upgradeItemId = -1) {
+    if (unitsanityReady == false || upgradeItemId < 0) {
+        return (false);
+    }
+    bool targeted = false;
+    for (j = 0; < unitTableCount) {
+        vector unit = getUnit(j);
+        if (structGetInt(unit, "upgradeItemId") != upgradeItemId) {
+            continue;
+        }
+        if (structGetBool(unit, "locked") == false) {
+            return (false);
+        }
+        targeted = true;
+    }
+    return (targeted);
 }
 
 void UnlockUnitItem(int itemId = -1) {

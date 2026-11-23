@@ -186,6 +186,10 @@ void tryApplyEffect(vector tech = cInvalidVector, bool atStartup = false) {
     if (deferEffect(tech)) {
         return;
     }
+    if (structGetBool(tech, "isUpgrade") && isHeavyWarships(tech) == false
+     && IsUpgradeRowLocked(structGetInt(tech, "itemId"))) {
+        return;
+    }
     applyViaShadow(tech);
     structSetBool(tech, "effectDone", true);
 }
@@ -214,16 +218,29 @@ void onTechResearched(vector tech = cInvalidVector) {
     RefreshTechStatusLine(FindLocationById(structGetInt(tech, "itemId")));
 }
 
-bool TechItemReceived(int itemId = -1) {
+vector findTechByItem(int itemId = -1) {
     int offset = itemId - TECH_ITEM_OFFSET;
-    if (offset < 0 || offset >= TECH_CAPACITY) {
-        return (false);
+    if (techsanityReady == false || offset < 0 || offset >= TECH_CAPACITY) {
+        return (cInvalidVector);
     }
-    vector tech = xsArrayGetVector(techByItem, offset);
+    return (xsArrayGetVector(techByItem, offset));
+}
+
+bool TechItemReceived(int itemId = -1) {
+    vector tech = findTechByItem(itemId);
     if (tech == cInvalidVector) {
         return (false);
     }
     return (structGetBool(tech, "hasItem"));
+}
+
+void TryActivateUpgrade(int itemId = -1) {
+    vector tech = findTechByItem(itemId);
+    if (tech == cInvalidVector) {
+        return;
+    }
+    tryApplyEffect(tech);
+    RefreshTechStatusLine(FindLocationById(itemId));
 }
 
 void UnlockTech(int itemOffset = -1, bool atStartup = false) {
@@ -271,6 +288,9 @@ void reconstructStartingState(int vanillaAge = -1) {
         return;
     }
     techVanillaAge = vanillaAge;
+    if (AP_TS_EXISTING == EXISTING_VANILLA) {
+        return;
+    }
     for (i = 0; < techCount) {
         vector tech = getTech(i);
         if (civCanResearch(tech) && structGetInt(tech, "age") < vanillaAge) {

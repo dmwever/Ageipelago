@@ -92,6 +92,11 @@ mutable void addUnitItem(int typeId = -1, int itemId = -1) {
                + " Unitsanity.xs did not define it.");
 }
 
+mutable void TryActivateUpgrade(int itemId = -1) {
+    xsChatData("<RED>TryActivateUpgrade is still the stub, so upgrade " + itemId + " never applies"
+               + " when its unit row unlocks. Techsanity.xs did not define it.");
+}
+
 mutable void addUnitVariant(int typeId = -1, int variantId = -1) {
     xsChatData("<RED>addUnitVariant is still the stub, so unit variant " + variantId + " is being discarded."
                + " Unitsanity.xs did not define it.");
