@@ -24,6 +24,10 @@ void Victory() {
   AP_Check_Location(30500);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(30500));
+}
+
 void CaptureGermanFlag() {
   AP_Check_Location(30501);
 }

@@ -25,6 +25,10 @@ void Victory() {
   AP_Check_Location(10200);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(10200));
+}
+
 void RedTC() {
   AP_Check_Location(10201);
 }

@@ -25,6 +25,10 @@ void Victory() {
   AP_Check_Location(20200);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(20200));
+}
+
 void ReachBlois() {
   AP_Check_Location(20201);
 }

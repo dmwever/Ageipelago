@@ -24,6 +24,10 @@ void Victory() {
   AP_Check_Location(20500);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(20500));
+}
+
 void Refugee1() {
   AP_Check_Location(20501);
 }

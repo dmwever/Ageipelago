@@ -24,6 +24,10 @@ void Victory() {
   AP_Check_Location(30100);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(30100));
+}
+
 // Branching - any: how many tribes joined, whichever they were
 void RecruitOneTribe() {
   AP_Check_Location(30101);

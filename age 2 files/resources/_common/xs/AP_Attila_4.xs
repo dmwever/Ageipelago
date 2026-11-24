@@ -24,6 +24,10 @@ void Victory() {
   AP_Check_Location(10400);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(10400));
+}
+
 void DefeatBurgundyAll() {
   AP_Check_Location(10401);
 }

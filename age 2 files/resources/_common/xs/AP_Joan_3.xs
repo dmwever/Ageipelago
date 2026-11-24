@@ -25,6 +25,10 @@ void Victory() {
   AP_Check_Location(20300);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(20300));
+}
+
 void FindBoats() {
   AP_Check_Location(20301);
 }

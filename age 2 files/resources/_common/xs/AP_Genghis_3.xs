@@ -28,6 +28,10 @@ void Victory() {
   AP_Check_Location(30300);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(30300));
+}
+
 void DefeatTanguts() {
   AP_Check_Location(30301);
 }

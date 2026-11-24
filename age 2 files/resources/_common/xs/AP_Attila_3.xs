@@ -25,6 +25,10 @@ void Victory() {
   AP_Check_Location(10300);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(10300));
+}
+
 void GreenDock1() {
   AP_Check_Location(10301);
 }

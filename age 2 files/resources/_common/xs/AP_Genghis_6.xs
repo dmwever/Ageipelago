@@ -27,6 +27,10 @@ void Victory() {
   AP_Check_Location(30601);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(30600));
+}
+
 void SubotaiArrives() {
   AP_Check_Location(30601);
 }

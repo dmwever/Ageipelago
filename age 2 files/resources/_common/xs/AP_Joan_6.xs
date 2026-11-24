@@ -24,6 +24,10 @@ void Victory() {
   AP_Check_Location(20600);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(20600));
+}
+
 void LaHire() {
   AP_Check_Location(20601);
 }

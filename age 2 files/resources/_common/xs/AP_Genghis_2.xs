@@ -24,6 +24,10 @@ void Victory() {
   AP_Check_Location(30200);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(30200));
+}
+
 void MakeKushlukFlee() {
   AP_Check_Location(30201);
 }

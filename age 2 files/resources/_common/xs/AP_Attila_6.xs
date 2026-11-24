@@ -31,6 +31,10 @@ void Victory() {
   AP_Check_Location(10600);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(10600));
+}
+
 void DefeatPatavium() {
   AP_Check_Location(10601);
 }

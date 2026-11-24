@@ -387,12 +387,13 @@ The repo's `age 2 files/` **is** the live game folder. Edits land in the game im
   bundles are 1.55, which `kit` rejects.
 - **One scenario per Python subprocess** when using the parser. `_initialise_version_dependencies`
   mutates module-level dicts, so reading a 1.59 then a 1.58 file in one process commits the second
-  with the first's schema. The `AP_*` scenarios are a mix of 1.58 and 1.59.
+  with the first's schema. Every `AP_*` scenario is 1.59 today, but keep the discipline: a file
+  re-saved by an older tool or a vanilla read in the same process brings the mix back.
 - `write_to_file` stamps `DataHeader.filename` from the output basename, so the name a file embeds
   is whatever basename it was last written under. Write to a temp file named after the scenario's
   **current embedded** filename and `os.replace` onto the real path, or the stamp changes as a side
-  effect. Nine 1.58 files embed `….aoe2scenario.migrating`, left from the 1.55 migration:
-  `AP_Attila_2`, `AP_Attila_5`, `AP_Attila_6` and all six `AP_Joan_*`.
+  effect. The embedded names differ from file to file (most are `AP_<C>_<n>.new.aoe2scenario`), so
+  read them with `kit scen field DataHeader.filename --root <dir>` rather than assuming.
 - Add a condition with `trigger.new_condition.script_call(xs_function="HasFoo();")`. Set the bare
   string; the parser handles the trailing `\x00`.
 - **Never reassign `trigger.effects` or `trigger.conditions`.** `effect_order` and `condition_order`
@@ -421,7 +422,13 @@ The repo's `age 2 files/` **is** the live game folder. Edits land in the game im
 - Match stored call strings with a regex such as `^\s*([A-Za-z_]\w*)\s*\(\s*\)\s*;?\s*$`, not
   `.rstrip(';')`, and assert the rewrite count.
 - Diff against a **no-op round trip**, not the original, unless a no-op round trip is confirmed
-  byte-identical for that file.
+  byte-identical for that file. A file last saved by the game editor is not: the parser fills
+  `item_id` on effects that leave it -1 and lowercases the colour mood (`Winter` → `winter`).
+  Files the parser already wrote carry that form and play fine.
+- **Condition precedence is AND > OR > no separator.** `A B OR C` means `A and (B or C)`. To give
+  several conditions an `OR` branch, join them with explicit `AND` conditions first
+  (`A AND B OR Script Call FooChecked();`), as every multi-condition AP trigger does. Set the order
+  through `condition_order`, since appended conditions land at the end.
 - Verify after writing: trigger count unchanged, effects unchanged, `invariant_ok=true`, and the
   embedded filename intact.
 

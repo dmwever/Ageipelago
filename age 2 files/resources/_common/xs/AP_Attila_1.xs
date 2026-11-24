@@ -44,6 +44,10 @@ void Victory() {
   AP_Check_Location(10100);
 }
 
+bool VictoryChecked() {
+  return (IsCheckedOnServer(10100));
+}
+
 void UniteTheHuns() {
   AP_Check_Location(10101);
 }
