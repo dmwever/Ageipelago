@@ -195,6 +195,48 @@ int canonicalTypeOf(int typeId = -1) {
     return (canonical);
 }
 
+float baseStandingGraphic(int typeId = -1) {
+    return (xsGetObjectAttribute(0, typeId, cStandingGraphic, 0));
+}
+
+int lineTypeWithStandingGraphic(int lineId = -1, float standingGraphic = -1.0) {
+    for (j = 0; < unitTableCount) {
+        vector row = getUnit(j);
+        if (structGetInt(row, "lineId") != lineId) {
+            continue;
+        }
+        int typeId = structGetInt(row, "typeId");
+        if (baseStandingGraphic(typeId) == standingGraphic) {
+            return (typeId);
+        }
+    }
+    return (-1);
+}
+
+int resolvedTypeOf(int unitId = -1) {
+    int copyId = xsGetUnitCopyId(unitId);
+    if (copyId != xsGetUnitObjectId(unitId)) {
+        return (copyId);
+    }
+    int index = findUnit(copyId);
+    if (index < 0) {
+        return (copyId);
+    }
+    int lineId = structGetInt(getUnit(index), "lineId");
+    if (lineId < 0) {
+        return (copyId);
+    }
+    float standingGraphic = xsGetUnitAttribute(unitId, cStandingGraphic, 0);
+    if (standingGraphic == baseStandingGraphic(copyId)) {
+        return (copyId);
+    }
+    int matched = lineTypeWithStandingGraphic(lineId, standingGraphic);
+    if (matched < 0) {
+        return (copyId);
+    }
+    return (matched);
+}
+
 void setObjectDisable(int objectId = -1, float disableFlag = 1.0, bool enable = false) {
     xsEffectAmount(cSetAttribute, objectId, cDisabledFlag, disableFlag, 1);
     if (enable) {
@@ -326,7 +368,7 @@ void checkOwnedUnits(int units = -1) {
         if (unitId < 0 || IsUnitUntracked(unitId)) {
             continue;
         }
-        if (MarkOwnedByType(xsGetUnitCopyId(unitId)) == false) {
+        if (MarkOwnedByType(resolvedTypeOf(unitId)) == false) {
             MarkOwnedByType(xsGetUnitObjectId(unitId));
         }
     }

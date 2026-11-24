@@ -226,7 +226,12 @@ void ApplyCaveman(int units = -1) {
                 || isUnitCavemanImmune(unitId)) {
             continue;
         }
-        int currentTypeId = canonicalTypeOf(xsGetUnitObjectId(unitId));
+        int objectId = xsGetUnitObjectId(unitId);
+        int liveTypeId = objectId;
+        if (xsGetUnitCopyId(unitId) == objectId) {
+            liveTypeId = resolvedTypeOf(unitId);
+        }
+        int currentTypeId = canonicalTypeOf(liveTypeId);
         int originalTypeId = originalTypeOf(unitId);
         if (originalTypeId == CAVEMAN_REMOVED) {
             continue;
